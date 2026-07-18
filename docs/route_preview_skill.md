@@ -49,3 +49,13 @@ Agent 不能选择文件路径、risk id、半径、planner id、Action 名、Se
 路径预览是一份瞬时证据，不是对未来环境的预约。后续 `navigate_to_approved_pose` 属于 controlled
 Skill，必须重新检查机器人健康、Keepout 和目标边界，并经过更严格审批；不能把旧的 `safe` 结果直接
 转换成运动授权。
+
+## 5. 真实发布结果
+
+`preview_safe_route@0.1.0` 已完成 `DRAFT → ACTIVE` 全生命周期。95 项测试全部通过，制品哈希为
+`d05c5c0aed6be59dbfb0f82c118b59099831c9c25db5c055fb56fb0326c7c7ca`。
+
+rbot 现场预览获得 173 个路径点、`5.113 m` 路径、`0.382 m` 语义禁区净空和 `0` 终点误差；水坑
+中心全局代价为 254。规划后 `/odom` 仍在原点附近。签名后的 ACTIVE Runtime 再次得到同一路径哈希，
+并写入 11 个 Trace 事件。冻结证据见
+`evidence/preview_safe_route/governed_release_v1.json`。
