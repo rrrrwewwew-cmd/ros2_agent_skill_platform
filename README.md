@@ -40,8 +40,10 @@ Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。
 - [只读机器人健康 Skill 实现](docs/robot_health_skill.md)；
 - [Registry-gated Skill Runtime](docs/skill_runtime.md)；
 - [Ed25519 Skill 发布签名与运行时验签](docs/release_signing.md)；
+- [`query_semantic_target` 只读语义地图 Skill](docs/semantic_query_skill.md)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
+- [第二个只读 Skill：`query_semantic_target`](skills/query_semantic_target)；
 - `safe_agent_core` ROS 2 Python 包和最小契约验证器；
 - `robot_skill_registry` SQLite Registry、审批/签名状态与 Agent run store；
 - ROS 2 Jazzy CI。
@@ -59,6 +61,7 @@ robot_agent_ws/
 ├── src/safe_agent_core/       # Skill 契约、策略和状态机底座
 ├── src/robot_skill_registry/  # 不可变版本、治理事件和 Agent run 状态
 ├── src/robot_skill_runtime/   # ACTIVE/hash/权限门控与批准适配器
+├── src/robot_semantic_skills/ # 项目一持久化语义地图的受控只读工具
 ├── artifacts/                 # 版本化 Skill artifact file locks
 ├── skills/                    # 版本化、可评测的机器人/Agent Skill
 ├── schemas/                   # 机器可读契约

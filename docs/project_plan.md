@@ -58,6 +58,7 @@
 - `check_robot_health@0.2.0` 确定性策略、只读 ROS 适配器、结果 Schema 和隔离 ROS 图测试。
 - `robot_skill_runtime` ACTIVE 状态、artifact hash、输入 Schema、ROS 权限、超时、结果与 Trace 门控。
 - Ed25519 artifact 发布 envelope、独立验签登记和 Runtime 执行前二次验签。
+- `query_semantic_target@0.1.0` 固定 map profile、单次字节快照 hash、严格证据验证和 Runtime adapter。
 
 尚未完成：其余 5 个标准 Skill 的真实实现、项目一日志适配、Registry 与运行时 Executor 的权限
 适配器扩展，以及 LLM/RAG/MCP Agent 层。`check_robot_health@0.2.0` 已通过项目一 rbot 完整仿真栈

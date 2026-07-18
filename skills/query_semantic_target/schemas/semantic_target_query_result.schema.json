@@ -1,0 +1,158 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/semantic-target-query-result.schema.json",
+  "title": "Semantic Target Query Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill",
+    "skill_version",
+    "state",
+    "query",
+    "source",
+    "found",
+    "landmark",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "skill": {"const": "query_semantic_target"},
+    "skill_version": {"const": "0.1.0"},
+    "state": {"enum": ["found", "not_found", "unavailable", "invalid"]},
+    "query": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["map_profile", "target_id"],
+      "properties": {
+        "map_profile": {
+          "enum": ["semantic_landmarks_v1", "rbot_water_puddle_v2"]
+        },
+        "target_id": {
+          "enum": [
+            "blue_cylinder",
+            "green_box",
+            "red_cube",
+            "restricted_area",
+            "water_puddle"
+          ]
+        }
+      }
+    },
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "store_profile",
+        "content_sha256",
+        "frame_id",
+        "updated_at"
+      ],
+      "properties": {
+        "store_profile": {
+          "enum": ["semantic_landmarks_v1", "rbot_water_puddle_v2"]
+        },
+        "content_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "frame_id": {"type": ["string", "null"], "minLength": 1},
+        "updated_at": {"type": "string"}
+      }
+    },
+    "found": {"type": "boolean"},
+    "landmark": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/landmark"}
+      ]
+    },
+    "reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "vector3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": {"type": "number"},
+        "y": {"type": "number"},
+        "z": {"type": "number"}
+      }
+    },
+    "nonnegativeVector3": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y", "z"],
+      "properties": {
+        "x": {"type": "number", "minimum": 0},
+        "y": {"type": "number", "minimum": 0},
+        "z": {"type": "number", "minimum": 0}
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "perception_backend",
+        "model_score",
+        "verified_score",
+        "service_request_count",
+        "inference_ms"
+      ],
+      "properties": {
+        "perception_backend": {"type": ["string", "null"]},
+        "model_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "verified_score": {
+          "type": ["number", "null"],
+          "minimum": 0,
+          "maximum": 1
+        },
+        "service_request_count": {
+          "type": ["integer", "null"],
+          "minimum": 0
+        },
+        "inference_ms": {"type": ["number", "null"], "minimum": 0}
+      }
+    },
+    "landmark": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target_id",
+        "mean_position_m",
+        "position_stddev_m",
+        "observations",
+        "last_observation_stamp_ns",
+        "last_wall_timestamp",
+        "last_evidence"
+      ],
+      "properties": {
+        "target_id": {"type": "string"},
+        "mean_position_m": {"$ref": "#/$defs/vector3"},
+        "position_stddev_m": {"$ref": "#/$defs/nonnegativeVector3"},
+        "observations": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["total", "accepted", "rejected"],
+          "properties": {
+            "total": {"type": "integer", "minimum": 1},
+            "accepted": {"type": "integer", "minimum": 1},
+            "rejected": {"type": "integer", "minimum": 0}
+          }
+        },
+        "last_observation_stamp_ns": {"type": "integer", "minimum": 0},
+        "last_wall_timestamp": {"type": "string"},
+        "last_evidence": {"$ref": "#/$defs/evidence"}
+      }
+    }
+  }
+}

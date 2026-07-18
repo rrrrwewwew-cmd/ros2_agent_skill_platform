@@ -15,7 +15,11 @@ from robot_skill_registry import (
     verify_signature_envelope,
 )
 
-from .adapters import HealthSkillAdapter, SkillAdapterError
+from .adapters import (
+    HealthSkillAdapter,
+    SemanticTargetQueryAdapter,
+    SkillAdapterError,
+)
 from .artifacts import ArtifactVerificationError, verify_artifact_lock
 from .trace import TraceRecorder
 
@@ -45,8 +49,10 @@ class SkillExecutor:
         default_adapter = HealthSkillAdapter(
             self.repository_root, use_sim_time=use_sim_time,
         )
+        semantic_adapter = SemanticTargetQueryAdapter(self.repository_root)
         self.adapters = adapters or {
             default_adapter.entrypoint: default_adapter,
+            semantic_adapter.entrypoint: semantic_adapter,
         }
         self._invocation_schema = self._load_schema('skill_invocation')
         self._result_schema = self._load_schema('skill_execution_result')

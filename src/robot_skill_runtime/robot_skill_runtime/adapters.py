@@ -106,3 +106,154 @@ class HealthSkillAdapter:
             raise SkillAdapterError(
                 'non-healthy result must include actionable reasons'
             )
+
+
+class SemanticTargetQueryAdapter:
+    """Query only approved persistent semantic map profiles."""
+
+    entrypoint = 'robot_semantic_skills.query:query_semantic_target'
+    safety_level = 'read_only'
+    permissions = {
+        'topics_read': [],
+        'topics_write': [],
+        'services': [],
+        'actions': [],
+    }
+
+    def __init__(self, repository_root, profile_paths=None,
+                 runner=subprocess.run):
+        self.repository_root = Path(repository_root).resolve()
+        defaults = {
+            'semantic_landmarks_v1': (
+                '~/.ros/semantic_nav_eval/semantic_landmarks_v1.json'
+            ),
+            'rbot_water_puddle_v2': (
+                '~/.ros/semantic_nav_eval/'
+                'rbot_water_puddle_landmarks_v2.json'
+            ),
+        }
+        configured = profile_paths or defaults
+        self.profile_paths = {
+            name: Path(path).expanduser().resolve()
+            for name, path in configured.items()
+        }
+        self.runner = runner
+
+    def invoke(self, inputs, timeout_sec):
+        """Run a fixed module with a code-owned store profile mapping."""
+        profile = inputs.get('map_profile')
+        target_id = inputs.get('target_id')
+        store_file = self.profile_paths.get(profile)
+        if store_file is None:
+            raise SkillAdapterError('semantic map profile is not approved')
+        command = [
+            sys.executable,
+            '-m',
+            'robot_semantic_skills.query_cli',
+            '--store-file',
+            str(store_file),
+            '--map-profile',
+            profile,
+            '--target-id',
+            target_id,
+        ]
+        try:
+            completed = self.runner(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=float(timeout_sec),
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exception:
+            raise SkillAdapterError('semantic map query timed out') from exception
+        except OSError as exception:
+            raise SkillAdapterError(
+                f'semantic map query could not start: {exception}'
+            ) from exception
+        if completed.returncode not in {0, 3, 4, 5}:
+            raise SkillAdapterError(
+                f'semantic map query exited {completed.returncode}'
+            )
+        try:
+            result = json.loads(completed.stdout.strip())
+        except json.JSONDecodeError as exception:
+            raise SkillAdapterError(
+                'semantic map query returned invalid JSON'
+            ) from exception
+        self.validate_result(result)
+        if result['query'] != {
+            'map_profile': profile,
+            'target_id': target_id,
+        }:
+            raise SkillAdapterError('semantic query output identity mismatch')
+        return result
+
+    def validate_result(self, result):
+        """Validate structural and semantic query postconditions."""
+        schema_path = (
+            self.repository_root /
+            'skills/query_semantic_target/schemas/'
+            'semantic_target_query_result.schema.json'
+        )
+        try:
+            schema = json.loads(schema_path.read_text(encoding='utf-8'))
+            Draft202012Validator(schema).validate(result)
+        except (OSError, json.JSONDecodeError, ValidationError) as exception:
+            raise SkillAdapterError(
+                'semantic query result violates its JSON Schema'
+            ) from exception
+        found = result['state'] == 'found'
+        if result['found'] is not found:
+            raise SkillAdapterError('semantic query found flag is inconsistent')
+        if found:
+            if result['landmark'] is None or result['reasons']:
+                raise SkillAdapterError(
+                    'found semantic query must contain evidence without errors'
+                )
+            if result['source']['frame_id'] != 'map':
+                raise SkillAdapterError(
+                    'found semantic target must use the map frame'
+                )
+            if result['source']['content_sha256'] is None:
+                raise SkillAdapterError(
+                    'found semantic target requires source content hash'
+                )
+            if (
+                result['landmark']['target_id'] !=
+                result['query']['target_id']
+            ):
+                raise SkillAdapterError(
+                    'semantic landmark identity is inconsistent'
+                )
+            observations = result['landmark']['observations']
+            if (
+                observations['total'] !=
+                observations['accepted'] + observations['rejected']
+            ):
+                raise SkillAdapterError(
+                    'semantic observation counters are inconsistent'
+                )
+        elif result['landmark'] is not None or not result['reasons']:
+            raise SkillAdapterError(
+                'non-found semantic query must contain a reason only'
+            )
+        if (
+            result['source']['store_profile'] !=
+            result['query']['map_profile']
+        ):
+            raise SkillAdapterError('semantic source profile is inconsistent')
+        if result['state'] == 'not_found' and (
+            result['source']['content_sha256'] is None or
+            result['source']['frame_id'] != 'map'
+        ):
+            raise SkillAdapterError(
+                'not-found query requires valid map source evidence'
+            )
+        if result['state'] == 'unavailable' and (
+            result['source']['content_sha256'] is not None or
+            result['source']['frame_id'] is not None
+        ):
+            raise SkillAdapterError(
+                'unavailable query cannot claim parsed source evidence'
+            )
