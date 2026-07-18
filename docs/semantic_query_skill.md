@@ -55,3 +55,13 @@ Agent input: map_profile + canonical target_id
 
 单元和 Runtime 测试覆盖：源文件字节不变、缺失目标、缺失/损坏文件、计数不一致、非有限数值、
 profile/path escape、输出身份不一致、timeout、artifact hash、Ed25519 签名和 ACTIVE 执行门。
+
+## 5. 发布与 Runtime 结果
+
+`query_semantic_target@0.1.0` 已完成 `DRAFT → ACTIVE` 全生命周期。发布制品哈希为
+`e4f6cddb16757bdee6b46163295152033a5f60a9aea7030fa5659eca2716200e`，并由部署端受信
+Ed25519 公钥验证。
+
+安装后 Runtime 通过两次唯一 invocation 分别查询 `green_box` 和 `water_puddle`，
+均返回 `SUCCEEDED/found`，每次生成 11 个追加式 Trace 事件。测试门为 77 项、0 失败。
+冻结证据见 `evidence/query_semantic_target/governed_release_v1.json`。
