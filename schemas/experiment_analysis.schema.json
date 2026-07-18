@@ -1,0 +1,39 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/experiment-analysis.schema.json",
+  "title": "Deterministic Robot Experiment Analysis",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "analyzer_version",
+    "run_id",
+    "parameters",
+    "source_hashes",
+    "summary",
+    "distance_matrix_sample_timestamps_ns",
+    "distance_matrix_m",
+    "correlated_samples",
+    "anomaly_windows",
+    "candidate_mechanisms"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "analyzer_version": {"type": "string"},
+    "run_id": {"type": "string"},
+    "parameters": {"type": "object"},
+    "source_hashes": {"type": "object"},
+    "summary": {"type": "object"},
+    "distance_matrix_sample_timestamps_ns": {
+      "type": "array",
+      "items": {"type": "integer", "minimum": 0}
+    },
+    "distance_matrix_m": {
+      "type": "array",
+      "items": {"type": "array", "items": {"type": "number", "minimum": 0}}
+    },
+    "correlated_samples": {"type": "array", "items": {"type": "object"}},
+    "anomaly_windows": {"type": "array", "items": {"type": "object"}},
+    "candidate_mechanisms": {"type": "array", "items": {"type": "object"}}
+  }
+}

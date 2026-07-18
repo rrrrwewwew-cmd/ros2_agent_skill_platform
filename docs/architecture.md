@@ -2,11 +2,12 @@
 
 ## 1. 目标
 
-项目二构建一个面向 ROS 2 移动机器人的 Agentic Skill 平台。它同时解决三个问题：
+项目二构建一个面向 ROS 2 移动机器人的 Agentic Skill 平台。它同时解决四个问题：
 
 1. LLM 如何利用版本正确、可引用的机器人知识；
 2. 如何把自然语言需求转成可测试、可审批的 ROS 2 Skill；
-3. 运行时 Agent 如何在确定性安全边界内选择和执行 Skill。
+3. 运行时 Agent 如何在确定性安全边界内选择和执行 Skill；
+4. 如何让 Agent 基于可复算实验日志定位异常并生成有证据的诊断报告。
 
 系统的安全目标不是保证 LLM 永远不提出错误动作，而是保证错误计划和未经批准的代码不能到达
 机器人执行层。
@@ -45,8 +46,13 @@
                   │ typed results
         ┌─────────▼─────────┐
         │ Trace + Evaluator │
+        │ Python Analytics  │
         └───────────────────┘
 ```
+
+LLM 不直接读取任意文件或调用 Python。LLM API 只接收经过检索和脱敏的上下文，所有分析、ROS
+访问和报告生成都通过具有 JSON Schema 的 Tool Calling。MCP 是工具发现与调用协议层，不替代
+Registry、策略校验或 ROS 2 执行安全边界。
 
 ## 3. 控制面与数据面
 
@@ -155,3 +161,48 @@ Skill manifest 声明所需 ROS topic/service/action 权限。执行进程后续
 - 导航结果和风险区净空验证。
 
 项目二不复制或重新实现 GroundingDINO、Qwen-VL、RGB-D 投影和 Keepout 算法。
+
+## 10. 实验诊断数据面
+
+实验诊断是项目二的首个完整 Agent 用例，其确定性数据流为：
+
+```text
+实验目录/Trace
+  → 查询 run 与校验 manifest/hash
+  → 对齐 pose、control、Nav2、TF、diagnostics 时间戳
+  → Python 距离矩阵与时间序列特征
+  → 异常窗口检测
+  → 关联控制指令和系统事件
+  → RAG 检索 ROS 文档、历史失败与项目接口
+  → LLM 生成有引用的原因假设
+  → SVG/JSON/Markdown 实验报告
+```
+
+确定性工具只报告观测、阈值和候选机制，不能把相关性冒充因果性。LLM 必须区分 `evidence`、
+`hypothesis` 和 `unknown`，每条原因假设都引用时间窗口、工具输出和 RAG source id。
+
+首批 MCP Tool 规划为：
+
+- `query_experiment_runs`；
+- `load_ros_timeseries`；
+- `compute_distance_matrix`；
+- `detect_anomaly_windows`；
+- `correlate_control_commands`；
+- `retrieve_failure_knowledge`；
+- `generate_experiment_report`；
+- `request_skill_approval`。
+
+## 11. LLM、Prompt、Agent 与状态边界
+
+- LLM Provider 使用统一接口；测试使用 deterministic fake，真实 Provider 由部署配置选择；
+- Prompt 存入 Prompt Registry，记录版本、hash、输入/输出 schema 和评测结果；
+- Tool Calling 参数必须先通过 JSON Schema，再经过权限和运行时前置条件校验；
+- Agent Loop 具有最大步骤、最大工具调用、墙钟超时、取消和失败终止条件；
+- 会话、计划、审批、Skill 版本和 Trace id 持久化，进程重启不能绕过审批；
+- Prompt、模型、检索结果、工具输入输出和状态迁移进入结构化 Trace，但密钥和敏感数据不落盘。
+
+## 12. 可复现部署
+
+作品集 v1 的部署目标是单机可复现环境：锁定 Python/ROS 依赖，提供 ROS 2 launch、MCP Server、
+RAG 索引构建、Agent API、Registry/Trace 存储、健康检查、CI 和版本化 Release。真机安全认证、
+生产现场高可用和无人监管运行属于后续工程，不作为 v1 结论。

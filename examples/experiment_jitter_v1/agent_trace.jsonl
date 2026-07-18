@@ -1,0 +1,2 @@
+{"schema_version":1,"timestamp_ns":1300000000,"trace_id":"trace_jitter_demo_001","event_id":"event_001","kind":"tool_call","source":"deterministic_fixture","correlation_id":"analysis_001","payload":{"tool":"correlate_control_commands","run_id":"jitter_demo_001"}}
+{"schema_version":1,"timestamp_ns":1800000000,"trace_id":"trace_jitter_demo_001","event_id":"event_002","kind":"tool_result","source":"deterministic_fixture","correlation_id":"analysis_001","payload":{"tool":"detect_anomaly_windows","window_count":1}}

@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/experiment-run.schema.json",
+  "title": "Robot Experiment Run Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "scenario",
+    "started_at",
+    "time_base",
+    "frame_id",
+    "sources"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "pattern": "^[a-z0-9][a-z0-9_-]{2,63}$"},
+    "scenario": {"type": "string", "minLength": 3},
+    "started_at": {"type": "string", "format": "date-time"},
+    "time_base": {"const": "nanoseconds"},
+    "frame_id": {"type": "string", "minLength": 1},
+    "sources": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["pose_csv", "command_csv"],
+      "properties": {
+        "pose_csv": {"$ref": "#/$defs/source"},
+        "command_csv": {"$ref": "#/$defs/source"},
+        "agent_trace_jsonl": {"$ref": "#/$defs/source"},
+        "nav_events_jsonl": {"$ref": "#/$defs/source"},
+        "diagnostics_jsonl": {"$ref": "#/$defs/source"}
+      }
+    }
+  },
+  "$defs": {
+    "source": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["path", "sha256"],
+      "properties": {
+        "path": {"type": "string", "minLength": 1},
+        "sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    }
+  }
+}
