@@ -37,6 +37,7 @@ Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。
 - [Skill 契约说明](docs/skill_contract.md)；
 - [实验日志诊断 Agent 契约](docs/experiment_diagnosis.md)；
 - [Skill Registry 与持久化状态机](docs/registry_state_machine.md)；
+- [只读机器人健康 Skill 实现](docs/robot_health_skill.md)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
 - `safe_agent_core` ROS 2 Python 包和最小契约验证器；
@@ -44,8 +45,9 @@ Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。
 - ROS 2 Jazzy CI。
 
 Phase 1 已提供实验清单、Agent Trace、时间序列关联、距离矩阵、异常窗口、可复算报告、不可变
-Skill Registry 和持久化 Agent run。它先使用确定性 Python 与事务状态建立证据和治理边界，再由
-后续的 RAG、LLM API、Prompt Registry、MCP 和有界 Agent Loop 组合这些能力。
+Skill Registry、持久化 Agent run，以及第一个可执行只读 ROS 健康 Skill。它先使用确定性 Python
+与事务状态建立证据和治理边界，再由后续的 RAG、LLM API、Prompt Registry、MCP 和有界 Agent
+Loop 组合这些能力。
 
 ## 仓库结构
 
@@ -90,6 +92,14 @@ colcon test-result --verbose
 ```bash
 ros2 run safe_agent_core skill_validate \
   ~/robot_agent_ws/skills/check_robot_health/skill.yaml
+```
+
+运行只读健康检查：
+
+```bash
+ros2 run safe_agent_core check_robot_health --ros-args \
+  -p use_sim_time:=true \
+  -p required_sensors:="[/scan, /camera/image]"
 ```
 
 运行冻结的抖动实验证据分析：

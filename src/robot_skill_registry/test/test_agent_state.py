@@ -49,7 +49,7 @@ def transition_to_executing(store, run_id):
         'PLANNING',
         'runtime',
         'plan generated',
-        plan={'steps': [{'skill': 'check_robot_health', 'version': '0.1.0'}]},
+        plan={'steps': [{'skill': 'check_robot_health', 'version': '0.2.0'}]},
     )
     return store.transition(
         run_id, 'EXECUTING', 'VALIDATING', 'validator', 'read-only plan valid',

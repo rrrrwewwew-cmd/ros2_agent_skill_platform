@@ -23,6 +23,7 @@ sensor availability. Return structured evidence; do not attempt repair or moveme
 - Never start, cancel, or modify a navigation task.
 - Never infer health from process existence alone.
 - Do not hide degraded checks behind an overall healthy label.
+- Reject sensor topics outside the manifest allowlist; `required_sensors` is not arbitrary ROS graph access.
 
 ## Output expectations
 

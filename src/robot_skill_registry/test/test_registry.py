@@ -108,7 +108,7 @@ def test_approval_signature_and_activation_are_hash_bound(tmp_path):
             record['name'],
             record['version'],
             record['artifact_hash'],
-            'fixture-signature:check_robot_health:0.1.0',
+            'fixture-signature:check_robot_health:0.2.0',
             'release_verifier',
             'detached signature verified',
         )

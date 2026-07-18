@@ -1,0 +1,53 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/robot-health-result.schema.json",
+  "title": "Read-only Robot Health Skill Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill",
+    "skill_version",
+    "observation_timestamp_ns",
+    "state",
+    "safe_to_proceed",
+    "checks",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "skill": {"const": "check_robot_health"},
+    "skill_version": {"const": "0.2.0"},
+    "observation_timestamp_ns": {"type": "integer", "minimum": 0},
+    "state": {"enum": ["healthy", "degraded", "unsafe"]},
+    "safe_to_proceed": {"type": "boolean"},
+    "checks": {
+      "type": "array",
+      "minItems": 3,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "status",
+          "safety_critical",
+          "observed_at_ns",
+          "reason",
+          "evidence"
+        ],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "status": {"enum": ["pass", "fail"]},
+          "safety_critical": {"type": "boolean"},
+          "observed_at_ns": {"type": "integer", "minimum": 0},
+          "reason": {"type": "string", "minLength": 1},
+          "evidence": {"type": "object"}
+        }
+      }
+    },
+    "reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1}
+    }
+  }
+}

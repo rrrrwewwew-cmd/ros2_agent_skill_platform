@@ -2,7 +2,7 @@
 
 | Field | Value |
 | --- | --- |
-| Version | 0.1.0 |
+| Version | 0.2.0 |
 | Status | DRAFT |
 | Safety level | read_only |
 | Human approval | not required |
@@ -16,12 +16,20 @@ Run before controlled/high-impact robot Skills to collect current Nav2, TF, sens
 
 This Skill does not repair nodes, publish velocity, activate lifecycle nodes, change masks, or cancel navigation.
 
+## Implementation status
+
+The Phase 1 implementation contains a deterministic policy evaluator, a bounded read-only ROS 2 adapter, a typed
+result Schema, unit tests, and an isolated ROS graph integration test. The adapter reads the Nav2 lifecycle health
+service, map-to-robot TF, semantic safety topic/diagnostic, and only manifest-allowlisted required sensor topics.
+
 ## Known limitations
 
-The Phase 0 package defines and validates the contract but does not yet implement the ROS health adapter. Runtime
-implementation and launch integration belong to Phase 1.
+The Skill does not diagnose root causes or repair failures. It remains `DRAFT` until it passes a project-one live
+simulation run and the Registry governance gates. Topic freshness is evaluated in the node clock domain; a clock
+or TF inconsistency therefore fails closed.
 
 ## Evaluation
 
-The initial evaluation set covers a healthy snapshot, stale TF, and missing safety evidence. Promotion beyond
-`DRAFT` requires the Phase 1 ROS adapter and integration tests.
+The evaluation set covers a healthy snapshot, stale TF, missing safety evidence, missing required sensors, future
+timestamps, sensor permission rejection, and a healthy isolated ROS graph. Promotion beyond `DRAFT` requires a
+project-one live-stack simulation result.

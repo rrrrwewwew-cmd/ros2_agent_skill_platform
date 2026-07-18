@@ -1,6 +1,6 @@
 schema_version: 1
 name: check_robot_health
-version: 0.1.0
+version: 0.2.0
 description: Collect a read-only ROS 2 navigation and semantic-safety health snapshot.
 entrypoint: safe_agent_core.health:check_robot_health
 safety_level: read_only
@@ -13,6 +13,14 @@ inputs:
     type: array
     items:
       type: string
+      enum:
+        - /camera/camera_info
+        - /camera/depth_image
+        - /camera/image
+        - /imu
+        - /odom
+        - /scan
+    uniqueItems: true
 preconditions: []
 effects:
   - reads_runtime_health
@@ -22,6 +30,12 @@ ros_permissions:
     - /semantic_keepout/safety_ok
     - /tf
     - /tf_static
+    - /camera/camera_info
+    - /camera/depth_image
+    - /camera/image
+    - /imu
+    - /odom
+    - /scan
   topics_write: []
   services:
     - /lifecycle_manager_navigation/is_active

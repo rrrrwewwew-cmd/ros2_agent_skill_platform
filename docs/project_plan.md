@@ -55,8 +55,10 @@
 - hash 绑定的实验 manifest、Agent Trace、距离矩阵、异常窗口与确定性报告；
 - SQLite Skill Registry、不可变版本、审批/签名治理事件；
 - 持久化 Agent run、合法状态迁移、乐观并发检查和重启 fail-closed。
+- `check_robot_health@0.2.0` 确定性策略、只读 ROS 适配器、结果 Schema 和隔离 ROS 图测试。
 
-尚未完成：6 个标准 Skill 的真实实现、项目一日志适配、Registry 与运行时 Executor 的权限联动。
+尚未完成：其余 5 个标准 Skill 的真实实现、项目一日志适配、Registry 与运行时 Executor 的权限
+联动，以及 `check_robot_health` 在项目一完整仿真栈上的晋级验证。
 
 ## Phase 2：版本化 RAG
 

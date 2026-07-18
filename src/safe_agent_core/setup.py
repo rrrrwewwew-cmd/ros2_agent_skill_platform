@@ -6,7 +6,7 @@ package_name = 'safe_agent_core'
 
 setup(
     name=package_name,
-    version='0.2.0',
+    version='0.3.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -25,6 +25,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'check_robot_health = safe_agent_core.health_ros:main',
             'experiment_analyze = safe_agent_core.experiment_analyze:main',
             'skill_validate = safe_agent_core.skill_validate:main',
         ],
