@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/skill-execution-result.schema.json",
+  "title": "Governed Skill Execution Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "skill_name",
+    "skill_version",
+    "status",
+    "agent_state",
+    "started_at_ns",
+    "completed_at_ns",
+    "output",
+    "error",
+    "trace_file"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "skill_name": {"type": "string", "minLength": 1},
+    "skill_version": {"type": "string", "minLength": 1},
+    "status": {"enum": ["succeeded", "failed"]},
+    "agent_state": {"enum": ["SUCCEEDED", "FAILED"]},
+    "started_at_ns": {"type": "integer", "minimum": 0},
+    "completed_at_ns": {"type": "integer", "minimum": 0},
+    "output": {"type": ["object", "null"]},
+    "error": {"type": ["string", "null"]},
+    "trace_file": {"type": "string", "minLength": 1}
+  }
+}

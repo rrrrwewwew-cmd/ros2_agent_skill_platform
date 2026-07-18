@@ -23,6 +23,9 @@ jobs:
       - name: Build and test the workspace
         uses: ros-tooling/action-ros-ci@v0.4
         with:
-          package-name: safe_agent_core
+          package-name: >-
+            safe_agent_core
+            robot_skill_registry
+            robot_skill_runtime
           target-ros2-distro: jazzy
           import-token: ${{ secrets.GITHUB_TOKEN }}

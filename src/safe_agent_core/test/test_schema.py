@@ -13,7 +13,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 def test_json_schemas_are_valid_json():
     """Every machine-readable contract remains parseable Draft 2020-12."""
     schema_paths = sorted((REPOSITORY_ROOT / 'schemas').glob('*.schema.json'))
-    assert len(schema_paths) == 7
+    assert len(schema_paths) == 10
     for schema_path in schema_paths:
         schema = json.loads(schema_path.read_text(encoding='utf-8'))
         assert schema['$schema'].endswith('2020-12/schema')
@@ -82,3 +82,17 @@ def test_live_health_evidence_matches_result_schema():
         'evidence/check_robot_health/rbot_live_simulation_v1.json'
     ).read_text(encoding='utf-8'))
     Draft202012Validator(_load_schema('robot_health_result')).validate(result)
+
+
+def test_runtime_invocation_and_artifact_lock_match_schemas():
+    """Versioned runtime examples satisfy their machine contracts."""
+    invocation = json.loads((
+        REPOSITORY_ROOT / 'examples/check_robot_health_invocation_v1.json'
+    ).read_text(encoding='utf-8'))
+    lock = json.loads((
+        REPOSITORY_ROOT / 'artifacts/check_robot_health/0.2.0.json'
+    ).read_text(encoding='utf-8'))
+    Draft202012Validator(_load_schema('skill_invocation')).validate(
+        invocation
+    )
+    Draft202012Validator(_load_schema('skill_artifact_lock')).validate(lock)
