@@ -18,6 +18,9 @@ LOCK_PATH = (
 SEMANTIC_LOCK_PATH = (
     REPOSITORY_ROOT / 'artifacts/query_semantic_target/0.1.0.json'
 )
+PREVIEW_LOCK_PATH = (
+    REPOSITORY_ROOT / 'artifacts/preview_safe_route/0.1.0.json'
+)
 
 
 def test_reference_artifact_matches_simulation_tested_hash():
@@ -48,6 +51,18 @@ def test_artifact_hash_changes_when_content_changes(tmp_path):
 def test_semantic_query_artifact_matches_its_file_list():
     """The second Skill has an independently reproducible identity."""
     lock = json.loads(SEMANTIC_LOCK_PATH.read_text(encoding='utf-8'))
+    verified = verify_artifact_lock(
+        REPOSITORY_ROOT,
+        lock['name'],
+        lock['version'],
+        lock['artifact_hash'],
+    )
+    assert verified == lock
+
+
+def test_route_preview_artifact_matches_its_file_list():
+    """The third Skill has an independently reproducible identity."""
+    lock = json.loads(PREVIEW_LOCK_PATH.read_text(encoding='utf-8'))
     verified = verify_artifact_lock(
         REPOSITORY_ROOT,
         lock['name'],

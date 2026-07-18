@@ -41,15 +41,18 @@ Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。
 - [Registry-gated Skill Runtime](docs/skill_runtime.md)；
 - [Ed25519 Skill 发布签名与运行时验签](docs/release_signing.md)；
 - [`query_semantic_target` 只读语义地图 Skill](docs/semantic_query_skill.md)；
+- [`preview_safe_route` 只读安全路径预览 Skill](docs/route_preview_skill.md)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
 - [第二个只读 Skill：`query_semantic_target`](skills/query_semantic_target)；
+- [第三个只读 Skill：`preview_safe_route`](skills/preview_safe_route)；
 - `safe_agent_core` ROS 2 Python 包和最小契约验证器；
 - `robot_skill_registry` SQLite Registry、审批/签名状态与 Agent run store；
 - ROS 2 Jazzy CI。
 
 Phase 1 已提供实验清单、Agent Trace、时间序列关联、距离矩阵、异常窗口、可复算报告、不可变
-Skill Registry、持久化 Agent run、两个已激活的只读 Skill（机器人健康与语义地图查询），以及只允许通过
+Skill Registry、持久化 Agent run、两个已激活的只读 Skill（机器人健康与语义地图查询）、一个已通过
+95 项测试的只读 Nav2 安全路径预览 Skill，以及只允许通过
 hash 和 Ed25519 发布证明的 `ACTIVE` artifact 进入固定适配器的 Skill Runtime。它先使用确定性 Python 与事务
 状态建立证据和治理边界，再由后续
 的 RAG、LLM API、Prompt Registry、MCP 和有界 Agent Loop 组合这些能力。
@@ -62,6 +65,7 @@ robot_agent_ws/
 ├── src/robot_skill_registry/  # 不可变版本、治理事件和 Agent run 状态
 ├── src/robot_skill_runtime/   # ACTIVE/hash/权限门控与批准适配器
 ├── src/robot_semantic_skills/ # 项目一持久化语义地图的受控只读工具
+├── src/robot_navigation_skills/ # 只读 Nav2 规划与语义 Keepout 路径验证
 ├── artifacts/                 # 版本化 Skill artifact file locks
 ├── skills/                    # 版本化、可评测的机器人/Agent Skill
 ├── schemas/                   # 机器可读契约

@@ -17,6 +17,7 @@ from robot_skill_registry import (
 
 from .adapters import (
     HealthSkillAdapter,
+    SafeRoutePreviewAdapter,
     SemanticTargetQueryAdapter,
     SkillAdapterError,
 )
@@ -50,9 +51,13 @@ class SkillExecutor:
             self.repository_root, use_sim_time=use_sim_time,
         )
         semantic_adapter = SemanticTargetQueryAdapter(self.repository_root)
+        preview_adapter = SafeRoutePreviewAdapter(
+            self.repository_root, use_sim_time=use_sim_time,
+        )
         self.adapters = adapters or {
             default_adapter.entrypoint: default_adapter,
             semantic_adapter.entrypoint: semantic_adapter,
+            preview_adapter.entrypoint: preview_adapter,
         }
         self._invocation_schema = self._load_schema('skill_invocation')
         self._result_schema = self._load_schema('skill_execution_result')

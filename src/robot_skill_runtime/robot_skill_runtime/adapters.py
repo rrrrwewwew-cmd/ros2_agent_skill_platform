@@ -257,3 +257,136 @@ class SemanticTargetQueryAdapter:
             raise SkillAdapterError(
                 'unavailable query cannot claim parsed source evidence'
             )
+
+
+class SafeRoutePreviewAdapter:
+    """Execute only the approved read-only Nav2 path preview."""
+
+    entrypoint = 'robot_navigation_skills.preview:preview_safe_route'
+    safety_level = 'read_only'
+    permissions = {
+        'topics_read': [],
+        'topics_write': [],
+        'services': ['/global_costmap/get_costmap'],
+        'actions': ['/compute_path_to_pose'],
+    }
+
+    def __init__(self, repository_root, use_sim_time=False,
+                 runner=subprocess.run):
+        self.repository_root = Path(repository_root).resolve()
+        self.use_sim_time = bool(use_sim_time)
+        self.runner = runner
+
+    def invoke(self, inputs, timeout_sec):
+        """Call fixed ROS endpoints through a bounded module process."""
+        command = [
+            sys.executable,
+            '-m',
+            'robot_navigation_skills.preview_ros',
+            '--goal-x',
+            str(inputs.get('goal_x')),
+            '--goal-y',
+            str(inputs.get('goal_y')),
+            '--goal-yaw-deg',
+            str(inputs.get('goal_yaw_deg')),
+            '--keepout-profile',
+            str(inputs.get('keepout_profile')),
+            '--ros-args',
+            '-p',
+            f'use_sim_time:={str(self.use_sim_time).lower()}',
+        ]
+        try:
+            completed = self.runner(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=float(timeout_sec),
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exception:
+            raise SkillAdapterError('route preview timed out') from exception
+        except OSError as exception:
+            raise SkillAdapterError(
+                f'route preview could not start: {exception}'
+            ) from exception
+        if completed.returncode not in {0, 3, 4, 5}:
+            raise SkillAdapterError(
+                f'route preview exited {completed.returncode}'
+            )
+        try:
+            result = json.loads(completed.stdout.strip())
+        except json.JSONDecodeError as exception:
+            raise SkillAdapterError(
+                'route preview returned invalid JSON'
+            ) from exception
+        self.validate_result(result)
+        expected_request = {
+            'goal': {
+                'frame_id': 'map',
+                'x': float(inputs['goal_x']),
+                'y': float(inputs['goal_y']),
+                'yaw_deg': float(inputs['goal_yaw_deg']),
+            },
+            'keepout_profile': inputs['keepout_profile'],
+        }
+        if result['request'] != expected_request:
+            raise SkillAdapterError('route preview output identity mismatch')
+        return result
+
+    def validate_result(self, result):
+        """Validate structural and safety-decision postconditions."""
+        schema_path = (
+            self.repository_root /
+            'skills/preview_safe_route/schemas/'
+            'safe_route_preview_result.schema.json'
+        )
+        try:
+            schema = json.loads(schema_path.read_text(encoding='utf-8'))
+            Draft202012Validator(schema).validate(result)
+        except (OSError, json.JSONDecodeError, ValidationError) as exception:
+            raise SkillAdapterError(
+                'route preview result violates its JSON Schema'
+            ) from exception
+        safe = result['state'] == 'safe'
+        if result['safe_to_execute'] is not safe:
+            raise SkillAdapterError(
+                'route preview readiness state is inconsistent'
+            )
+        if result['motion_command_sent'] is not False:
+            raise SkillAdapterError(
+                'read-only route preview cannot report motion'
+            )
+        if safe:
+            planner = result['planner']
+            keepout = result['keepout']
+            route = result['route']
+            if result['reasons'] or route is None:
+                raise SkillAdapterError(
+                    'safe route preview requires route evidence only'
+                )
+            if not (
+                planner['available']
+                and planner['error_code'] == 0
+                and planner['path_frame'] == 'map'
+                and planner['observed_at_ns'] > 0
+            ):
+                raise SkillAdapterError(
+                    'safe route preview has invalid planner evidence'
+                )
+            if not (
+                keepout['active_in_global_costmap'] is True
+                and keepout['global_center_cost'] >= 253
+                and keepout['intersects'] is False
+                and keepout['minimum_clearance_m'] > 0.0
+            ):
+                raise SkillAdapterError(
+                    'safe route preview has invalid keepout evidence'
+                )
+            if route['goal_position_error_m'] > 0.25:
+                raise SkillAdapterError(
+                    'safe route preview does not reach requested goal'
+                )
+        elif not result['reasons']:
+            raise SkillAdapterError(
+                'non-safe route preview must include reasons'
+            )
