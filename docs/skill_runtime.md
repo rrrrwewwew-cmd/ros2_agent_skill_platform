@@ -11,6 +11,7 @@ typed invocation
   → require ACTIVE
   → invocation hash == Registry hash
   → recompute artifact lock
+  → verify Ed25519 release envelope with trusted public key
   → validate inputs and exact ROS permissions
   → fixed approved adapter
   → bounded subprocess timeout
@@ -18,12 +19,13 @@ typed invocation
   → AgentRun state + append-only JSONL Trace
 ```
 
-## 2. 四层拒绝
+## 2. 五层拒绝
 
 1. **治理状态**：`DRAFT` 到 `SIGNED` 都不能执行，只有 `ACTIVE` 可以进入适配器；
 2. **代码身份**：invocation、Registry、artifact lock 和本地文件计算值四者 hash 必须一致；
-3. **参数权限**：输入通过 Skill manifest JSON Schema，ROS 权限必须与代码内批准适配器完全一致；
-4. **输出验证**：返回值既要通过 JSON Schema，也要满足语义不变量，例如 `healthy` 才能
+3. **发布身份**：Ed25519 envelope 必须通过部署时固定的受信公钥再次验证；
+4. **参数权限**：输入通过 Skill manifest JSON Schema，ROS 权限必须与代码内批准适配器完全一致；
+5. **输出验证**：返回值既要通过 JSON Schema，也要满足语义不变量，例如 `healthy` 才能
    `safe_to_proceed=true`。
 
 运行时不会自行批准、签名或激活 Skill，因此不能把执行接口反向用作治理绕过。
@@ -58,13 +60,13 @@ ros2 run robot_skill_runtime skill_execute \
   --use-sim-time
 ```
 
-拒绝本身会保存 AgentRun `FAILED` 状态和 JSONL Trace。完成外部签名验证并将同一 hash 的版本推进为
-`ACTIVE` 后，同一调用才可启动固定的 `HealthSkillAdapter`。适配器使用参数数组启动 Python 模块，
+拒绝本身会保存 AgentRun `FAILED` 状态和 JSONL Trace。完成 Ed25519 签名验证并将同一 hash 的版本
+推进为 `ACTIVE` 后，同一调用才可启动固定的 `HealthSkillAdapter`。适配器使用参数数组启动 Python 模块，
 明确设置 `shell=False`，并使用 manifest 的 10 秒上限终止超时进程。
 
 ## 6. 当前边界
 
 - 仅实现 `check_robot_health` approved adapter；
-- Registry 签名仍由外部 verifier 提供，Runtime 不持有私钥；
+- Registry 签名由独立 verifier 验证，Runtime 只持有受信公钥、不持有私钥；
 - 当前没有 LLM、Prompt 或 MCP；
 - Trace 包含结构化输入输出，但后续接入模型前仍需增加字段级脱敏策略。

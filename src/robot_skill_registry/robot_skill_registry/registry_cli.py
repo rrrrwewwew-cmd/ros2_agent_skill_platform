@@ -75,14 +75,6 @@ def _build_parser():
         default='APPROVED',
     )
 
-    sign = subparsers.add_parser('sign')
-    sign.add_argument('--name', required=True)
-    sign.add_argument('--version', required=True)
-    sign.add_argument('--artifact-hash', required=True)
-    sign.add_argument('--signature', required=True)
-    sign.add_argument('--signer', required=True)
-    sign.add_argument('--reason', required=True)
-
     create_run = subparsers.add_parser('create-run')
     create_run.add_argument('--run-id', required=True)
     create_run.add_argument('--trace-id', required=True)
@@ -147,15 +139,6 @@ def _skill_command(args):
                 args.reason,
                 decision=args.decision,
             )
-        if args.command == 'sign':
-            return registry.record_verified_signature(
-                args.name,
-                args.version,
-                args.artifact_hash,
-                args.signature,
-                args.signer,
-                args.reason,
-            )
     raise RegistryContractError(f'unsupported command: {args.command}')
 
 
@@ -197,7 +180,7 @@ def main(argv=None):
     try:
         if args.command in {
             'init', 'register', 'show', 'skill-events', 'approvals',
-            'advance', 'approve', 'sign',
+            'advance', 'approve',
         }:
             result = _skill_command(args)
         else:

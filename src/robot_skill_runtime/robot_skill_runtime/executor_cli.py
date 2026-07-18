@@ -25,6 +25,10 @@ def _parse_args(argv=None):
     parser.add_argument(
         '--trace-dir', default='~/.ros/robot_agent/traces',
     )
+    parser.add_argument(
+        '--trusted-public-key',
+        default='~/.ros/robot_agent/keys/release_ed25519.pub.pem',
+    )
     parser.add_argument('--invocation', required=True)
     parser.add_argument('--use-sim-time', action='store_true')
     return parser.parse_args(argv)
@@ -42,6 +46,7 @@ def main(argv=None):
             Path(args.repository_root).expanduser(),
             Path(args.trace_dir).expanduser(),
             use_sim_time=args.use_sim_time,
+            trusted_public_key=Path(args.trusted_public_key).expanduser(),
         )
         result = executor.execute(invocation)
     except (

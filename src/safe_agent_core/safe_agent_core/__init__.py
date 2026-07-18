@@ -1,5 +1,10 @@
 """Deterministic contracts and policy primitives for safe robot agents."""
 
+from .artifacts import (
+    ArtifactVerificationError,
+    compute_artifact_hash,
+    verify_artifact_lock,
+)
 from .experiment_analytics import (
     analyze_experiment,
     compute_distance_matrix,
@@ -17,15 +22,18 @@ from .skill_contract import SkillContractError, validate_skill_manifest
 
 
 __all__ = [
+    'ArtifactVerificationError',
     'ExperimentDataError',
     'HealthEvidenceError',
     'SkillContractError',
     'analyze_experiment',
     'check_robot_health',
+    'compute_artifact_hash',
     'compute_distance_matrix',
     'correlate_control_commands',
     'detect_anomaly_windows',
     'evaluate_health_snapshot',
     'query_experiment_runs',
     'validate_skill_manifest',
+    'verify_artifact_lock',
 ]

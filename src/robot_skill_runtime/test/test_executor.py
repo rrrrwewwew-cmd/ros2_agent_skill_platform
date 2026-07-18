@@ -8,6 +8,11 @@ from types import SimpleNamespace
 
 from jsonschema import Draft202012Validator
 from robot_skill_registry import AgentRunStore, SkillRegistry
+from robot_skill_registry import (
+    canonical_json,
+    create_signature_envelope,
+    generate_ed25519_keypair,
+)
 from robot_skill_runtime import SkillExecutor
 from robot_skill_runtime.adapters import HealthSkillAdapter
 import yaml
@@ -94,9 +99,21 @@ def _register(database, clock, active):
             record['name'], record['version'], record['artifact_hash'],
             'test_policy', 'fixture approval',
         )
+        private_key = database.parent / 'release_ed25519.pem'
+        public_key = database.parent / 'release_ed25519.pub.pem'
+        generate_ed25519_keypair(private_key, public_key)
+        envelope = create_signature_envelope(
+            REPOSITORY_ROOT,
+            record['name'],
+            record['version'],
+            record['artifact_hash'],
+            private_key,
+            'test_release_signer',
+            clock_ns=clock,
+        )
         record = registry.record_verified_signature(
             record['name'], record['version'], record['artifact_hash'],
-            'fixture-signature', 'test_verifier', 'fixture verified',
+            canonical_json(envelope), 'test_verifier', 'fixture verified',
         )
         return registry.advance(
             record['name'], record['version'], 'ACTIVE', 'SIGNED',
@@ -124,6 +141,7 @@ def _executor(tmp_path, clock, runner):
         tmp_path / 'traces',
         adapters={adapter.entrypoint: adapter},
         clock_ns=clock,
+        trusted_public_key=tmp_path / 'release_ed25519.pub.pem',
     )
 
 
@@ -217,6 +235,27 @@ def test_invocation_hash_mismatch_is_rejected_before_adapter(tmp_path):
     )
     assert result['status'] == 'failed'
     assert 'hash does not match Registry' in result['error']
+    assert runner.calls == []
+
+
+def test_active_skill_with_tampered_signature_is_rejected(tmp_path):
+    """An ACTIVE database flag cannot bypass runtime cryptographic proof."""
+    import sqlite3
+
+    clock = IncrementingClock()
+    record = _register(tmp_path / 'registry.db', clock, active=True)
+    with sqlite3.connect(tmp_path / 'registry.db') as connection:
+        connection.execute(
+            'UPDATE skill_versions SET signature = ? '
+            'WHERE name = ? AND version = ?',
+            ('{"forged":true}', record['name'], record['version']),
+        )
+    runner = FixedProcessRunner({})
+    result = _executor(tmp_path, clock, runner).execute(
+        _invocation('run_forged_signature', record['artifact_hash'])
+    )
+    assert result['status'] == 'failed'
+    assert 'release signature is invalid' in result['error']
     assert runner.calls == []
 
 

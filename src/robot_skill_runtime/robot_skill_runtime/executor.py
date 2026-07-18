@@ -10,7 +10,9 @@ from robot_skill_registry import (
     RegistryConflictError,
     RegistryContractError,
     RegistryNotFoundError,
+    ReleaseSignatureError,
     SkillRegistry,
+    verify_signature_envelope,
 )
 
 from .adapters import HealthSkillAdapter, SkillAdapterError
@@ -30,10 +32,15 @@ class SkillExecutor:
     """Resolve, validate, execute, and verify one exact Skill version."""
 
     def __init__(self, database_path, repository_root, trace_directory,
-                 use_sim_time=False, adapters=None, clock_ns=time.time_ns):
+                 use_sim_time=False, adapters=None, clock_ns=time.time_ns,
+                 trusted_public_key=None):
         self.database_path = Path(database_path).expanduser()
         self.repository_root = Path(repository_root).expanduser().resolve()
         self.trace_directory = Path(trace_directory).expanduser().resolve()
+        self.trusted_public_key = Path(
+            trusted_public_key or
+            '~/.ros/robot_agent/keys/release_ed25519.pub.pem'
+        ).expanduser().resolve()
         self.clock_ns = clock_ns
         default_adapter = HealthSkillAdapter(
             self.repository_root, use_sim_time=use_sim_time,
@@ -116,6 +123,18 @@ class SkillExecutor:
             )
         except ArtifactVerificationError as exception:
             raise ExecutionPolicyError(str(exception)) from exception
+        try:
+            verify_signature_envelope(
+                record['signature'],
+                self.trusted_public_key,
+                expected_name=record['name'],
+                expected_version=record['version'],
+                expected_hash=record['artifact_hash'],
+            )
+        except ReleaseSignatureError as exception:
+            raise ExecutionPolicyError(
+                f'ACTIVE Skill release signature is invalid: {exception}'
+            ) from exception
         return adapter
 
     @staticmethod
