@@ -206,3 +206,11 @@ Skill manifest 声明所需 ROS topic/service/action 权限。执行进程后续
 作品集 v1 的部署目标是单机可复现环境：锁定 Python/ROS 依赖，提供 ROS 2 launch、MCP Server、
 RAG 索引构建、Agent API、Registry/Trace 存储、健康检查、CI 和版本化 Release。真机安全认证、
 生产现场高可用和无人监管运行属于后续工程，不作为 v1 结论。
+
+## 13. Registry 持久化
+
+Phase 1 使用 SQLite 作为单机事实源，详细契约见
+[Skill Registry 与持久化 Agent 状态机](registry_state_machine.md)。Skill 的 `name + version`
+不可覆盖，审批和签名绑定 artifact hash；所有写操作使用事务和 expected-state 检查。该层只管理
+治理状态，不执行 ROS 动作。未来 MCP、LLM Planner 和 Executor 均不能绕过 Registry 直接加载
+Skill。

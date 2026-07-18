@@ -50,6 +50,14 @@
 批准、版本不匹配、前置条件失败或参数越界的 Skill 调用全部无法进入执行层。确定性工具输出
 只描述证据与候选机制，不宣称已经证明因果关系。
 
+当前已完成的 Phase 1 切片：
+
+- hash 绑定的实验 manifest、Agent Trace、距离矩阵、异常窗口与确定性报告；
+- SQLite Skill Registry、不可变版本、审批/签名治理事件；
+- 持久化 Agent run、合法状态迁移、乐观并发检查和重启 fail-closed。
+
+尚未完成：6 个标准 Skill 的真实实现、项目一日志适配、Registry 与运行时 Executor 的权限联动。
+
 ## Phase 2：版本化 RAG
 
 交付：

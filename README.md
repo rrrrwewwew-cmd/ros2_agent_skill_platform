@@ -36,20 +36,23 @@ Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。
 - [分阶段计划与验收标准](docs/project_plan.md)；
 - [Skill 契约说明](docs/skill_contract.md)；
 - [实验日志诊断 Agent 契约](docs/experiment_diagnosis.md)；
+- [Skill Registry 与持久化状态机](docs/registry_state_machine.md)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
 - `safe_agent_core` ROS 2 Python 包和最小契约验证器；
+- `robot_skill_registry` SQLite Registry、审批/签名状态与 Agent run store；
 - ROS 2 Jazzy CI。
 
-Phase 1 首个切片将提供实验清单、Agent Trace、时间序列关联、距离矩阵、异常窗口和可复算报告。
-它先使用确定性 Python 工具建立证据，再由后续的 RAG、LLM API、Prompt Registry、MCP 和有界
-Agent Loop 组合这些工具。
+Phase 1 已提供实验清单、Agent Trace、时间序列关联、距离矩阵、异常窗口、可复算报告、不可变
+Skill Registry 和持久化 Agent run。它先使用确定性 Python 与事务状态建立证据和治理边界，再由
+后续的 RAG、LLM API、Prompt Registry、MCP 和有界 Agent Loop 组合这些能力。
 
 ## 仓库结构
 
 ```text
 robot_agent_ws/
 ├── src/safe_agent_core/       # Skill 契约、策略和状态机底座
+├── src/robot_skill_registry/  # 不可变版本、治理事件和 Agent run 状态
 ├── skills/                    # 版本化、可评测的机器人/Agent Skill
 ├── schemas/                   # 机器可读契约
 ├── examples/                  # 冻结实验样例和可复算输入
@@ -59,7 +62,6 @@ robot_agent_ws/
 
 后续包将按验收阶段加入，而不是一次性建立空框架：
 
-- `robot_skill_registry`；
 - `robot_skill_runtime`；
 - `robot_rag`；
 - `robot_mcp_tools`；
@@ -79,7 +81,7 @@ cd ~/robot_agent_ws
 source /opt/ros/jazzy/setup.bash
 colcon build --symlink-install
 source install/setup.bash
-colcon test --packages-select safe_agent_core
+colcon test
 colcon test-result --verbose
 ```
 
@@ -100,6 +102,21 @@ ros2 run safe_agent_core experiment_analyze \
 
 该命令不调用 LLM；它验证输入 hash，计算轨迹距离矩阵，对齐控制指令，标出异常窗口，并输出
 `analysis.json`、`report.md`、`trajectory.svg` 和 `motion_timeseries.svg`。
+
+初始化 Registry 并登记参考 Skill：
+
+```bash
+ros2 run robot_skill_registry skill_registry \
+  --db ~/.ros/robot_agent/registry.db init
+
+ros2 run robot_skill_registry skill_registry \
+  --db ~/.ros/robot_agent/registry.db register \
+  --manifest ~/robot_agent_ws/skills/check_robot_health/skill.yaml
+```
+
+Registry 使用 SQLite 事务、不可变 `name + version`、artifact hash、专用审批/签名操作和追加式
+审计事件。Agent run 同样持久化；重启后遗留活动 run 默认转为 `ABORTED`，不会自动重放可能已经
+执行过的机器人动作。
 
 ## 冻结边界
 
