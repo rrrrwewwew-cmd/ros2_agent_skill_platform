@@ -32,6 +32,7 @@ source ~/robot_agent_ws/install/setup.bash
 
 Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。仓库已包含：
 
+- [最新进度检查点与下次恢复入口](docs/current_progress.md)；
 - [系统架构](docs/architecture.md)；
 - [分阶段计划与验收标准](docs/project_plan.md)；
 - [Skill 契约说明](docs/skill_contract.md)；
