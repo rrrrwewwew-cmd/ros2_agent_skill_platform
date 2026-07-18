@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "skill": {
+    "name": "check_robot_health",
+    "version": "0.2.0",
+    "artifact_hash": "1df7df2354693c025c850368661656c6014db9636c5b19914245c8ba26914e8f"
+  },
+  "quality_gate": {
+    "colcon_tests": 61,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "governance": {
+    "approval": {
+      "decision": "APPROVED",
+      "actor": "read_only_release_policy",
+      "basis": "manifest requires_human_approval=false and frozen live rbot simulation evidence passed"
+    },
+    "signature": {
+      "algorithm": "ed25519",
+      "artifact_hash_algorithm": "sha256-file-list-v1",
+      "public_key_fingerprint": "23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a",
+      "signer": "local_read_only_release_authority",
+      "private_key_mode": "0600",
+      "runtime_reverification_required": true
+    },
+    "lifecycle": [
+      "DRAFT",
+      "GENERATED",
+      "STATIC_VALIDATED",
+      "BUILT",
+      "UNIT_TESTED",
+      "SIMULATION_TESTED",
+      "HUMAN_APPROVED",
+      "SIGNED",
+      "ACTIVE"
+    ],
+    "final_state": "ACTIVE"
+  },
+  "runtime_validation": {
+    "run_id": "health_runtime_active_002",
+    "trace_id": "trace_health_runtime_active_002",
+    "runtime_status": "succeeded",
+    "agent_state": "SUCCEEDED",
+    "health_state": "unsafe",
+    "safe_to_proceed": false,
+    "environment_evidence": "ROS graph was not running: simulation clock remained zero and required publishers were absent",
+    "interpretation": "The signed ACTIVE Skill executed through the bounded Runtime and correctly failed closed for downstream motion"
+  },
+  "live_healthy_evidence": "evidence/check_robot_health/rbot_live_simulation_v1.json",
+  "secrets_committed": false
+}

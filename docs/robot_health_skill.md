@@ -45,6 +45,6 @@ ros2 run safe_agent_core check_robot_health --ros-args \
 ## 5. 当前治理状态
 
 版本为 `0.2.0`，完成纯策略单测、隔离 ROS graph 集成测试和项目一 rbot 完整仿真栈现场验证。
-机器可读证据保存在 `evidence/check_robot_health/rbot_live_simulation_v1.json`。Registry 可以按
-`STATIC_VALIDATED → BUILT → UNIT_TESTED → SIMULATION_TESTED` 顺序推进，但仍不得越过人工审批和签名
-直接激活。
+机器可读健康证据保存在 `evidence/check_robot_health/rbot_live_simulation_v1.json`。该版本已经走完
+九段 Registry 生命周期并进入 `ACTIVE`；审批、Ed25519 公钥指纹、61 项测试和安装后 Runtime 的
+fail-closed 执行证据保存在 `evidence/check_robot_health/governed_release_v1.json`。私钥未进入仓库。

@@ -107,13 +107,18 @@ ros2 run safe_agent_core check_robot_health --ros-args \
   -p required_sensors:="[/scan, /camera/image]"
 ```
 
-验证 Runtime 会拒绝尚未 `ACTIVE` 的参考 Skill：
+运行已经审批、签名并激活的参考 Skill（`run_id` 与 `trace_id` 每次必须唯一）：
 
 ```bash
 ros2 run robot_skill_runtime skill_execute \
   --invocation ~/robot_agent_ws/examples/check_robot_health_invocation_v1.json \
+  --trusted-public-key ~/.ros/robot_agent/keys/release_ed25519.pub.pem \
   --use-sim-time
 ```
+
+Runtime 会重新计算 artifact hash、验证 Ed25519 发布 envelope、输入和权限，再调用固定 adapter。
+完整机器人栈在线时返回 `healthy`；ROS 图不可用时工具调用仍可正常完成，但输出为
+`safe_to_proceed=false`，下游运动必须停止。
 
 运行冻结的抖动实验证据分析：
 
@@ -137,7 +142,7 @@ ros2 run robot_skill_registry skill_registry \
   --manifest ~/robot_agent_ws/skills/check_robot_health/skill.yaml
 ```
 
-Registry 使用 SQLite 事务、不可变 `name + version`、artifact hash、专用审批/签名操作和追加式
+Registry 使用 SQLite 事务、不可变 `name + version`、artifact hash、专用审批/Ed25519 验签操作和追加式
 审计事件。Agent run 同样持久化；重启后遗留活动 run 默认转为 `ABORTED`，不会自动重放可能已经
 执行过的机器人动作。
 
