@@ -24,12 +24,13 @@ service, map-to-robot TF, semantic safety topic/diagnostic, and only manifest-al
 
 ## Known limitations
 
-The Skill does not diagnose root causes or repair failures. It remains `DRAFT` until it passes a project-one live
-simulation run and the Registry governance gates. Topic freshness is evaluated in the node clock domain; a clock
-or TF inconsistency therefore fails closed.
+The Skill does not diagnose root causes or repair failures. Topic freshness is evaluated in the node clock domain;
+a clock or TF inconsistency therefore fails closed. The source card remains versioned with the artifact while the
+runtime Registry records its separate promotion state.
 
 ## Evaluation
 
 The evaluation set covers a healthy snapshot, stale TF, missing safety evidence, missing required sensors, future
-timestamps, sensor permission rejection, and a healthy isolated ROS graph. Promotion beyond `DRAFT` requires a
-project-one live-stack simulation result.
+timestamps, sensor permission rejection, a healthy isolated ROS graph, and a healthy project-one rbot live-stack
+run. The frozen live result is stored under `evidence/check_robot_health/` and supports Registry promotion through
+`SIMULATION_TESTED`, not automatic activation.

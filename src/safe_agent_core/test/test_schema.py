@@ -73,3 +73,12 @@ def test_reference_skill_has_governance_artifacts():
         skill_dir / 'evals/evals.json',
     ]
     assert all(path.is_file() for path in required)
+
+
+def test_live_health_evidence_matches_result_schema():
+    """Operator-captured rbot evidence remains machine-verifiable."""
+    result = json.loads((
+        REPOSITORY_ROOT /
+        'evidence/check_robot_health/rbot_live_simulation_v1.json'
+    ).read_text(encoding='utf-8'))
+    Draft202012Validator(_load_schema('robot_health_result')).validate(result)
