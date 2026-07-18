@@ -1,0 +1,36 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/agent-trace-event.schema.json",
+  "title": "Robot Agent Trace Event",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "timestamp_ns",
+    "trace_id",
+    "event_id",
+    "kind",
+    "source",
+    "payload"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "timestamp_ns": {"type": "integer", "minimum": 0},
+    "trace_id": {"type": "string", "minLength": 1},
+    "event_id": {"type": "string", "minLength": 1},
+    "kind": {
+      "enum": [
+        "retrieval",
+        "plan",
+        "tool_call",
+        "tool_result",
+        "approval",
+        "state_transition",
+        "error"
+      ]
+    },
+    "source": {"type": "string", "minLength": 1},
+    "correlation_id": {"type": ["string", "null"]},
+    "payload": {"type": "object"}
+  }
+}

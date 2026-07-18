@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>safe_agent_core</name>
-  <version>0.1.0</version>
-  <description>Contracts and deterministic safety core for governed ROS 2 agent skills.</description>
+  <version>0.2.0</version>
+  <description>Contracts, evidence analytics, and safety primitives for ROS 2 agent skills.</description>
   <maintainer email="maintainer@example.com">rrrrwewwew-cmd</maintainer>
   <license>MIT</license>
 
@@ -12,6 +12,7 @@
 
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-jsonschema</test_depend>
   <test_depend>python3-pytest</test_depend>
 
   <export>

@@ -1,0 +1,22 @@
+{
+  "schema_version": 1,
+  "run_id": "jitter_demo_001",
+  "scenario": "controller_jitter_fixture",
+  "started_at": "2026-07-18T14:00:00+08:00",
+  "time_base": "nanoseconds",
+  "frame_id": "map",
+  "sources": {
+    "pose_csv": {
+      "path": "pose.csv",
+      "sha256": "a6e63b91a2512485e61171358455c215fb5f40428c0d485fba01c4c69132b269"
+    },
+    "command_csv": {
+      "path": "command.csv",
+      "sha256": "8d433856108c2ddafd6a2d824bf03881bdf5e8c4c0c071cfed1fb829ab200224"
+    },
+    "agent_trace_jsonl": {
+      "path": "agent_trace.jsonl",
+      "sha256": "77d1143226c5f465433429b54bd1da00158bae2b404514d3a87454a6cb3db7b4"
+    }
+  }
+}

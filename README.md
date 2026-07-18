@@ -1,7 +1,7 @@
 # ROS 2 Agent Skill Platform
 
 > RAG-assisted ROS 2 skill authoring, governed registration, safe agent
-> execution, and reproducible evaluation.
+> execution, experiment diagnosis, and reproducible evaluation.
 
 项目二研究如何让 LLM 在机器人系统中安全地获得、选择、组合和执行能力。用户可以用自然语言
 描述任务或新 Skill；系统通过版本化 RAG 检索 ROS 2 文档、已有接口、模板和安全规则。生成的
@@ -21,23 +21,29 @@ source ~/ros2_ws/install/setup.bash
 source ~/robot_agent_ws/install/setup.bash
 ```
 
-## 三个闭环
+## 四个闭环
 
 1. **Skill 编写闭环**：需求 → RAG → 代码/契约/测试生成 → 构建与仿真 → 审批 → Registry；
 2. **安全执行闭环**：任务 → 检索 → 结构化计划 → 双重策略校验 → Skill 执行 → 结果验证；
-3. **评测闭环**：正常/模糊/恶意/故障场景 → Trace → 安全和任务指标 → 可复算报告。
+3. **实验诊断闭环**：查询日志 → Python 分析 → 异常时间段 → 控制关联 → 原因假设 → 图表报告；
+4. **评测闭环**：正常/模糊/恶意/故障场景 → Trace → 安全和任务指标 → 可复算报告。
 
 ## 当前状态
 
-当前为 Phase 0：冻结架构、范围、Skill 契约和评测指标。仓库已包含：
+Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。仓库已包含：
 
 - [系统架构](docs/architecture.md)；
 - [分阶段计划与验收标准](docs/project_plan.md)；
 - [Skill 契约说明](docs/skill_contract.md)；
+- [实验日志诊断 Agent 契约](docs/experiment_diagnosis.md)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
 - `safe_agent_core` ROS 2 Python 包和最小契约验证器；
 - ROS 2 Jazzy CI。
+
+Phase 1 首个切片将提供实验清单、Agent Trace、时间序列关联、距离矩阵、异常窗口和可复算报告。
+它先使用确定性 Python 工具建立证据，再由后续的 RAG、LLM API、Prompt Registry、MCP 和有界
+Agent Loop 组合这些工具。
 
 ## 仓库结构
 
@@ -46,6 +52,7 @@ robot_agent_ws/
 ├── src/safe_agent_core/       # Skill 契约、策略和状态机底座
 ├── skills/                    # 版本化、可评测的机器人/Agent Skill
 ├── schemas/                   # 机器可读契约
+├── examples/                  # 冻结实验样例和可复算输入
 ├── docs/                      # 架构、计划和安全边界
 └── .github/workflows/         # ROS 2 Jazzy CI
 ```
@@ -55,8 +62,15 @@ robot_agent_ws/
 - `robot_skill_registry`；
 - `robot_skill_runtime`；
 - `robot_rag`；
+- `robot_mcp_tools`；
 - `robot_skill_author`；
 - `safe_agent_eval`。
+
+## 目标技术栈
+
+最终闭环明确覆盖 LLM API、版本化 Prompt、结构化 Tool Calling、有界 Agent Loop、持久化状态、
+Python 数据分析、版本化 RAG、MCP、Trace/Replay/可观测性、人工审批和可复现部署。MCP 只暴露
+声明过权限的分析工具或已批准 Skill，不作为任意 Shell 或任意 ROS graph 后门。
 
 ## 本地构建
 
@@ -76,8 +90,20 @@ ros2 run safe_agent_core skill_validate \
   ~/robot_agent_ws/skills/check_robot_health/skill.yaml
 ```
 
+运行冻结的抖动实验证据分析：
+
+```bash
+ros2 run safe_agent_core experiment_analyze \
+  --manifest ~/robot_agent_ws/examples/experiment_jitter_v1/manifest.json \
+  --output-dir /tmp/robot_agent_jitter_report
+```
+
+该命令不调用 LLM；它验证输入 hash，计算轨迹距离矩阵，对齐控制指令，标出异常窗口，并输出
+`analysis.json`、`report.md`、`trajectory.svg` 和 `motion_timeseries.svg`。
+
 ## 冻结边界
 
 项目二不会让 LLM 在线生成任意代码后直接控制机器人。不会提供任意 Shell、任意 ROS 图接口、
 直接 `/cmd_vel`、多 Agent、VLA 控制或 Web 搜索。生成 Skill 只能在隔离构建/仿真环境运行，
-通过审批后才能注册。
+通过审批后才能注册。最终部署指锁定依赖、容器/ROS 2 launch、配置、CI 和版本化 Release；真机
+安全认证与生产现场上线不在作品集 v1 的完成范围内。

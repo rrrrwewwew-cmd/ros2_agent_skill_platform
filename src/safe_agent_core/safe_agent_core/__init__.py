@@ -1,6 +1,23 @@
 """Deterministic contracts and policy primitives for safe robot agents."""
 
+from .experiment_analytics import (
+    analyze_experiment,
+    compute_distance_matrix,
+    correlate_control_commands,
+    detect_anomaly_windows,
+    ExperimentDataError,
+    query_experiment_runs,
+)
 from .skill_contract import SkillContractError, validate_skill_manifest
 
 
-__all__ = ['SkillContractError', 'validate_skill_manifest']
+__all__ = [
+    'ExperimentDataError',
+    'SkillContractError',
+    'analyze_experiment',
+    'compute_distance_matrix',
+    'correlate_control_commands',
+    'detect_anomaly_windows',
+    'query_experiment_runs',
+    'validate_skill_manifest',
+]

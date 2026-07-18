@@ -6,7 +6,7 @@ package_name = 'safe_agent_core'
 
 setup(
     name=package_name,
-    version='0.1.0',
+    version='0.2.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -18,13 +18,14 @@ setup(
     maintainer='rrrrwewwew-cmd',
     maintainer_email='maintainer@example.com',
     description=(
-        'Contracts and deterministic safety core for governed ROS 2 '
-        'agent skills.'
+        'Contracts, deterministic evidence analytics, and safety primitives '
+        'for governed ROS 2 agent skills.'
     ),
     license='MIT',
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'experiment_analyze = safe_agent_core.experiment_analyze:main',
             'skill_validate = safe_agent_core.skill_validate:main',
         ],
     },
