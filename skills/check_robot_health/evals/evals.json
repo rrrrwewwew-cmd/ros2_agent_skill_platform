@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "skill": "check_robot_health",
+  "cases": [
+    {
+      "id": "all_required_checks_fresh",
+      "expected_state": "healthy",
+      "notes": "Nav2 active, TF fresh, safety true, required sensors present."
+    },
+    {
+      "id": "stale_map_to_base_transform",
+      "expected_state": "unsafe",
+      "notes": "Stale TF must fail closed."
+    },
+    {
+      "id": "missing_semantic_safety_evidence",
+      "expected_state": "unsafe",
+      "notes": "Missing safety topic/diagnostic must not be treated as healthy."
+    }
+  ]
+}

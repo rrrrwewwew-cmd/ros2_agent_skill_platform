@@ -1,0 +1,28 @@
+schema_version: 1
+name: check_robot_health
+version: 0.1.0
+description: Collect a read-only ROS 2 navigation and semantic-safety health snapshot.
+entrypoint: safe_agent_core.health:check_robot_health
+safety_level: read_only
+requires_human_approval: false
+timeout_sec: 10.0
+cancel_supported: true
+idempotent: true
+inputs:
+  required_sensors:
+    type: array
+    items:
+      type: string
+preconditions: []
+effects:
+  - reads_runtime_health
+ros_permissions:
+  topics_read:
+    - /diagnostics
+    - /semantic_keepout/safety_ok
+    - /tf
+    - /tf_static
+  topics_write: []
+  services:
+    - /lifecycle_manager_navigation/is_active
+  actions: []

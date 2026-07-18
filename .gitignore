@@ -1,0 +1,13 @@
+build/
+install/
+log/
+.pytest_cache/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.venv/
+venv/
+.env
+.env.*
+traces/runtime/
+reports/generated/

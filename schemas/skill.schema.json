@@ -1,0 +1,70 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/ros2-agent-skill.schema.json",
+  "title": "ROS 2 Agent Skill Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "name",
+    "version",
+    "description",
+    "safety_level",
+    "requires_human_approval",
+    "timeout_sec",
+    "cancel_supported",
+    "inputs",
+    "preconditions",
+    "effects",
+    "ros_permissions"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "description": {"type": "string", "minLength": 10},
+    "entrypoint": {"type": ["string", "null"]},
+    "safety_level": {
+      "enum": ["read_only", "controlled", "high", "emergency"]
+    },
+    "requires_human_approval": {"type": "boolean"},
+    "timeout_sec": {"type": "number", "exclusiveMinimum": 0, "maximum": 600},
+    "cancel_supported": {"type": "boolean"},
+    "idempotent": {"type": "boolean"},
+    "inputs": {"type": "object"},
+    "preconditions": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "effects": {
+      "type": "array",
+      "items": {"type": "string"},
+      "uniqueItems": true
+    },
+    "ros_permissions": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["topics_read", "topics_write", "services", "actions"],
+      "properties": {
+        "topics_read": {"$ref": "#/$defs/rosNames"},
+        "topics_write": {"$ref": "#/$defs/rosNames"},
+        "services": {"$ref": "#/$defs/rosNames"},
+        "actions": {"$ref": "#/$defs/rosNames"}
+      }
+    }
+  },
+  "$defs": {
+    "rosNames": {
+      "type": "array",
+      "items": {"type": "string", "pattern": "^/[A-Za-z0-9_/]+$"},
+      "uniqueItems": true
+    }
+  }
+}
