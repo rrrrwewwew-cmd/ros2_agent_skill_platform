@@ -137,3 +137,86 @@ def test_non_json_assistant_content_fails_closed():
     ).plan(_request(prompt))
     assert result['state'] == 'failed'
     assert result['error']['code'] == 'provider_response_invalid'
+
+
+def test_contract_aware_prompt_rejects_invented_skill_inputs():
+    """Generic Plan JSON cannot smuggle invalid fields into a Skill call."""
+    registry = _registry()
+    prompt = registry.resolve('robot_task_planner', '0.2.0')
+    skill = next(
+        item for item in prompt.definition['allowed_skills']
+        if item['name'] == 'query_semantic_target'
+    )
+    plan = {
+        'schema_version': 1,
+        'decision': 'plan',
+        'summary': 'Invalid coordinate-based semantic query.',
+        'steps': [{
+            'step_id': 1,
+            'skill_name': skill['name'],
+            'skill_version': skill['version'],
+            'artifact_hash': skill['artifact_hash'],
+            'inputs': {'target_x': 4.5, 'target_y': 0.0},
+            'reason': 'Deliberately invalid test input.',
+            'expected_evidence': ['semantic target'],
+        }],
+        'clarification': None,
+    }
+    result = LlmGateway(
+        FakeProvider(plan),
+        registry,
+        REPOSITORY_ROOT / 'schemas',
+    ).plan(_request(prompt))
+    assert result['state'] == 'failed'
+    assert result['error']['code'] == 'plan_schema_invalid'
+    assert 'query_semantic_target' in result['error']['message']
+    assert 'Additional properties' in result['error']['message']
+
+
+def test_contract_aware_prompt_accepts_exact_semantic_inputs():
+    """A catalog-pinned Skill call succeeds with its exact input contract."""
+    registry = _registry()
+    prompt = registry.resolve('robot_task_planner', '0.2.0')
+    skill = next(
+        item for item in prompt.definition['allowed_skills']
+        if item['name'] == 'query_semantic_target'
+    )
+    plan = {
+        'schema_version': 1,
+        'decision': 'plan',
+        'summary': 'Query the named semantic target.',
+        'steps': [{
+            'step_id': 1,
+            'skill_name': skill['name'],
+            'skill_version': skill['version'],
+            'artifact_hash': skill['artifact_hash'],
+            'inputs': {
+                'map_profile': 'semantic_landmarks_v1',
+                'target_id': 'green_box',
+            },
+            'reason': 'The named target is present in the approved profile.',
+            'expected_evidence': ['typed semantic target result'],
+        }],
+        'clarification': None,
+    }
+    result = LlmGateway(
+        FakeProvider(plan),
+        registry,
+        REPOSITORY_ROOT / 'schemas',
+    ).plan(_request(prompt))
+    assert result['state'] == 'succeeded'
+
+
+def test_plan_step_ids_must_be_consecutive():
+    """Execution order cannot contain duplicates or hidden gaps."""
+    registry = _registry()
+    prompt = registry.resolve('robot_task_planner', '0.2.0')
+    plan = _valid_plan(prompt)
+    plan['steps'][0]['step_id'] = 2
+    result = LlmGateway(
+        FakeProvider(plan),
+        registry,
+        REPOSITORY_ROOT / 'schemas',
+    ).plan(_request(prompt))
+    assert result['state'] == 'failed'
+    assert 'consecutive' in result['error']['message']

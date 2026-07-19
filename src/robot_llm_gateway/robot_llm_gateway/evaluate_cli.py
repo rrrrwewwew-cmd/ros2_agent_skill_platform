@@ -83,7 +83,7 @@ def main(argv=None):
     manifest_path = Path(
         args.manifest or (
             share_dir /
-            'prompts/robot_task_planner/evals/0.1.0.json'
+            'prompts/robot_task_planner/evals/0.2.0.json'
         )
     ).expanduser()
     try:

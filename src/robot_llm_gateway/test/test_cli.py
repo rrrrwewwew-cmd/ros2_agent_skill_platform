@@ -20,3 +20,4 @@ def test_fake_cli_smoke_needs_no_api_key(capsys):
     assert return_code == 0
     assert output['state'] == 'succeeded'
     assert output['provider'] == 'fake'
+    assert output['prompt_version'] == '0.2.0'

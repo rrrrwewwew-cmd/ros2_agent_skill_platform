@@ -35,13 +35,44 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["name", "version", "artifact_hash", "permission", "purpose"],
+        "required": [
+          "name",
+          "version",
+          "artifact_hash",
+          "permission",
+          "purpose"
+        ],
         "properties": {
           "name": {"type": "string", "minLength": 1},
           "version": {"type": "string", "minLength": 1},
           "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
           "permission": {"const": "read_only"},
-          "purpose": {"type": "string", "minLength": 1, "maxLength": 500}
+          "purpose": {"type": "string", "minLength": 1, "maxLength": 500},
+          "input_schema": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "type",
+              "additionalProperties",
+              "properties",
+              "required"
+            ],
+            "properties": {
+              "type": {"const": "object"},
+              "additionalProperties": {"const": false},
+              "properties": {
+                "type": "object",
+                "maxProperties": 32,
+                "additionalProperties": {"type": "object"}
+              },
+              "required": {
+                "type": "array",
+                "maxItems": 32,
+                "items": {"type": "string"},
+                "uniqueItems": true
+              }
+            }
+          }
         }
       }
     }

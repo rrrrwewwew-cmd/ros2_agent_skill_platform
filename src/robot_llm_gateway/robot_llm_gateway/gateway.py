@@ -130,10 +130,16 @@ class LlmGateway:
         ]
 
     def _validate_catalog_bindings(self, plan, definition):
-        """Require every planned Skill version and hash to match the prompt."""
+        """Require exact Skill pins, ordered steps, and valid Skill inputs."""
         catalog = {
             item['name']: item for item in definition['allowed_skills']
         }
+        expected_step_ids = list(range(1, len(plan['steps']) + 1))
+        actual_step_ids = [step['step_id'] for step in plan['steps']]
+        if actual_step_ids != expected_step_ids:
+            raise ContractError(
+                'plan step ids must be consecutive and start at one'
+            )
         for step in plan['steps']:
             skill = catalog.get(step['skill_name'])
             if skill is None:
@@ -142,6 +148,15 @@ class LlmGateway:
                 raise ContractError('plan Skill version is not pinned')
             if step['artifact_hash'] != skill['artifact_hash']:
                 raise ContractError('plan Skill artifact hash is not pinned')
+            if 'input_schema' in skill:
+                validate_instance(
+                    step['inputs'],
+                    skill['input_schema'],
+                    (
+                        f"Skill inputs for step {step['step_id']} "
+                        f"({step['skill_name']})"
+                    ),
+                )
 
     def _failure(self, request, request_hash, code, message, runtime):
         """Build and validate a fail-closed result without provider payloads."""

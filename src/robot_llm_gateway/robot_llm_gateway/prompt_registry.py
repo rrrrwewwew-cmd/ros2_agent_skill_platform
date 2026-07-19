@@ -4,6 +4,9 @@ from dataclasses import dataclass
 from pathlib import Path
 import re
 
+from jsonschema import Draft202012Validator
+from jsonschema.exceptions import SchemaError
+
 from robot_llm_gateway.contracts import (
     ContractError,
     load_json,
@@ -56,6 +59,7 @@ class PromptRegistry:
             self.definition_schema,
             'prompt definition',
         )
+        self._validate_skill_catalog(definition)
         if definition['prompt_id'] != prompt_id:
             raise PromptRegistryError('prompt id does not match its path')
         if definition['version'] != version:
@@ -64,3 +68,25 @@ class PromptRegistry:
         if expected_sha256 is not None and digest != expected_sha256:
             raise PromptRegistryError('prompt hash does not match request pin')
         return PromptRecord(definition=definition, sha256=digest, path=path)
+
+    @staticmethod
+    def _validate_skill_catalog(definition):
+        """Reject duplicate Skills and malformed embedded input contracts."""
+        names = [item['name'] for item in definition['allowed_skills']]
+        if len(names) != len(set(names)):
+            raise PromptRegistryError('prompt Skill names must be unique')
+        for item in definition['allowed_skills']:
+            if 'input_schema' not in item:
+                continue
+            try:
+                Draft202012Validator.check_schema(item['input_schema'])
+            except SchemaError as exc:
+                raise PromptRegistryError(
+                    f"invalid input schema for Skill {item['name']}"
+                ) from exc
+            properties = set(item['input_schema']['properties'])
+            required = set(item['input_schema']['required'])
+            if not required.issubset(properties):
+                raise PromptRegistryError(
+                    f"Skill {item['name']} requires an undefined input"
+                )

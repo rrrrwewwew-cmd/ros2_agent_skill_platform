@@ -27,6 +27,7 @@ def _parser():
         default='xiaomi_mimo',
     )
     parser.add_argument('--model')
+    parser.add_argument('--prompt-version', default='0.2.0')
     parser.add_argument('--max-output-tokens', type=int, default=1024)
     parser.add_argument('--timeout-sec', type=float, default=60.0)
     parser.add_argument('--output')
@@ -65,7 +66,10 @@ def main(argv=None):
             share_dir / 'prompts',
             share_dir / 'schemas',
         )
-        prompt = registry.resolve('robot_task_planner', '0.1.0')
+        prompt = registry.resolve(
+            'robot_task_planner',
+            args.prompt_version,
+        )
         if args.provider == 'fake':
             provider = FakeProvider(_fake_plan(prompt))
             model = args.model or 'fake-planner-v1'

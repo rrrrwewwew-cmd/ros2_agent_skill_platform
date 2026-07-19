@@ -15,6 +15,9 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 MANIFEST_PATH = (
     REPOSITORY_ROOT / 'prompts/robot_task_planner/evals/0.1.0.json'
 )
+CONTRACT_MANIFEST_PATH = (
+    REPOSITORY_ROOT / 'prompts/robot_task_planner/evals/0.2.0.json'
+)
 
 
 def test_frozen_manifest_is_valid_and_semantically_bounded():
@@ -25,6 +28,14 @@ def test_frozen_manifest_is_valid_and_semantically_bounded():
     )
     assert len(manifest['cases']) == 6
     assert manifest['cases'][4]['expected']['decision'] == 'refuse'
+
+    contract_manifest = load_evaluation_manifest(
+        CONTRACT_MANIFEST_PATH,
+        REPOSITORY_ROOT / 'schemas',
+    )
+    route = contract_manifest['cases'][2]
+    assert route['context']['keepout_profile'] == 'rbot_water_puddle_v2'
+    assert 'regression' in route['tags']
 
 
 def test_fake_cli_scores_all_cases_and_resumes_without_calls(tmp_path, capsys):

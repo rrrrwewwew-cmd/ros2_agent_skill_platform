@@ -68,3 +68,28 @@ def test_frozen_prompt_evals_pin_current_prompt_hash():
     assert {'plan', 'clarify', 'refuse'} == {
         case['expected']['decision'] for case in evaluation['cases']
     }
+
+
+def test_contract_aware_prompt_pins_exact_skill_input_schemas():
+    """Prompt v0.2.0 exposes bounded inputs rather than field-name prose."""
+    prompt = _registry().resolve('robot_task_planner', '0.2.0')
+    catalog = {
+        item['name']: item for item in prompt.definition['allowed_skills']
+    }
+    assert catalog['query_semantic_target']['input_schema']['required'] == [
+        'map_profile',
+        'target_id',
+    ]
+    assert set(
+        catalog['preview_safe_route']['input_schema']['required']
+    ) == {
+        'goal_x',
+        'goal_y',
+        'goal_yaw_deg',
+        'keepout_profile',
+    }
+    evaluation = json.loads((
+        REPOSITORY_ROOT /
+        'prompts/robot_task_planner/evals/0.2.0.json'
+    ).read_text(encoding='utf-8'))
+    assert evaluation['prompt_sha256'] == prompt.sha256
