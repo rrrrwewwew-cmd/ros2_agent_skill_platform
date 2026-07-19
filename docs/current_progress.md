@@ -3,24 +3,27 @@
 更新时间：2026-07-19
 
 本文件是休息、重启或上下文切换后的唯一恢复入口。恢复时先读本文件，再查看 Git 历史；不要
-重新搭建项目一、重新选择地图，也不要重复实现或发布前四个 Skill。
+重新搭建项目一、重新实现前四个 Skill，也不要恢复已经取消的“双 Provider”设计。
 
 ## 当前结论
 
-项目二仍严格沿着最初确定的“RAG 辅助 ROS 2 Skill 编写 + 受治理 Tool Calling Agent + 实验日志
-诊断”路线推进。Phase 1 的前 4 个标准 Skill 已经完成受治理激活；真实 LLM API、RAG、MCP 和
-Agent Loop 尚未开始。先完成确定性工具，是为了让后续模型只能调用已经有契约、权限、审批、
-Trace 和物理后置条件的能力。
+项目二已完成确定性安全底座，并正式进入 LLM 接入阶段。生产 LLM 只使用 Xiaomi MiMo；
+`FakeProvider` 仅服务无网络 CI，不是第二个 API。当前 LLM Gateway 只生成只读计划，不执行 Skill，
+不触发审批，也不控制机器人。
 
 - 工作区：`/home/li/robot_agent_ws`
 - Git 分支：`feature/skill-registry-state-machine`
-- 第四个 Skill 实现提交：`d854b90 Add one-time approved navigation Skill`
-- 首次运动仿真证据提交：`1c77006 Record approved navigation simulation evidence`
-- 受治理发布证据提交：`853041b Record governed navigation release`
-- 当前测试基线：115 项，0 error、0 failure、0 skipped
-- 项目一与项目二仍是独立仓库；项目二仅通过已安装 ROS 2 接口复用项目一
-- 当前 rbot 仿真可安全关闭，不存在需要保留的后台推理任务
-- 当前成果只做本地保存，本检查点没有远端 push 或合并
+- 前四个 Skill：均已签名并处于 `ACTIVE`
+- ROS 2 包：7 个
+- 当前测试基线：133 项，0 error、0 failure、0 skipped
+- LLM 真实后端：Xiaomi MiMo Chat Completions
+- Prompt：`robot_task_planner@0.1.0`
+- Prompt canonical SHA-256：
+  `7699bac29b1d5e7a08fdb8d666f7dff39ec758f3c203eb6e2d8f7e734b8179f2`
+- 安装态 Fake Provider 冒烟：通过
+- MiMo 真实 API 冒烟：尚未执行，等待操作者在本机设置 `MIMO_API_KEY`
+- 项目一与项目二仍是独立仓库；项目二仅复用项目一安装后的 ROS 2 接口
+- 当前成果仅本地保存，本检查点没有远端 push 或合并
 
 ## 已激活 Skill
 
@@ -31,79 +34,79 @@ Trace 和物理后置条件的能力。
 | `preview_safe_route` | `0.1.0` | `read_only` | `ACTIVE` | `d05c5c0aed6be59dbfb0f82c118b59099831c9c25db5c055fb56fb0326c7c7ca` |
 | `navigate_to_approved_pose` | `0.1.0` | `controlled` | `ACTIVE` | `24c2dca959382b9a4db1fed850577a42172403322dd5225eeee50f562ea6865a` |
 
-发布证据位于 `evidence/<skill>/governed_release_v1.json`。本机 release 公钥指纹为
-`23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a`；私钥、Registry、execution
+发布证据位于 `evidence/<skill>/governed_release_v1.json`。本机私钥、Registry、execution
 approval 和完整 Trace 位于 `~/.ros/robot_agent/`，不会进入 Git。
 
-## 第四个 Skill 已完成的安全链路
+## 已完成的 MiMo LLM Gateway
 
-`navigate_to_approved_pose@0.1.0` 是第一个会产生物理运动的受控 Skill，已完成：
+新增 `robot_llm_gateway@0.1.0`：
 
-1. 独立 ROS 2 包 `robot_controlled_navigation_skills`，未修改第三个已签名 artifact；
-2. 固定 NavigateToPose adapter，只读 safety/TF/里程计/激光证据，禁止 topic 写入和 `/cmd_vel`；
-3. 运动前重跑健康检查和路径预览，路径与语义地图 SHA-256 必须匹配人工批准内容；
-4. 运动中监控 Keepout safety，unsafe 或内部超时会取消 Nav2 goal；
-5. 运动后验证 Nav2 状态、终点误差、未进入 Keepout、全程 safety 和最终停止；
-6. Registry schema v2 的一次性执行批准，绑定完整 invocation，TTL 限制 1～300 秒；
-7. Runtime 状态 `WAITING_APPROVAL`，事务消费批准，参数篡改、run 不匹配、过期和重放均拒绝；
-8. 隔离 ROS 图无 Nav2/TF/传感器时返回 `unavailable` 且不发送目标；
-9. 6 个包构建成功，115 项自动测试全部通过；
-10. rbot 首次作者仿真到 `(4.5,0,0°)` 成功，终点误差 0.044 m，未进入水坑；
-11. 经显式人工发布批准、Ed25519 签名和独立验签后进入 `ACTIVE`；
-12. 正式 Runtime run `navigate_home_active_001` 使用 120 秒一次性批准返回原点成功。
+1. 真实 Provider 只有 `MimoProvider`，默认地址为官方 `/v1/chat/completions`；
+2. 密钥只读取 `MIMO_API_KEY`，模型和账户地址可通过 `MIMO_MODEL`、`MIMO_BASE_URL` 覆盖；
+3. 使用非流式 JSON object 输出、关闭 thinking、限制 token、温度和墙钟超时；
+4. Prompt Registry 按 `id + version + canonical SHA-256` 精确解析；
+5. 用户任务作为不可信 user JSON，与系统规则和 Skill catalog 分离；
+6. 只向模型暴露前三个只读 ACTIVE Skill，导航 Skill 当前不可见；
+7. 输出必须通过 Agent Plan JSON Schema，最多 6 步；
+8. 每一步的 Skill name、version 和 artifact hash 再与冻结目录逐项复核；
+9. Prompt hash 变化、Provider 不匹配、HTTP/空响应/非 JSON、Schema 错误和 hash 伪造均 fail closed；
+10. Gateway 只返回 plan，不导入或调用 `robot_skill_runtime`；
+11. 6 个冻结 eval case 覆盖正常请求、运动越权、Prompt Injection 和缺少输入；
+12. Fake Provider 安装态 CLI 冒烟通过，完整工作区 133 项测试通过。
 
-正式 Runtime 验证结果：
+新增机器契约：
 
-- Agent state：`SUCCEEDED`；Trace：13 个事件；
-- 状态链包含 `WAITING_APPROVAL → EXECUTING → VERIFYING → SUCCEEDED`；
-- approval `approval_navigate_home_active_001` 已由同名 run 原子消费，不能复用；
-- 路径 hash 与语义地图 hash 在动作前重新计算并完全一致；
-- Keepout 中心 cost：254；最小中心距离：0.889 m；进入禁区：否；
-- 最终位置误差：0.044 m；朝向误差：13.264°；safety 全程正常；机器人已停止。
+- `schemas/llm_plan_request.schema.json`
+- `schemas/prompt_definition.schema.json`
+- `schemas/agent_plan.schema.json`
+- `schemas/llm_gateway_result.schema.json`
 
-详细设计和冻结证据：
+详细设计见 `docs/llm_gateway.md`。
 
-- `docs/approved_navigation_skill.md`
-- `evidence/navigate_to_approved_pose/rbot_live_simulation_v1.json`
-- `evidence/navigate_to_approved_pose/governed_release_v1.json`
+## 架构决策修正
 
-## 下次唯一主线：第五个标准 Skill
+早期检查点要求先手写 `observe_and_avoid_water_risk` 和 `return_home_safely`，再接 LLM。经过架构
+复盘后该顺序已废止：前四个 Skill 已经覆盖状态查询、知识查询、路径规划和受控动作四种最重要的
+Tool Calling 形态，足以安全启动 Agent 层。第五、第六 Skill 将在后续 RAG + Skill Author 阶段
+作为“模型辅助生成、构建、仿真、审批、签名、激活”的完整案例，而不是继续人工堆确定性工具。
 
-开始设计并实现 `observe_and_avoid_water_risk`，不要跳到 LLM/RAG/MCP，也不要重复测试第四个
-Skill。它应复用项目一已经完成的 GroundingDINO → Qwen-VL → RGB-D map 投影 → 语义地图 →
-动态 Keepout 链路，但必须通过项目二的固定 adapter、Registry、Trace 和后置条件治理。
+这项修正不会降低安全性。模型当前只能规划三个只读 Skill；受控导航仍必须由已有 Runtime、一次性
+approval、动态前置条件和后置条件处理。
 
-设计时先冻结：
+## 下次唯一主线
 
-1. 这是复合受控 Skill，负责“观察风险并建立/确认约束”，不能直接发布速度；
-2. 感知事件必须保留 GroundingDINO candidate、Qwen semantic-policy、RGB-D/TF 投影和时间戳证据；
-3. 只有风险被接受、地图投影有效且语义地图成功写入时，才允许进入下一阶段；
-4. 必须验证新 Keepout 已在 global costmap 中达到 lethal cost，safety monitor 当前有效；
-5. 感知失败、TF 过期、VLM 输出不一致、地图写入失败或 filter 未生效时 fail closed；
-6. 需要明确它是否只观察和更新约束，还是组合第 3/4 Skill 完成绕行；优先保持可审计的分层组合；
-7. 先完成确定性 adapter、Schema、单元测试和隔离 ROS 图测试，再进行真实仿真和发布。
+1. 操作者在本机终端设置 MiMo 密钥，不在聊天或 Git 中粘贴；
+2. 运行一个真实 plan-only 冒烟，验证模型输出和 token/latency；
+3. 对 6 个冻结 eval case 运行 MiMo，记录 plan/clarify/refuse 一致率和 Schema 通过率；
+4. 实现有界只读 Agent Loop：计划 → 校验 → Runtime 调用 → Trace，限制最大步骤/超时/取消；
+5. 只读闭环通过后，再决定何时向模型暴露受控导航；运动仍需人工审批；
+6. 随后进入版本化 RAG、MCP 实验诊断工具、RAG-assisted Skill Author 和最终部署。
 
-第 5 个 Skill 完成后再实现：
+不要在下一步增加 DeepSeek、模型投票、自动 Provider 切换或多 Agent。
 
-6. `return_home_safely`
-
-六个标准 Skill 全部完成后进入 Phase 2 版本化 RAG，再进入 Phase 3 的 LLM API、Prompt Registry、
-MCP 与有界 Agent Loop。
-
-## 恢复检查
+## 恢复与冒烟命令
 
 ```bash
 cd ~/robot_agent_ws
 source /opt/ros/jazzy/setup.bash
 source ~/ros2_ws/install/setup.bash
 source install/setup.bash
+
 git status -sb
 colcon test-result --verbose
 
-ros2 run robot_skill_registry skill_registry \
-  --db ~/.ros/robot_agent/registry.db show \
-  --name navigate_to_approved_pose --version 0.1.0
+# 无网络回归
+ros2 run robot_llm_gateway plan_robot_task \
+  --provider fake \
+  --task '检查机器人健康状态' \
+  --request-id fake_resume_001
+
+# 真实 MiMo：密钥只在本机设置
+export MIMO_API_KEY='本机密钥'
+export MIMO_MODEL='mimo-v2.5-pro'
+ros2 run robot_llm_gateway plan_robot_task \
+  --task '检查机器人健康状态，并告诉我是否可以继续规划' \
+  --request-id mimo_smoke_001
 ```
 
-预期：Git 工作区干净、115 项测试通过、第四个 Skill 为 `ACTIVE`。随后直接开始
-`observe_and_avoid_water_risk` 的契约设计。
+真实冒烟预期只输出结构化计划和运行元数据，不应出现 API key，也不会执行健康检查或控制机器人。

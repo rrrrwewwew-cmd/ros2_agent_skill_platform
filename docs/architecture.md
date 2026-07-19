@@ -194,7 +194,7 @@ Skill manifest 声明所需 ROS topic/service/action 权限。执行进程后续
 
 ## 11. LLM、Prompt、Agent 与状态边界
 
-- LLM Provider 使用统一接口；测试使用 deterministic fake，真实 Provider 由部署配置选择；
+- 真实 LLM Provider 固定为 Xiaomi MiMo；deterministic fake 只用于无网络 CI，不是第二个线上 API；
 - Prompt 存入 Prompt Registry，记录版本、hash、输入/输出 schema 和评测结果；
 - Tool Calling 参数必须先通过 JSON Schema，再经过权限和运行时前置条件校验；
 - Agent Loop 具有最大步骤、最大工具调用、墙钟超时、取消和失败终止条件；

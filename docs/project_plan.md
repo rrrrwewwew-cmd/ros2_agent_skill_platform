@@ -84,7 +84,7 @@
 
 交付：
 
-- provider-neutral LLM API 和 deterministic fake provider；
+- Xiaomi MiMo LLM API、隔离 HTTP 边界和 deterministic fake test provider；
 - Prompt Registry：版本、hash、输入/输出 Schema、评测和回滚；
 - 具有严格 JSON Schema 的 MCP Server 与 Tool adapters；
 - 有界 Tool Calling Agent Loop 和持久化状态；

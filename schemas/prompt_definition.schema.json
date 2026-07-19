@@ -1,0 +1,49 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/prompt-definition.schema.json",
+  "title": "Immutable Prompt Registry Definition",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prompt_id",
+    "version",
+    "description",
+    "task_mode",
+    "system_message",
+    "output_schema",
+    "allowed_skills"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "prompt_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,63}$"
+    },
+    "version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "description": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "task_mode": {"const": "plan_only"},
+    "system_message": {"type": "string", "minLength": 1, "maxLength": 12000},
+    "output_schema": {"const": "agent_plan.schema.json"},
+    "allowed_skills": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["name", "version", "artifact_hash", "permission", "purpose"],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "minLength": 1},
+          "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "permission": {"const": "read_only"},
+          "purpose": {"type": "string", "minLength": 1, "maxLength": 500}
+        }
+      }
+    }
+  }
+}
