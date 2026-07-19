@@ -55,7 +55,7 @@ Phase 0 已完成；当前进入 Phase 1 的实验证据与可观测性底座。
 
 Phase 1 已提供实验清单、Agent Trace、时间序列关联、距离矩阵、异常窗口、可复算报告、不可变
 Skill Registry、持久化 Agent run、三个已激活的只读 Skill（机器人健康、语义地图查询和 Nav2
-安全路径预览）、一个达到 `UNIT_TESTED` 的一次性批准导航 Skill，以及只允许通过
+安全路径预览）、一个已激活的一次性批准导航 Skill，以及只允许通过
 hash 和 Ed25519 发布证明的 `ACTIVE` artifact 进入固定适配器的 Skill Runtime。它先使用确定性 Python 与事务
 状态建立证据和治理边界，再由后续
 的 RAG、LLM API、Prompt Registry、MCP 和有界 Agent Loop 组合这些能力。
