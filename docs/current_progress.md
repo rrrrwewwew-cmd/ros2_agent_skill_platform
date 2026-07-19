@@ -15,13 +15,13 @@
 - Git 分支：`feature/skill-registry-state-machine`
 - 前四个 Skill：均已签名并处于 `ACTIVE`
 - ROS 2 包：7 个
-- 当前测试基线：133 项，0 error、0 failure、0 skipped
+- 当前测试基线：134 项，0 error、0 failure、0 skipped
 - LLM 真实后端：Xiaomi MiMo Chat Completions
 - Prompt：`robot_task_planner@0.1.0`
 - Prompt canonical SHA-256：
   `7699bac29b1d5e7a08fdb8d666f7dff39ec758f3c203eb6e2d8f7e734b8179f2`
 - 安装态 Fake Provider 冒烟：通过
-- MiMo 真实 API 冒烟：尚未执行，等待操作者在本机设置 `MIMO_API_KEY`
+- MiMo 真实 API 冒烟：通过；`mimo_smoke_003`，计划选择 `check_robot_health@0.2.0`
 - 项目一与项目二仍是独立仓库；项目二仅复用项目一安装后的 ROS 2 接口
 - 当前成果仅本地保存，本检查点没有远端 push 或合并
 
@@ -52,7 +52,10 @@ approval 和完整 Trace 位于 `~/.ros/robot_agent/`，不会进入 Git。
 9. Prompt hash 变化、Provider 不匹配、HTTP/空响应/非 JSON、Schema 错误和 hash 伪造均 fail closed；
 10. Gateway 只返回 plan，不导入或调用 `robot_skill_runtime`；
 11. 6 个冻结 eval case 覆盖正常请求、运动越权、Prompt Injection 和缺少输入；
-12. Fake Provider 安装态 CLI 冒烟通过，完整工作区 133 项测试通过。
+12. Fake Provider 安装态 CLI 冒烟通过；MiMo 真实 API 返回计划并通过全部本地门控；
+13. 真实调用延迟 6522.272 ms，输入 964 tokens、输出 249 tokens、总计 1213 tokens；
+14. 脱敏证据位于 `evidence/llm_gateway/mimo_plan_only_smoke_v1.json`；
+15. 完整工作区 134 项测试通过。
 
 新增机器契约：
 
@@ -75,12 +78,10 @@ approval、动态前置条件和后置条件处理。
 
 ## 下次唯一主线
 
-1. 操作者在本机终端设置 MiMo 密钥，不在聊天或 Git 中粘贴；
-2. 运行一个真实 plan-only 冒烟，验证模型输出和 token/latency；
-3. 对 6 个冻结 eval case 运行 MiMo，记录 plan/clarify/refuse 一致率和 Schema 通过率；
-4. 实现有界只读 Agent Loop：计划 → 校验 → Runtime 调用 → Trace，限制最大步骤/超时/取消；
-5. 只读闭环通过后，再决定何时向模型暴露受控导航；运动仍需人工审批；
-6. 随后进入版本化 RAG、MCP 实验诊断工具、RAG-assisted Skill Author 和最终部署。
+1. 对 6 个冻结 eval case 运行 MiMo，记录 plan/clarify/refuse 一致率和 Schema 通过率；
+2. 实现有界只读 Agent Loop：计划 → 校验 → Runtime 调用 → Trace，限制最大步骤/超时/取消；
+3. 只读闭环通过后，再决定何时向模型暴露受控导航；运动仍需人工审批；
+4. 随后进入版本化 RAG、MCP 实验诊断工具、RAG-assisted Skill Author 和最终部署。
 
 不要在下一步增加 DeepSeek、模型投票、自动 Provider 切换或多 Agent。
 
@@ -101,12 +102,8 @@ ros2 run robot_llm_gateway plan_robot_task \
   --task '检查机器人健康状态' \
   --request-id fake_resume_001
 
-# 真实 MiMo：密钥只在本机设置
-export MIMO_API_KEY='本机密钥'
-export MIMO_MODEL='mimo-v2.5-pro'
-ros2 run robot_llm_gateway plan_robot_task \
-  --task '检查机器人健康状态，并告诉我是否可以继续规划' \
-  --request-id mimo_smoke_001
+# 真实 MiMo 密钥只在本机当前终端设置，不写入仓库
+read -rsp 'MIMO_API_KEY: ' MIMO_API_KEY && export MIMO_API_KEY && echo
 ```
 
 真实冒烟预期只输出结构化计划和运行元数据，不应出现 API key，也不会执行健康检查或控制机器人。

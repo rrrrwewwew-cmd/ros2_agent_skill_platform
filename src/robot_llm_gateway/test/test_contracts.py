@@ -33,3 +33,25 @@ def test_frozen_mimo_request_matches_public_contract():
         'llm_plan_request.schema.json',
     )
     validate_instance(request, schema, 'example request')
+
+
+def test_real_mimo_smoke_evidence_matches_result_and_plan_contracts():
+    """The first live MiMo plan remains machine-verifiable and read-only."""
+    evidence = json.loads((
+        REPOSITORY_ROOT /
+        'evidence/llm_gateway/mimo_plan_only_smoke_v1.json'
+    ).read_text(encoding='utf-8'))
+    result_schema = load_schema(
+        REPOSITORY_ROOT / 'schemas',
+        'llm_gateway_result.schema.json',
+    )
+    plan_schema = load_schema(
+        REPOSITORY_ROOT / 'schemas',
+        'agent_plan.schema.json',
+    )
+    validate_instance(evidence, result_schema, 'MiMo smoke result')
+    validate_instance(evidence['plan'], plan_schema, 'MiMo smoke plan')
+    assert evidence['state'] == 'succeeded'
+    assert evidence['plan']['steps'][0]['skill_name'] == (
+        'check_robot_health'
+    )

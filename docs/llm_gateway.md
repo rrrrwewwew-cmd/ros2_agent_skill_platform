@@ -104,3 +104,18 @@ ros2 run robot_llm_gateway plan_robot_task \
 
 首版不做自动重试，避免一次 Agent 计划产生不可见的重复计费和不确定响应。后续如果增加重试，
 也只允许在无副作用的规划阶段按固定次数执行，并写入 Trace。
+
+## 7. 首次真实 API 证据
+
+2026-07-19，`mimo-v2.5-pro` 首次真实 plan-only 调用成功：
+
+- request id：`mimo_smoke_003`
+- decision：`plan`
+- Skill：`check_robot_health@0.2.0`
+- artifact hash：与 ACTIVE artifact 完全一致
+- 延迟：6522.272 ms
+- token：输入 964、输出 249、总计 1213
+- 本地结果：Gateway Schema、Agent Plan Schema 和 Prompt/catalog pin 全部通过
+
+脱敏机器证据：`evidence/llm_gateway/mimo_plan_only_smoke_v1.json`。该结果只是尚未执行的计划，
+不能被表述为“机器人已经健康”。
