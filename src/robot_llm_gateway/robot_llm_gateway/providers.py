@@ -57,7 +57,13 @@ class MimoProvider:
         """Configure MiMo with an injected transport for deterministic tests."""
         if not api_key or not api_key.strip():
             raise ProviderError('MIMO_API_KEY is required')
-        self._api_key = api_key.strip()
+        normalized_key = api_key.strip()
+        if normalized_key.startswith('tp-'):
+            raise ProviderError(
+                'Token Plan credentials are not allowed for the custom '
+                'robot Agent gateway; use a pay-as-you-go API key'
+            )
+        self._api_key = normalized_key
         self.base_url = (
             base_url or self.default_base_url
         ).rstrip('/')

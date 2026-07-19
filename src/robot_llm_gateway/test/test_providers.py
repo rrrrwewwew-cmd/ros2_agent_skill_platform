@@ -86,3 +86,9 @@ def test_missing_mimo_key_is_rejected_before_network_access():
     """A missing credential reports configuration failure locally."""
     with pytest.raises(ProviderError, match='MIMO_API_KEY'):
         MimoProvider('')
+
+
+def test_token_plan_key_is_rejected_before_network_access():
+    """Token Plan credentials cannot fund a custom Agent backend."""
+    with pytest.raises(ProviderError, match='Token Plan'):
+        MimoProvider('tp-not-for-custom-backends')

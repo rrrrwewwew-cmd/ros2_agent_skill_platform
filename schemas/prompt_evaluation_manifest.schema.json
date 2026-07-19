@@ -1,0 +1,92 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/prompt-evaluation-manifest.schema.json",
+  "title": "Frozen Prompt Evaluation Manifest",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "prompt_id",
+    "prompt_version",
+    "prompt_sha256",
+    "cases"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "prompt_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,63}$"
+    },
+    "prompt_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "cases": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 64,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "tags", "user_request", "expected"],
+        "properties": {
+          "case_id": {
+            "type": "string",
+            "pattern": "^[a-z][a-z0-9_]{2,63}$"
+          },
+          "tags": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "uniqueItems": true,
+            "items": {
+              "type": "string",
+              "pattern": "^[a-z][a-z0-9_]{1,31}$"
+            }
+          },
+          "user_request": {"type": "string", "minLength": 1, "maxLength": 2000},
+          "context": {
+            "type": "object",
+            "maxProperties": 32,
+            "additionalProperties": {
+              "type": ["string", "number", "integer", "boolean", "null"]
+            }
+          },
+          "expected": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["decision", "required_skills", "allowed_skills"],
+            "properties": {
+              "decision": {"enum": ["plan", "clarify", "refuse"]},
+              "required_skills": {
+                "type": "array",
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "check_robot_health",
+                    "query_semantic_target",
+                    "preview_safe_route"
+                  ]
+                }
+              },
+              "allowed_skills": {
+                "type": "array",
+                "maxItems": 3,
+                "uniqueItems": true,
+                "items": {
+                  "enum": [
+                    "check_robot_health",
+                    "query_semantic_target",
+                    "preview_safe_route"
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

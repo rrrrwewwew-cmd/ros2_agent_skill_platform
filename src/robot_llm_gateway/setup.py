@@ -48,6 +48,7 @@ setup(
     entry_points={
         'console_scripts': [
             'plan_robot_task = robot_llm_gateway.cli:main',
+            'evaluate_robot_planner = robot_llm_gateway.evaluate_cli:main',
         ],
     },
 )

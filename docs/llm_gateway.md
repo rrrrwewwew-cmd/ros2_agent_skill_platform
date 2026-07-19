@@ -34,7 +34,9 @@ Provider 接口不是为了同时接两个模型，而是隔离三类变化：
 MiMo 使用官方兼容 Chat Completions 地址
 `https://api.xiaomimimo.com/v1/chat/completions`。请求为非流式，关闭 thinking，使用
 `max_completion_tokens` 和 JSON object 输出模式。默认模型是 `mimo-v2.5-pro`，可以用
-`MIMO_MODEL` 覆盖；套餐账户如果使用不同地址，可用 `MIMO_BASE_URL` 覆盖。
+`MIMO_MODEL` 覆盖；获得平台明确批准的自定义部署地址时，可用 `MIMO_BASE_URL` 覆盖。
+Token Plan 的 `tp-` 凭据只面向官方允许的编程工具场景，不能用于本自定义 Agent 后端；Gateway
+会在网络请求前拒绝该类凭据。
 
 ## 3. 四层契约
 
@@ -70,7 +72,7 @@ cd ~/robot_agent_ws
 source /opt/ros/jazzy/setup.bash
 source install/setup.bash
 
-export MIMO_API_KEY='在本机设置，不要粘贴到聊天或提交到 Git'
+read -rsp 'MIMO_API_KEY: ' MIMO_API_KEY && export MIMO_API_KEY && echo
 export MIMO_MODEL='mimo-v2.5-pro'
 
 ros2 run robot_llm_gateway plan_robot_task \
@@ -78,11 +80,13 @@ ros2 run robot_llm_gateway plan_robot_task \
   --request-id mimo_smoke_001
 ```
 
-如果账户控制台给出套餐专属地址，再设置：
+如果平台为自定义应用明确提供了专属 OpenAI-compatible 地址，再设置：
 
 ```bash
 export MIMO_BASE_URL='控制台给出的、以 /v1 结尾的地址'
 ```
+
+不要在这里填写 Token Plan 地址或 `tp-` Key。机器人 Agent 使用按量 API 的 `sk-` Key。
 
 离线冒烟不需要密钥：
 
@@ -119,3 +123,33 @@ ros2 run robot_llm_gateway plan_robot_task \
 
 脱敏机器证据：`evidence/llm_gateway/mimo_plan_only_smoke_v1.json`。该结果只是尚未执行的计划，
 不能被表述为“机器人已经健康”。
+
+## 8. 冻结 Prompt 评测
+
+`evaluate_robot_planner` 顺序运行 6 个冻结用例：三个只读能力选择、受控运动拒绝、Prompt
+Injection 拒绝和歧义澄清。评分完全由本地代码完成，模型不能给自己打分。
+
+```bash
+ros2 run robot_llm_gateway evaluate_robot_planner \
+  --output-dir ~/.ros/robot_agent/mimo_planner_evaluation_v1 \
+  --evaluation-id mimo_planner_eval_v1
+```
+
+该命令最多产生 6 次 MiMo 付费调用。默认串行执行且首次 Provider 错误立即停止；每个成功 case
+保存在 `cases/<case_id>/result.json`，再次运行会复核配置并断点续跑。输出：
+
+- `sample_results.csv`：逐样本 decision、实际 Skill、缺失/越权 Skill、延迟和 token；
+- `summary.json`：Schema 成功率、decision 准确率、Skill policy 准确率、Injection 拒绝率与成本；
+- 原始 Gateway result：保留 Prompt/request hash 和 provider request id，不包含 API key。
+
+可先运行单个用例控制费用：
+
+```bash
+ros2 run robot_llm_gateway evaluate_robot_planner \
+  --output-dir ~/.ros/robot_agent/mimo_planner_evaluation_v1 \
+  --evaluation-id mimo_planner_eval_v1 \
+  --case-id prompt_injection_shell
+```
+
+安装态 Fake Provider 已获得 6/6 PASS，用于证明评测机制而非模型质量。完整工作区当前 139 项测试
+通过。

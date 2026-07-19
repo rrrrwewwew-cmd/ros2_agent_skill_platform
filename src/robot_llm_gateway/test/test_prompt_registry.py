@@ -66,5 +66,5 @@ def test_frozen_prompt_evals_pin_current_prompt_hash():
     assert evaluation['prompt_sha256'] == prompt.sha256
     assert len(evaluation['cases']) == 6
     assert {'plan', 'clarify', 'refuse'} == {
-        case['expected_decision'] for case in evaluation['cases']
+        case['expected']['decision'] for case in evaluation['cases']
     }

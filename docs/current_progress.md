@@ -15,7 +15,7 @@
 - Git 分支：`feature/skill-registry-state-machine`
 - 前四个 Skill：均已签名并处于 `ACTIVE`
 - ROS 2 包：7 个
-- 当前测试基线：134 项，0 error、0 failure、0 skipped
+- 当前测试基线：139 项，0 error、0 failure、0 skipped
 - LLM 真实后端：Xiaomi MiMo Chat Completions
 - Prompt：`robot_task_planner@0.1.0`
 - Prompt canonical SHA-256：
@@ -55,7 +55,23 @@ approval 和完整 Trace 位于 `~/.ros/robot_agent/`，不会进入 Git。
 12. Fake Provider 安装态 CLI 冒烟通过；MiMo 真实 API 返回计划并通过全部本地门控；
 13. 真实调用延迟 6522.272 ms，输入 964 tokens、输出 249 tokens、总计 1213 tokens；
 14. 脱敏证据位于 `evidence/llm_gateway/mimo_plan_only_smoke_v1.json`；
-15. 完整工作区 134 项测试通过。
+15. 首次真实调用检查点建立时完整工作区 134 项测试通过。
+
+## 已完成的 Prompt 评测器
+
+新增 `evaluate_robot_planner` 命令和两份机器契约：
+
+- `schemas/prompt_evaluation_manifest.schema.json`
+- `schemas/prompt_evaluation_summary.schema.json`
+
+6 个冻结用例现在显式区分预期 decision、必须出现的 Skill 和允许出现的 Skill。评测器按清单顺序
+串行调用，默认 Provider 首次失败立即停止；每个成功结果独立保存，重启后按 provider、model、
+Prompt pin 和 request id 复核后续跑。汇总指标包含 Schema 成功率、decision 准确率、Skill policy
+准确率、Prompt Injection 拒绝率、总/平均延迟和 token usage。
+
+安装态 Fake Provider 评测已完成：6/6 PASS，四项比例指标均为 100%，证明评测和续跑机制可用；
+Fake 结果不作为 MiMo 模型质量结论。Gateway 还会在联网前拒绝不适用于自定义后端的 `tp-`
+Token Plan 凭据。完整工作区当前为 139 项测试通过。
 
 新增机器契约：
 
@@ -78,8 +94,8 @@ approval、动态前置条件和后置条件处理。
 
 ## 下次唯一主线
 
-1. 对 6 个冻结 eval case 运行 MiMo，记录 plan/clarify/refuse 一致率和 Schema 通过率；
-2. 实现有界只读 Agent Loop：计划 → 校验 → Runtime 调用 → Trace，限制最大步骤/超时/取消；
+1. 对 6 个冻结 eval case 运行真实 MiMo，记录 plan/clarify/refuse 一致率和 Schema 通过率；
+2. 冻结评测证据后，实现有界只读 Agent Loop：计划 → 校验 → Runtime 调用 → Trace；
 3. 只读闭环通过后，再决定何时向模型暴露受控导航；运动仍需人工审批；
 4. 随后进入版本化 RAG、MCP 实验诊断工具、RAG-assisted Skill Author 和最终部署。
 
@@ -104,6 +120,11 @@ ros2 run robot_llm_gateway plan_robot_task \
 
 # 真实 MiMo 密钥只在本机当前终端设置，不写入仓库
 read -rsp 'MIMO_API_KEY: ' MIMO_API_KEY && export MIMO_API_KEY && echo
+
+# 真实 6-case 评测；默认失败即停，重复运行会断点续跑
+ros2 run robot_llm_gateway evaluate_robot_planner \
+  --output-dir ~/.ros/robot_agent/mimo_planner_evaluation_v1 \
+  --evaluation-id mimo_planner_eval_v1
 ```
 
 真实冒烟预期只输出结构化计划和运行元数据，不应出现 API key，也不会执行健康检查或控制机器人。
