@@ -16,6 +16,7 @@ Trace 和物理后置条件的能力。
 - Git 分支：`feature/skill-registry-state-machine`
 - 第四个 Skill 实现提交：`d854b90 Add one-time approved navigation Skill`
 - 首次运动仿真证据提交：`1c77006 Record approved navigation simulation evidence`
+- 受治理发布证据提交：`853041b Record governed navigation release`
 - 当前测试基线：115 项，0 error、0 failure、0 skipped
 - 项目一与项目二仍是独立仓库；项目二仅通过已安装 ROS 2 接口复用项目一
 - 当前 rbot 仿真可安全关闭，不存在需要保留的后台推理任务
