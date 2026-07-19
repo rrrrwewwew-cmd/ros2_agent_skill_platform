@@ -10,6 +10,7 @@ from .executor import (
     SkillExecutor,
     SkillRuntimeError,
 )
+from .trace import TraceRecorder
 
 
 __all__ = [
@@ -17,6 +18,7 @@ __all__ = [
     'ExecutionPolicyError',
     'SkillExecutor',
     'SkillRuntimeError',
+    'TraceRecorder',
     'compute_artifact_hash',
     'verify_artifact_lock',
 ]

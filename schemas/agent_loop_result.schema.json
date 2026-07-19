@@ -1,0 +1,98 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/agent-loop-result.schema.json",
+  "title": "Bounded Read-only Agent Loop Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "status",
+    "agent_state",
+    "planner_decision",
+    "safe_to_continue",
+    "gateway_result",
+    "plan",
+    "steps",
+    "recovered_runs",
+    "halt_reason",
+    "error",
+    "started_at_ns",
+    "completed_at_ns",
+    "trace_file"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{3,96}$"
+    },
+    "trace_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{3,96}$"
+    },
+    "status": {
+      "enum": [
+        "succeeded",
+        "blocked_by_evidence",
+        "clarification_required",
+        "refused",
+        "failed"
+      ]
+    },
+    "agent_state": {"enum": ["SUCCEEDED", "ABORTED", "FAILED"]},
+    "planner_decision": {"enum": ["plan", "clarify", "refuse", null]},
+    "safe_to_continue": {"type": "boolean"},
+    "gateway_result": {"type": ["object", "null"]},
+    "plan": {"type": ["object", "null"]},
+    "steps": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id",
+          "skill_name",
+          "skill_version",
+          "artifact_hash",
+          "run_id",
+          "trace_id",
+          "inputs_sha256",
+          "status",
+          "evidence_gate_passed",
+          "evidence_gate_reason",
+          "output",
+          "error",
+          "trace_file"
+        ],
+        "properties": {
+          "step_id": {"type": "integer", "minimum": 1, "maximum": 6},
+          "skill_name": {"type": "string", "minLength": 1},
+          "skill_version": {"type": "string", "minLength": 1},
+          "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "run_id": {"type": "string", "minLength": 1},
+          "trace_id": {"type": "string", "minLength": 1},
+          "inputs_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "status": {"enum": ["succeeded", "failed"]},
+          "evidence_gate_passed": {"type": "boolean"},
+          "evidence_gate_reason": {"type": "string", "minLength": 1},
+          "output": {"type": ["object", "null"]},
+          "error": {"type": ["string", "null"]},
+          "trace_file": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "recovered_runs": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    },
+    "halt_reason": {"type": ["string", "null"]},
+    "error": {"type": ["string", "null"]},
+    "started_at_ns": {"type": "integer", "minimum": 0},
+    "completed_at_ns": {"type": "integer", "minimum": 0},
+    "trace_file": {"type": "string", "minLength": 1}
+  }
+}
