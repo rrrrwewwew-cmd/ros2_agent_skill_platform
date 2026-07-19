@@ -1,0 +1,119 @@
+{
+  "schema_version": 1,
+  "evidence_type": "live_read_only_agent_loop",
+  "captured_at": "2026-07-19",
+  "environment": {
+    "robot_stack": "rbot_small_warehouse_semantic_risks_v1",
+    "ros_distribution": "jazzy",
+    "use_sim_time": true
+  },
+  "agent": {
+    "run_id": "agent_route_live_001",
+    "trace_id": "trace_route_live_001",
+    "status": "succeeded",
+    "terminal_state": "SUCCEEDED",
+    "planner_decision": "plan",
+    "safe_to_continue": true,
+    "wall_time_ms": 14394.2,
+    "state_path": [
+      "IDLE",
+      "RETRIEVING",
+      "PLANNING",
+      "VALIDATING",
+      "EXECUTING",
+      "VERIFYING",
+      "SUCCEEDED"
+    ]
+  },
+  "llm": {
+    "provider": "xiaomi_mimo",
+    "model": "mimo-v2.5-pro",
+    "prompt_id": "robot_task_planner",
+    "prompt_version": "0.2.0",
+    "prompt_sha256": "652ad2e5b64735aefaea747a02634fc68796db0354501eb523f579bd940107ff",
+    "request_sha256": "77778bc275a2fbdeac449914a9a87918efd34efe9b75ecebc7301e1c1dc0b114",
+    "latency_ms": 9022.18,
+    "usage": {
+      "input_tokens": 1390,
+      "output_tokens": 431,
+      "total_tokens": 1821
+    }
+  },
+  "steps": [
+    {
+      "step_id": 1,
+      "run_id": "agent_route_live_001.step1",
+      "skill_name": "check_robot_health",
+      "skill_version": "0.2.0",
+      "artifact_hash": "1df7df2354693c025c850368661656c6014db9636c5b19914245c8ba26914e8f",
+      "inputs_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "status": "succeeded",
+      "evidence_gate_passed": true,
+      "result": {
+        "state": "healthy",
+        "safe_to_proceed": true,
+        "nav2_active": true,
+        "map_to_robot_transform_available": true,
+        "semantic_keepout_safety_ok": true
+      }
+    },
+    {
+      "step_id": 2,
+      "run_id": "agent_route_live_001.step2",
+      "skill_name": "preview_safe_route",
+      "skill_version": "0.1.0",
+      "artifact_hash": "d05c5c0aed6be59dbfb0f82c118b59099831c9c25db5c055fb56fb0326c7c7ca",
+      "inputs_sha256": "e6bf1d72a950257df64d88aa73d7b0f550386a96e412f25c1dfefa1b0e8d929d",
+      "status": "succeeded",
+      "evidence_gate_passed": true,
+      "result": {
+        "state": "safe",
+        "safe_to_execute": true,
+        "planner_action": "/compute_path_to_pose",
+        "planning_time_ms": 4.0,
+        "route_length_m": 5.113481343331553,
+        "route_pose_count": 173,
+        "path_sha256": "821dcc0ac53d084a6e88d29687ad702007e58394794602bb740c34e2afbceadf",
+        "keepout_profile": "rbot_water_puddle_v2",
+        "keepout_center_cost": 254,
+        "keepout_intersects": false,
+        "minimum_center_distance_m": 0.9823659811081585,
+        "minimum_clearance_m": 0.38236598110815856,
+        "motion_command_sent": false
+      }
+    }
+  ],
+  "trace_integrity": {
+    "parent": {
+      "local_file": "~/.ros/robot_agent/traces/agent_route_live_001.jsonl",
+      "event_count": 13,
+      "sha256": "3e691ce1bfd98ac15dca489233d97fd0e3ba68a110e3732703aa148de1dfe5df"
+    },
+    "step1": {
+      "local_file": "~/.ros/robot_agent/traces/agent_route_live_001.step1.jsonl",
+      "event_count": 11,
+      "sha256": "cf345f7f5ce83de8a6059212c74cce6b54c6b1406fe7722e411fdb78f638feab"
+    },
+    "step2": {
+      "local_file": "~/.ros/robot_agent/traces/agent_route_live_001.step2.jsonl",
+      "event_count": 11,
+      "sha256": "f69dbed5176d375606dea08c307c06393309a3e98eb9460c50f51d1cf67b1c48"
+    },
+    "parent_result": {
+      "local_file": "~/.ros/robot_agent/agent_route_live_001.json",
+      "sha256": "08aba281389d27f8ad35ef82bf7364856605c667292d4d1fee1e8ca5b2d85a77"
+    }
+  },
+  "security": {
+    "read_only_catalog_enforced": true,
+    "controlled_navigation_exposed_to_llm": false,
+    "execution_approval_consumed": false,
+    "motion_command_sent": false,
+    "api_key_persisted": false,
+    "raw_trace_committed": false
+  },
+  "known_limitations": [
+    "The health step used an empty optional required_sensors input, so this run proved Nav2, TF and semantic Keepout health but did not assert individual sensor-topic freshness."
+  ],
+  "conclusion": "A real MiMo plan passed local contract validation, executed two signed ACTIVE read-only Skills through the governed Runtime, satisfied both deterministic evidence gates, produced linked parent/child traces, and sent no motion command."
+}

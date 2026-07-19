@@ -107,3 +107,17 @@ ros2 run robot_agent_orchestrator run_read_only_agent \
 预期 MiMo 只规划 `check_robot_health → preview_safe_route`。输出应有两个成功子步骤、父状态
 `SUCCEEDED`、`planner_decision=plan`，并明确给出 `safe_to_continue`。该命令只读取健康、Nav2 路径
 和 Keepout，不发送运动 action。
+
+## 7. 真实现场结果
+
+`agent_route_live_001` 已于 2026-07-19 在 rbot 仿真栈通过：MiMo 生成两步合法计划，父状态沿完整
+状态路径进入 `SUCCEEDED`；健康 gate 和路径 gate 均通过。Nav2 返回 5.113 m、173 pose 的路径，
+语义水坑中心代价为 254，路径不相交且最小净空 0.382 m。输出明确记录
+`motion_command_sent=false`。
+
+父 Trace 包含 13 个事件，两个 Skill Runtime 子 Trace 各包含 11 个事件。脱敏摘要和原始文件
+SHA-256 位于 `evidence/agent_loop/live_read_only_route_v1.json`，完整 Trace 仅保留在本机
+`~/.ros/robot_agent/traces/`。
+
+这次运行的健康输入没有指定可选的 `required_sensors`，因此现场证据不包含逐 topic 新鲜度。该限制
+被显式记录，后续不能把 LLM 生成的 `expected_evidence` 当作真正的运行时检查。
