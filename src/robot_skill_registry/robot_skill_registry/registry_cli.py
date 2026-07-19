@@ -75,6 +75,20 @@ def _build_parser():
         default='APPROVED',
     )
 
+    approve_execution = subparsers.add_parser('approve-execution')
+    approve_execution.add_argument('--invocation', required=True)
+    approve_execution.add_argument('--actor', required=True)
+    approve_execution.add_argument('--reason', required=True)
+    approve_execution.add_argument('--ttl-sec', type=float, default=120.0)
+    approve_execution.add_argument(
+        '--decision',
+        choices=['APPROVED', 'REJECTED'],
+        default='APPROVED',
+    )
+
+    execution_approval = subparsers.add_parser('execution-approval')
+    execution_approval.add_argument('--approval-id', required=True)
+
     create_run = subparsers.add_parser('create-run')
     create_run.add_argument('--run-id', required=True)
     create_run.add_argument('--trace-id', required=True)
@@ -139,6 +153,21 @@ def _skill_command(args):
                 args.reason,
                 decision=args.decision,
             )
+        if args.command == 'approve-execution':
+            invocation = json.loads(
+                Path(args.invocation).expanduser().read_text(
+                    encoding='utf-8'
+                )
+            )
+            return registry.issue_execution_approval(
+                invocation,
+                args.actor,
+                args.reason,
+                ttl_sec=args.ttl_sec,
+                decision=args.decision,
+            )
+        if args.command == 'execution-approval':
+            return registry.get_execution_approval(args.approval_id)
     raise RegistryContractError(f'unsupported command: {args.command}')
 
 
@@ -180,12 +209,14 @@ def main(argv=None):
     try:
         if args.command in {
             'init', 'register', 'show', 'skill-events', 'approvals',
-            'advance', 'approve',
+            'advance', 'approve', 'approve-execution',
+            'execution-approval',
         }:
             result = _skill_command(args)
         else:
             result = _run_command(args)
     except (
+        json.JSONDecodeError,
         OSError,
         yaml.YAMLError,
         RegistryConflictError,

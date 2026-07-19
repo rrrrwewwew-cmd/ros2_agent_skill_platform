@@ -1,30 +1,26 @@
 # 项目二当前进度检查点
 
-更新时间：2026-07-18
+更新时间：2026-07-19
 
-本文件是休息、重启或上下文切换后的唯一恢复入口。恢复工作时先读本文件，再查看对应的设计文档和 Git 历史；不要重新搭建项目一、重新选择地图，或重复已经完成的前三个 Skill。
+本文件是休息、重启或上下文切换后的唯一恢复入口。恢复时先读本文件，再查看 Git 历史；不要
+重新搭建项目一、重新选择地图，也不要重复实现第四个 Skill。
 
 ## 当前结论
 
-项目二仍沿着最初确定的“RAG 辅助 ROS 2 Skill 编写 + 受治理 Tool Calling Agent + 实验日志诊断”路线推进。当前完成的是 Phase 1 的确定性、安全治理底座，尚未接入真实 LLM API、RAG、MCP 或自由形式 Agent Loop。
+项目二仍严格沿着最初确定的“RAG 辅助 ROS 2 Skill 编写 + 受治理 Tool Calling Agent + 实验日志
+诊断”路线推进。当前正在完成 Phase 1 的第 4 个标准 Skill。确定性治理底座已经具备，真实 LLM
+API、RAG、MCP 和 Agent Loop 尚未开始，这一顺序是为了让后续模型只能调用已经有契约、权限、
+审批、Trace 和物理后置条件的工具。
 
 - 工作区：`/home/li/robot_agent_ws`
 - Git 分支：`feature/skill-registry-state-machine`
-- 本检查点建立前的最新提交：`7a4d023 Record governed route preview release`
-- 测试基线：95 项，0 error，0 failure，0 skipped
-- 项目一与项目二保持独立仓库；项目二只通过已安装 ROS 2 接口复用项目一
+- 上一个恢复点：`44a5f3f Save project two progress checkpoint`
+- 当前测试基线：115 项，0 error、0 failure、0 skipped
+- 项目一与项目二仍是独立仓库；项目二仅通过已安装 ROS 2 接口复用项目一
 - 当前没有需要继续运行的仿真或推理服务
-- 当前成果仅保存在本地，本检查点不包含远端上传或合并
+- 当前成果只做本地保存，本检查点没有远端 push 或合并
 
-## 已完成的核心底座
-
-1. 冻结实验样例可自动完成日志读取、距离矩阵、异常窗口、控制指令关联、SVG 图表和 Markdown/JSON 报告。
-2. SQLite Skill Registry 已实现不可变版本、状态迁移、审批/签名事件与持久化 Agent run。
-3. Skill Runtime 已实现固定 adapter、输入 Schema、ROS 权限、超时、结果后置条件、Trace 与 Replay 门控。
-4. Artifact file lock 与 Ed25519 发布 envelope 已实现；Runtime 会在调用前重新计算 hash 并二次验签。
-5. 三个标准只读 Skill 已完成真实 ROS 验证、签名发布与受治理激活。
-
-## 已激活 Skill
+## 已完成并激活的三个只读 Skill
 
 | Skill | 版本 | Registry 状态 | Artifact hash |
 | --- | --- | --- | --- |
@@ -32,55 +28,99 @@
 | `query_semantic_target` | `0.1.0` | `ACTIVE` | `e4f6cddb16757bdee6b46163295152033a5f60a9aea7030fa5659eca2716200e` |
 | `preview_safe_route` | `0.1.0` | `ACTIVE` | `d05c5c0aed6be59dbfb0f82c118b59099831c9c25db5c055fb56fb0326c7c7ca` |
 
-对应受治理发布证据：
+对应发布证据位于 `evidence/<skill>/governed_release_v1.json`。本机 release 公钥指纹为
+`23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a`；私钥、Registry 和 Trace
+位于 `~/.ros/robot_agent/`，不会进入 Git。
 
-- `evidence/check_robot_health/governed_release_v1.json`
-- `evidence/query_semantic_target/governed_release_v1.json`
-- `evidence/preview_safe_route/governed_release_v1.json`
+## 第四个 Skill 的当前状态
 
-本机 release 公钥指纹：`23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a`。私钥、Registry 数据库和运行 Trace 位于 `~/.ros/robot_agent/`，不进入 Git。
+`navigate_to_approved_pose@0.1.0` 已完成实现，Registry 状态为 `UNIT_TESTED`，artifact hash 为：
 
-## 第三个 Skill 的最新真实验证
+```text
+24c2dca959382b9a4db1fed850577a42172403322dd5225eeee50f562ea6865a
+```
 
-`preview_safe_route@0.1.0` 已在项目一 rbot headless 仿真栈中通过 Runtime 调用，对目标 `(4.5, 0.0)` 进行无运动路径预览：
+已完成：
 
-- Nav2 路径点：173
-- 路径长度：5.1134813433 m
-- `water_puddle` 中心代价值：254
-- 语义禁区半径：0.600 m
-- 路径到禁区中心最小距离：0.9823659811 m
-- 扣除半径后的最小净空：0.3823659811 m
-- 路径进入禁区：否
-- 目标终点误差：0.000 m
-- 机器人运动：否；调用后里程计速度接近零
-- Runtime Trace：11 个事件，执行与后置条件均通过
+1. 新建独立 ROS 2 包 `robot_controlled_navigation_skills`，没有修改第三个已签名 Skill 的 artifact；
+2. 固定 NavigateToPose adapter，只读安全/TF/里程计/激光证据，禁止 topic 写入和 `/cmd_vel`；
+3. 运动前重跑健康检查和路径预览，并要求路径 SHA-256 与语义地图 SHA-256 和批准内容一致；
+4. 运动中监控 Keepout safety，内部超时或 unsafe 时取消 Nav2 goal；
+5. 验证 Nav2 状态、终点误差、朝向误差、未进入 Keepout、全程 safety 和最终停止；
+6. Registry schema 升级到 v2，加入绑定完整 invocation 的一次性执行批准；
+7. Runtime 对 `controlled/high` Skill 执行 `WAITING_APPROVAL`，事务消费批准并写入 Trace；
+8. 批准支持 1～300 秒 TTL，参数篡改、run 不匹配、过期和重复使用全部 fail closed；
+9. 隔离 ROS Domain 无 Nav2/TF/传感器测试返回 `unavailable`，且
+   `goal_accepted=false`、`motion_command_sent=false`；
+10. `colcon build` 成功，115 项自动测试全部通过。
 
-这证明第三个 Skill 只读取规划与代价地图证据，不发送导航目标，也不直接控制机器人。
+详细设计见 `docs/approved_navigation_skill.md`。格式示例见
+`examples/navigate_to_approved_pose_invocation_v1.json`。
 
-## 下次唯一主线
+## 为什么还不能称为完成或 ACTIVE
 
-开始实现第四个标准 Skill：`navigate_to_approved_pose`。它将是项目二第一个受控物理动作 Skill，不应跳到 LLM/RAG/MCP，也不要先做第五或第六个 Skill。
+`UNIT_TESTED` 只证明契约、纯策略、Registry、Runtime、超时和离线 fail-closed 路径。它还没有在
+项目一的 rbot 仓库仿真中真正发送目标并验证绕开水坑、到达目标、停止和完整结果。因此当前不应
+做发布审批、Ed25519 签名或 `ACTIVE`，Runtime 也会拒绝 Agent 调用。
 
-实现前必须冻结以下安全契约：
+## 下次唯一主线：真实 rbot 仿真验收
 
-1. 风险等级为 `controlled`，每次执行必须具备显式人工批准证据。
-2. 只能通过固定 Nav2 `NavigateToPose` adapter 执行，禁止直接写 `/cmd_vel`，禁止任意 ROS graph 访问。
-3. 输入目标必须通过 Schema、地图范围和参数边界检查。
-4. 执行前重新运行机器人健康与语义 Keepout 安全检查，并绑定新鲜的 `preview_safe_route` 结果；应考虑使用预览结果 hash/目标摘要防止批准后参数被替换。
-5. 必须支持超时、取消、Nav2 失败和 safety false 的 fail-closed 路径。
-6. 必须验证导航结果、终点误差、Keepout 未进入和机器人最终停止，再允许 run 成功结束。
-7. 先完成确定性 adapter、单元测试、隔离 ROS 图测试和仿真证据，再进入 Registry 审批、Ed25519 签名和 `ACTIVE`。
+### 1. 启动项目一仿真
 
-后续仍按既定顺序完成：
+```bash
+cd ~/ros2_ws
+source /opt/ros/jazzy/setup.bash
+source install/setup.bash
+ros2 launch semantic_nav_bringup sim_rbot_warehouse_nav.launch.py
+```
+
+确认 Gazebo、Nav2、AMCL、语义 Keepout 和 safety monitor 正常后再继续。
+
+### 2. 在另一个终端生成同一现场的新鲜只读预览
+
+```bash
+cd ~/robot_agent_ws
+source /opt/ros/jazzy/setup.bash
+source ~/ros2_ws/install/setup.bash
+source install/setup.bash
+
+ros2 run robot_navigation_skills preview_safe_route \
+  --goal-x 4.5 --goal-y 0.0 --goal-yaw-deg 0.0 \
+  --keepout-profile rbot_water_puddle_v2 \
+  --ros-args -p use_sim_time:=true
+```
+
+记录输出里的 `route.path_sha256` 和 `keepout.source_content_sha256`。不要沿用示例 JSON 的旧 hash。
+
+### 3. 仅在 Skill 作者仿真阶段运行固定动作 adapter
+
+```bash
+ros2 run robot_controlled_navigation_skills navigate_to_approved_pose \
+  --goal-x 4.5 --goal-y 0.0 --goal-yaw-deg 0.0 \
+  --keepout-profile rbot_water_puddle_v2 \
+  --approved-path-sha256 <fresh_path_sha256> \
+  --approved-semantic-map-sha256 <fresh_semantic_map_sha256> \
+  --ros-args -p use_sim_time:=true
+```
+
+预期：`state=succeeded`、`goal_reached=true`、`entered_keepout=false`、
+`safety_remained_ok=true`、`robot_stopped=true`。如果失败，先保存完整输出，不自动重试。
+
+### 4. 仿真通过后的治理工作
+
+冻结仿真证据并推进到 `SIMULATION_TESTED`，再做发布审批、Ed25519 签名与 `ACTIVE`。激活以后才
+测试正常 Runtime 路径：先为完整 invocation 发放 120 秒一次性人工批准，再由 Runtime 执行并
+检查 Trace 中的 `WAITING_APPROVAL`、批准消费和物理后置条件事件。
+
+完成第四个 Skill 后仍按既定顺序实现：
 
 5. `observe_and_avoid_water_risk`
 6. `return_home_safely`
 
-六个标准 Skill 完成后，再进入 Phase 2 的版本化 RAG，以及 Phase 3 的 LLM API、Prompt Registry、MCP 与有界 Agent Loop。这样 LLM 调用的是已经有契约、权限、证据和回放能力的工具，而不是直接控制 ROS。
+六个标准 Skill 完成后进入 Phase 2 版本化 RAG，再进入 Phase 3 的 LLM API、Prompt Registry、
+MCP 与有界 Agent Loop。
 
 ## 恢复检查
-
-下次开始时执行：
 
 ```bash
 cd ~/robot_agent_ws
@@ -91,4 +131,5 @@ git status -sb
 colcon test-result --verbose
 ```
 
-预期结果：位于本检查点提交之后的干净分支，测试仍为 95 项全通过。随后阅读 `docs/skill_contract.md`、`docs/skill_runtime.md` 与 `docs/route_preview_skill.md`，开始第四个 Skill 的契约设计。
+预期：第四个 Skill 已存在、Registry 为 `UNIT_TESTED`、115 项测试通过；随后直接进行上面的真实
+rbot 仿真验收，不再重复写实现。

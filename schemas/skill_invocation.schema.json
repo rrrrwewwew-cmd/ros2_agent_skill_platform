@@ -26,6 +26,10 @@
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
     },
     "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approval_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{3,96}$"
+    },
     "inputs": {"type": "object"}
   }
 }

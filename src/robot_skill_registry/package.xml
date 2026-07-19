@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>robot_skill_registry</name>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <description>Persistent governed Skill registry and bounded Agent state store.</description>
   <maintainer email="maintainer@example.com">rrrrwewwew-cmd</maintainer>
   <license>MIT</license>

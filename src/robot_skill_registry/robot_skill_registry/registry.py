@@ -11,8 +11,9 @@ import time
 from safe_agent_core import validate_skill_manifest
 
 
-DATABASE_SCHEMA_VERSION = 1
+DATABASE_SCHEMA_VERSION = 2
 HASH_PATTERN = re.compile(r'^[0-9a-f]{64}$')
+IDENTIFIER_PATTERN = re.compile(r'^[A-Za-z0-9_.-]{3,96}$')
 SKILL_STATES = (
     'DRAFT',
     'GENERATED',
@@ -163,6 +164,26 @@ def _initialize_database(connection):
                 REFERENCES skill_versions(name, version)
         );
 
+        CREATE TABLE IF NOT EXISTS execution_approvals (
+            approval_id TEXT PRIMARY KEY,
+            run_id TEXT NOT NULL,
+            skill_name TEXT NOT NULL,
+            skill_version TEXT NOT NULL,
+            artifact_hash TEXT NOT NULL,
+            invocation_hash TEXT NOT NULL,
+            decision TEXT NOT NULL CHECK (decision IN ('APPROVED', 'REJECTED')),
+            actor TEXT NOT NULL,
+            reason TEXT NOT NULL,
+            created_at_ns INTEGER NOT NULL CHECK (created_at_ns >= 0),
+            expires_at_ns INTEGER NOT NULL CHECK (expires_at_ns >= 0),
+            consumed_at_ns INTEGER CHECK (
+                consumed_at_ns IS NULL OR consumed_at_ns >= 0
+            ),
+            consumed_by_run_id TEXT,
+            FOREIGN KEY (skill_name, skill_version)
+                REFERENCES skill_versions(name, version)
+        );
+
         CREATE TABLE IF NOT EXISTS agent_runs (
             run_id TEXT PRIMARY KEY,
             trace_id TEXT NOT NULL UNIQUE,
@@ -193,18 +214,27 @@ def _initialize_database(connection):
             ON skill_events(name, version, sequence);
         CREATE INDEX IF NOT EXISTS agent_events_lookup
             ON agent_events(run_id, sequence);
+        CREATE INDEX IF NOT EXISTS execution_approvals_lookup
+            ON execution_approvals(skill_name, skill_version, created_at_ns);
         """
-    )
-    connection.execute(
-        'INSERT OR IGNORE INTO schema_metadata(component, schema_version) '
-        'VALUES (?, ?)',
-        ('robot_skill_registry', DATABASE_SCHEMA_VERSION),
     )
     row = connection.execute(
         'SELECT schema_version FROM schema_metadata WHERE component = ?',
         ('robot_skill_registry',),
     ).fetchone()
-    if row['schema_version'] != DATABASE_SCHEMA_VERSION:
+    if row is None:
+        connection.execute(
+            'INSERT INTO schema_metadata(component, schema_version) '
+            'VALUES (?, ?)',
+            ('robot_skill_registry', DATABASE_SCHEMA_VERSION),
+        )
+    elif row['schema_version'] == 1:
+        connection.execute(
+            'UPDATE schema_metadata SET schema_version = ? '
+            'WHERE component = ?',
+            (DATABASE_SCHEMA_VERSION, 'robot_skill_registry'),
+        )
+    elif row['schema_version'] != DATABASE_SCHEMA_VERSION:
         raise RegistryContractError('unsupported registry database schema')
 
 
@@ -247,6 +277,25 @@ def _agent_record(row):
         'terminal_reason': row['terminal_reason'],
         'created_at_ns': row['created_at_ns'],
         'updated_at_ns': row['updated_at_ns'],
+    }
+
+
+def _execution_approval_record(row):
+    return {
+        'schema_version': 1,
+        'approval_id': row['approval_id'],
+        'run_id': row['run_id'],
+        'skill_name': row['skill_name'],
+        'skill_version': row['skill_version'],
+        'artifact_hash': row['artifact_hash'],
+        'invocation_hash': row['invocation_hash'],
+        'decision': row['decision'],
+        'actor': row['actor'],
+        'reason': row['reason'],
+        'created_at_ns': row['created_at_ns'],
+        'expires_at_ns': row['expires_at_ns'],
+        'consumed_at_ns': row['consumed_at_ns'],
+        'consumed_by_run_id': row['consumed_by_run_id'],
     }
 
 
@@ -465,6 +514,142 @@ class SkillRegistry(_DatabaseOwner):
             (name, version),
         ).fetchall()
         return [dict(row) for row in rows]
+
+    def issue_execution_approval(self, invocation, actor, reason,
+                                 ttl_sec=120.0, decision='APPROVED'):
+        """Create one expiring approval bound to an exact invocation."""
+        if not isinstance(invocation, dict):
+            raise RegistryContractError('invocation must be an object')
+        required = {
+            'approval_id', 'run_id', 'trace_id', 'skill_name',
+            'skill_version', 'artifact_hash', 'inputs',
+        }
+        missing = sorted(required - invocation.keys())
+        if missing:
+            raise RegistryContractError(
+                f'execution approval invocation is missing: {missing}'
+            )
+        approval_id = _require_text(
+            invocation['approval_id'], 'approval_id',
+        )
+        run_id = _require_text(invocation['run_id'], 'run_id')
+        if not IDENTIFIER_PATTERN.fullmatch(approval_id):
+            raise RegistryContractError('approval_id has invalid format')
+        if not IDENTIFIER_PATTERN.fullmatch(run_id):
+            raise RegistryContractError('run_id has invalid format')
+        if decision not in {'APPROVED', 'REJECTED'}:
+            raise RegistryContractError(
+                'decision must be APPROVED or REJECTED'
+            )
+        actor = _require_text(actor, 'actor')
+        reason = _require_text(reason, 'reason')
+        if isinstance(ttl_sec, bool) or not isinstance(ttl_sec, (int, float)):
+            raise RegistryContractError('ttl_sec must be numeric')
+        ttl_sec = float(ttl_sec)
+        if not 1.0 <= ttl_sec <= 300.0:
+            raise RegistryContractError('ttl_sec must be in [1, 300]')
+        name = _require_text(invocation['skill_name'], 'skill_name')
+        version = _require_text(invocation['skill_version'], 'skill_version')
+        artifact_hash = _require_text(
+            invocation['artifact_hash'], 'artifact_hash',
+        )
+        if not HASH_PATTERN.fullmatch(artifact_hash):
+            raise RegistryContractError(
+                'artifact_hash must be lowercase SHA-256'
+            )
+        now = _timestamp(self._clock_ns)
+        expires_at_ns = now + int(ttl_sec * 1_000_000_000)
+        invocation_hash = _canonical_hash(invocation)
+        with _write_transaction(self._connection):
+            skill = self._skill_row(name, version)
+            self._check_artifact_hash(skill, artifact_hash)
+            if skill['state'] != 'ACTIVE':
+                raise RegistryConflictError(
+                    'execution approval requires an ACTIVE Skill'
+                )
+            manifest = json.loads(skill['manifest_json'])
+            if not (
+                manifest['requires_human_approval'] or
+                manifest['safety_level'] in {'controlled', 'high'}
+            ):
+                raise RegistryContractError(
+                    'read-only Skill does not accept execution approval'
+                )
+            try:
+                self._connection.execute(
+                    """
+                    INSERT INTO execution_approvals(
+                        approval_id, run_id, skill_name, skill_version,
+                        artifact_hash, invocation_hash, decision, actor,
+                        reason, created_at_ns, expires_at_ns,
+                        consumed_at_ns, consumed_by_run_id
+                    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NULL, NULL)
+                    """,
+                    (
+                        approval_id, run_id, name, version, artifact_hash,
+                        invocation_hash, decision, actor, reason, now,
+                        expires_at_ns,
+                    ),
+                )
+            except sqlite3.IntegrityError as exception:
+                raise RegistryConflictError(
+                    'approval_id must be unique'
+                ) from exception
+        return self.get_execution_approval(approval_id)
+
+    def get_execution_approval(self, approval_id):
+        """Return one execution approval without consuming it."""
+        row = self._connection.execute(
+            'SELECT * FROM execution_approvals WHERE approval_id = ?',
+            (approval_id,),
+        ).fetchone()
+        if row is None:
+            raise RegistryNotFoundError(
+                f'Execution approval not found: {approval_id}'
+            )
+        return _execution_approval_record(row)
+
+    def consume_execution_approval(self, approval_id, invocation):
+        """Atomically consume one fresh exact-invocation approval."""
+        if not isinstance(invocation, dict):
+            raise RegistryContractError('invocation must be an object')
+        now = _timestamp(self._clock_ns)
+        invocation_hash = _canonical_hash(invocation)
+        run_id = _require_text(invocation.get('run_id'), 'run_id')
+        with _write_transaction(self._connection):
+            row = self._connection.execute(
+                'SELECT * FROM execution_approvals WHERE approval_id = ?',
+                (approval_id,),
+            ).fetchone()
+            if row is None:
+                raise RegistryNotFoundError(
+                    f'Execution approval not found: {approval_id}'
+                )
+            if row['decision'] != 'APPROVED':
+                raise RegistryContractError('execution approval was rejected')
+            if row['consumed_at_ns'] is not None:
+                raise RegistryConflictError(
+                    'execution approval has already been consumed'
+                )
+            if now > row['expires_at_ns']:
+                raise RegistryContractError('execution approval has expired')
+            if row['run_id'] != run_id:
+                raise RegistryContractError(
+                    'execution approval run_id does not match invocation'
+                )
+            if row['invocation_hash'] != invocation_hash:
+                raise RegistryContractError(
+                    'execution approval is not bound to this invocation'
+                )
+            self._connection.execute(
+                """
+                UPDATE execution_approvals
+                SET consumed_at_ns = ?, consumed_by_run_id = ?
+                WHERE approval_id = ? AND consumed_at_ns IS NULL
+                """,
+                (now, run_id, approval_id),
+            )
+        return self.get_execution_approval(approval_id)
 
     def _transition_skill(self, name, version, target_state,
                           expected_current_state, actor, reason):

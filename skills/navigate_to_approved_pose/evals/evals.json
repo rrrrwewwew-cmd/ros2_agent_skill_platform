@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "skill": "navigate_to_approved_pose",
+  "skill_version": "0.1.0",
+  "cases": [
+    {
+      "id": "approved_safe_goal_succeeds",
+      "expected_state": "succeeded",
+      "notes": "Exact fresh approval, healthy robot, identical safe preview, Nav2 success, and stopped postcondition."
+    },
+    {
+      "id": "missing_expired_or_reused_approval",
+      "expected_state": "runtime_rejected",
+      "notes": "No ROS adapter or motion action may start."
+    },
+    {
+      "id": "goal_or_hash_changed_after_approval",
+      "expected_state": "runtime_rejected",
+      "notes": "The invocation hash differs from the Registry approval."
+    },
+    {
+      "id": "fresh_preview_differs",
+      "expected_state": "rejected",
+      "notes": "A path or semantic-map hash change blocks motion before NavigateToPose."
+    },
+    {
+      "id": "safety_false_during_navigation",
+      "expected_state": "safety_stopped",
+      "notes": "The accepted goal is canceled and cannot auto-retry."
+    },
+    {
+      "id": "nav2_timeout_or_bad_postcondition",
+      "expected_state": "failed",
+      "notes": "Timeout, Keepout entry, goal error, or nonzero final velocity fails closed."
+    }
+  ]
+}

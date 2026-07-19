@@ -29,6 +29,7 @@ def test_direct_velocity_write_is_rejected(topic):
     """No generated Skill may directly publish base velocity."""
     manifest = deepcopy(load_example())
     manifest['safety_level'] = 'controlled'
+    manifest['requires_human_approval'] = True
     manifest['ros_permissions']['topics_write'] = [topic]
     with pytest.raises(SkillContractError, match='direct velocity'):
         validate_skill_manifest(manifest)
@@ -38,6 +39,15 @@ def test_high_safety_skill_requires_human_approval():
     """High-impact Skills cannot opt out of approval."""
     manifest = deepcopy(load_example())
     manifest['safety_level'] = 'high'
+    manifest['requires_human_approval'] = False
+    with pytest.raises(SkillContractError, match='require human approval'):
+        validate_skill_manifest(manifest)
+
+
+def test_controlled_skill_requires_human_approval():
+    """Physical actions cannot opt out of per-execution approval."""
+    manifest = deepcopy(load_example())
+    manifest['safety_level'] = 'controlled'
     manifest['requires_human_approval'] = False
     with pytest.raises(SkillContractError, match='require human approval'):
         validate_skill_manifest(manifest)

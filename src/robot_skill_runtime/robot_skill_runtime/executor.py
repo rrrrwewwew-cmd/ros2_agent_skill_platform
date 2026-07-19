@@ -16,6 +16,7 @@ from robot_skill_registry import (
 )
 
 from .adapters import (
+    ApprovedNavigationAdapter,
     HealthSkillAdapter,
     SafeRoutePreviewAdapter,
     SemanticTargetQueryAdapter,
@@ -54,10 +55,14 @@ class SkillExecutor:
         preview_adapter = SafeRoutePreviewAdapter(
             self.repository_root, use_sim_time=use_sim_time,
         )
+        navigation_adapter = ApprovedNavigationAdapter(
+            self.repository_root, use_sim_time=use_sim_time,
+        )
         self.adapters = adapters or {
             default_adapter.entrypoint: default_adapter,
             semantic_adapter.entrypoint: semantic_adapter,
             preview_adapter.entrypoint: preview_adapter,
+            navigation_adapter.entrypoint: navigation_adapter,
         }
         self._invocation_schema = self._load_schema('skill_invocation')
         self._result_schema = self._load_schema('skill_execution_result')
@@ -147,6 +152,14 @@ class SkillExecutor:
                 f'ACTIVE Skill release signature is invalid: {exception}'
             ) from exception
         return adapter
+
+    @staticmethod
+    def _requires_execution_approval(record):
+        manifest = record['manifest']
+        return (
+            manifest['requires_human_approval'] or
+            manifest['safety_level'] in {'controlled', 'high'}
+        )
 
     @staticmethod
     def _transition(store, trace, run_id, current, target, actor,
@@ -270,11 +283,50 @@ class SkillExecutor:
                 adapter = self._validate_execution_policy(
                     record, invocation['inputs'],
                 )
-                self._transition(
-                    store, trace, invocation['run_id'], current,
-                    'EXECUTING', 'policy_validator',
-                    'Registry artifact and permissions validated',
-                )
+                approval_required = self._requires_execution_approval(record)
+                approval_id = invocation.get('approval_id')
+                if approval_required and approval_id is None:
+                    raise ExecutionPolicyError(
+                        'controlled Skill requires one-time execution approval'
+                    )
+                if not approval_required and approval_id is not None:
+                    raise ExecutionPolicyError(
+                        'read-only Skill must not include execution approval'
+                    )
+                if approval_required:
+                    self._transition(
+                        store, trace, invocation['run_id'], current,
+                        'WAITING_APPROVAL', 'policy_validator',
+                        'artifact and inputs validated; require exact approval',
+                    )
+                    current = 'WAITING_APPROVAL'
+                    approval = registry.consume_execution_approval(
+                        approval_id, invocation,
+                    )
+                    trace.record(
+                        'approval',
+                        'skill_registry',
+                        {
+                            'approval_id': approval['approval_id'],
+                            'decision': approval['decision'],
+                            'actor': approval['actor'],
+                            'invocation_hash': approval['invocation_hash'],
+                            'expires_at_ns': approval['expires_at_ns'],
+                            'consumed_at_ns': approval['consumed_at_ns'],
+                        },
+                        correlation_id=invocation['run_id'],
+                    )
+                    self._transition(
+                        store, trace, invocation['run_id'], current,
+                        'EXECUTING', 'execution_approval_gate',
+                        'fresh exact-invocation approval consumed',
+                    )
+                else:
+                    self._transition(
+                        store, trace, invocation['run_id'], current,
+                        'EXECUTING', 'policy_validator',
+                        'Registry artifact and permissions validated',
+                    )
                 current = 'EXECUTING'
                 trace.record(
                     'tool_call',
@@ -316,6 +368,7 @@ class SkillExecutor:
                 SkillAdapterError,
                 RegistryConflictError,
                 RegistryContractError,
+                RegistryNotFoundError,
             ) as exception:
                 error = str(exception)
                 trace.record(

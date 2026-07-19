@@ -390,3 +390,210 @@ class SafeRoutePreviewAdapter:
             raise SkillAdapterError(
                 'non-safe route preview must include reasons'
             )
+
+
+class ApprovedNavigationAdapter:
+    """Execute one exact controlled Nav2 goal through a fixed module."""
+
+    entrypoint = (
+        'robot_controlled_navigation_skills.navigation:'
+        'navigate_to_approved_pose'
+    )
+    safety_level = 'controlled'
+    permissions = {
+        'topics_read': [
+            '/diagnostics',
+            '/semantic_keepout/safety_ok',
+            '/tf',
+            '/tf_static',
+            '/odom',
+            '/scan',
+        ],
+        'topics_write': [],
+        'services': [
+            '/lifecycle_manager_navigation/is_active',
+            '/global_costmap/get_costmap',
+            '/navigate_to_pose/_action/cancel_goal',
+        ],
+        'actions': ['/compute_path_to_pose', '/navigate_to_pose'],
+    }
+
+    def __init__(self, repository_root, use_sim_time=False,
+                 runner=subprocess.run, cancel_runner=subprocess.run):
+        self.repository_root = Path(repository_root).resolve()
+        self.use_sim_time = bool(use_sim_time)
+        self.runner = runner
+        self.cancel_runner = cancel_runner
+
+    @staticmethod
+    def _required_inputs(inputs):
+        required = {
+            'goal_x', 'goal_y', 'goal_yaw_deg', 'keepout_profile',
+            'approved_path_sha256', 'approved_semantic_map_sha256',
+        }
+        missing = sorted(required - inputs.keys())
+        if missing:
+            raise SkillAdapterError(
+                f'navigation inputs are missing: {missing}'
+            )
+
+    def _cancel_all_navigation_goals(self):
+        command = [
+            sys.executable,
+            '-m',
+            'robot_controlled_navigation_skills.cancel_ros',
+            '--ros-args',
+            '-p',
+            f'use_sim_time:={str(self.use_sim_time).lower()}',
+        ]
+        try:
+            completed = self.cancel_runner(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=4.0,
+                check=False,
+            )
+        except (OSError, subprocess.TimeoutExpired) as exception:
+            raise SkillAdapterError(
+                'navigation timed out and emergency cancellation failed'
+            ) from exception
+        if completed.returncode != 0:
+            raise SkillAdapterError(
+                'navigation timed out and emergency cancellation was rejected'
+            )
+
+    def invoke(self, inputs, timeout_sec):
+        """Run the fixed controlled adapter with an emergency cancel margin."""
+        self._required_inputs(inputs)
+        command = [
+            sys.executable,
+            '-m',
+            'robot_controlled_navigation_skills.navigation_ros',
+            '--goal-x',
+            str(inputs['goal_x']),
+            '--goal-y',
+            str(inputs['goal_y']),
+            '--goal-yaw-deg',
+            str(inputs['goal_yaw_deg']),
+            '--keepout-profile',
+            str(inputs['keepout_profile']),
+            '--approved-path-sha256',
+            str(inputs['approved_path_sha256']),
+            '--approved-semantic-map-sha256',
+            str(inputs['approved_semantic_map_sha256']),
+            '--ros-args',
+            '-p',
+            f'use_sim_time:={str(self.use_sim_time).lower()}',
+        ]
+        try:
+            completed = self.runner(
+                command,
+                capture_output=True,
+                text=True,
+                timeout=float(timeout_sec),
+                check=False,
+            )
+        except subprocess.TimeoutExpired as exception:
+            self._cancel_all_navigation_goals()
+            raise SkillAdapterError(
+                'approved navigation timed out; cancellation requested'
+            ) from exception
+        except OSError as exception:
+            raise SkillAdapterError(
+                f'approved navigation could not start: {exception}'
+            ) from exception
+        if completed.returncode not in {0, 3, 4, 5, 6, 7}:
+            raise SkillAdapterError(
+                f'approved navigation exited {completed.returncode}'
+            )
+        try:
+            result = json.loads(completed.stdout.strip())
+        except json.JSONDecodeError as exception:
+            raise SkillAdapterError(
+                'approved navigation returned invalid JSON'
+            ) from exception
+        self.validate_result(result)
+        expected_request = {
+            'goal': {
+                'frame_id': 'map',
+                'x': float(inputs['goal_x']),
+                'y': float(inputs['goal_y']),
+                'yaw_deg': float(inputs['goal_yaw_deg']),
+            },
+            'keepout_profile': inputs['keepout_profile'],
+            'approved_preview': {
+                'path_sha256': inputs['approved_path_sha256'],
+                'semantic_map_sha256': inputs[
+                    'approved_semantic_map_sha256'
+                ],
+            },
+        }
+        if result['request'] != expected_request:
+            raise SkillAdapterError(
+                'approved navigation output identity mismatch'
+            )
+        return result
+
+    def validate_result(self, result):
+        """Validate typed result and physical postconditions."""
+        schema_path = (
+            self.repository_root /
+            'skills/navigate_to_approved_pose/schemas/'
+            'navigation_result.schema.json'
+        )
+        try:
+            schema = json.loads(schema_path.read_text(encoding='utf-8'))
+            Draft202012Validator(schema).validate(result)
+        except (OSError, json.JSONDecodeError, ValidationError) as exception:
+            raise SkillAdapterError(
+                'approved navigation result violates its JSON Schema'
+            ) from exception
+        succeeded = result['state'] == 'succeeded'
+        if result['goal_reached'] is not succeeded:
+            raise SkillAdapterError(
+                'approved navigation goal state is inconsistent'
+            )
+        if succeeded:
+            preflight = result['preflight']
+            navigation = result['navigation']
+            postcondition = result['postcondition']
+            if result['reasons']:
+                raise SkillAdapterError(
+                    'successful navigation cannot include failure reasons'
+                )
+            if not (
+                preflight['allowed'] is True
+                and preflight['health_state'] == 'healthy'
+                and preflight['preview_state'] == 'safe'
+                and preflight['path_identity_matches'] is True
+                and preflight['semantic_identity_matches'] is True
+                and preflight['global_center_cost'] >= 253
+                and preflight['minimum_clearance_m'] > 0.0
+            ):
+                raise SkillAdapterError(
+                    'successful navigation has invalid preflight evidence'
+                )
+            if not (
+                result['motion_command_sent'] is True
+                and navigation['goal_accepted'] is True
+                and navigation['result_status'] == 4
+                and navigation['nav2_error_code'] == 0
+            ):
+                raise SkillAdapterError(
+                    'successful navigation has invalid Nav2 evidence'
+                )
+            if not (
+                postcondition['goal_position_error_m'] <= 0.25
+                and postcondition['goal_yaw_error_deg'] <= 15.0
+                and postcondition['entered_keepout'] is False
+                and postcondition['safety_remained_ok'] is True
+                and postcondition['robot_stopped'] is True
+            ):
+                raise SkillAdapterError(
+                    'successful navigation has invalid physical postconditions'
+                )
+        elif not result['reasons']:
+            raise SkillAdapterError(
+                'non-success navigation must include reasons'
+            )

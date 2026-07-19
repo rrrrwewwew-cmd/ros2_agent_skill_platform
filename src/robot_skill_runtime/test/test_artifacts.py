@@ -21,6 +21,9 @@ SEMANTIC_LOCK_PATH = (
 PREVIEW_LOCK_PATH = (
     REPOSITORY_ROOT / 'artifacts/preview_safe_route/0.1.0.json'
 )
+NAVIGATION_LOCK_PATH = (
+    REPOSITORY_ROOT / 'artifacts/navigate_to_approved_pose/0.1.0.json'
+)
 
 
 def test_reference_artifact_matches_simulation_tested_hash():
@@ -63,6 +66,18 @@ def test_semantic_query_artifact_matches_its_file_list():
 def test_route_preview_artifact_matches_its_file_list():
     """The third Skill has an independently reproducible identity."""
     lock = json.loads(PREVIEW_LOCK_PATH.read_text(encoding='utf-8'))
+    verified = verify_artifact_lock(
+        REPOSITORY_ROOT,
+        lock['name'],
+        lock['version'],
+        lock['artifact_hash'],
+    )
+    assert verified == lock
+
+
+def test_controlled_navigation_artifact_matches_its_file_list():
+    """The fourth Skill has an independently reproducible identity."""
+    lock = json.loads(NAVIGATION_LOCK_PATH.read_text(encoding='utf-8'))
     verified = verify_artifact_lock(
         REPOSITORY_ROOT,
         lock['name'],

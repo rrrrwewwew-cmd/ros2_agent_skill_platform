@@ -1,0 +1,29 @@
+{
+  "schema_version": 1,
+  "name": "navigate_to_approved_pose",
+  "version": "0.1.0",
+  "hash_algorithm": "sha256-file-list-v1",
+  "artifact_hash": "24c2dca959382b9a4db1fed850577a42172403322dd5225eeee50f562ea6865a",
+  "files": [
+    "skills/navigate_to_approved_pose/SKILL.md",
+    "skills/navigate_to_approved_pose/evals/evals.json",
+    "skills/navigate_to_approved_pose/schemas/navigation_result.schema.json",
+    "skills/navigate_to_approved_pose/skill-card.md",
+    "skills/navigate_to_approved_pose/skill.yaml",
+    "src/robot_controlled_navigation_skills/package.xml",
+    "src/robot_controlled_navigation_skills/setup.py",
+    "src/robot_controlled_navigation_skills/robot_controlled_navigation_skills/__init__.py",
+    "src/robot_controlled_navigation_skills/robot_controlled_navigation_skills/cancel_ros.py",
+    "src/robot_controlled_navigation_skills/robot_controlled_navigation_skills/navigation.py",
+    "src/robot_controlled_navigation_skills/robot_controlled_navigation_skills/navigation_ros.py",
+    "src/robot_controlled_navigation_skills/test/test_flake8.py",
+    "src/robot_controlled_navigation_skills/test/test_navigation.py",
+    "src/robot_controlled_navigation_skills/test/test_navigation_schema.py",
+    "src/robot_controlled_navigation_skills/test/test_pep257.py",
+    "src/robot_navigation_skills/robot_navigation_skills/preview.py",
+    "src/robot_navigation_skills/robot_navigation_skills/preview_ros.py",
+    "src/robot_semantic_skills/robot_semantic_skills/query.py",
+    "src/safe_agent_core/safe_agent_core/health.py",
+    "src/safe_agent_core/safe_agent_core/health_ros.py"
+  ]
+}
