@@ -1,0 +1,120 @@
+{
+  "schema_version": 1,
+  "corpus_id": "robotics_core",
+  "corpus_version": "1.0.0",
+  "description": "Version-pinned ROS 2 Jazzy, Nav2, project-one interface and governed Skill fact cards with a wrong-distribution distractor.",
+  "chunking": {
+    "splitter": "markdown_sections_v1",
+    "max_terms": 120,
+    "overlap_terms": 20
+  },
+  "embedding": {
+    "provider": "feature_hash_v1",
+    "dimensions": 256
+  },
+  "sources": [
+    {
+      "source_id": "ros2.jazzy.qos",
+      "version": "jazzy-2026-07-20",
+      "source_type": "official_documentation",
+      "title": "ROS 2 Jazzy QoS 事实卡",
+      "product": "ros2",
+      "distribution": "jazzy",
+      "canonical_url": "https://docs.ros.org/en/jazzy/Concepts/About-Quality-of-Service-Settings.html",
+      "license": "Local paraphrased fact card: MIT; upstream documentation: see canonical source",
+      "content_file": "sources/ros2_jazzy_qos.md",
+      "content_sha256": "04301c2bfb74e4ce8cb03e70a99b6c42c7f29bf128a80d97a99659e64b5dd7bf",
+      "language": "bilingual",
+      "tags": ["ros2", "jazzy", "qos", "sensor_data"],
+      "retrieved_at": "2026-07-20"
+    },
+    {
+      "source_id": "ros2.jazzy.tf2_time",
+      "version": "jazzy-2026-07-20",
+      "source_type": "official_documentation",
+      "title": "ROS 2 Jazzy tf2 与时间事实卡",
+      "product": "ros2",
+      "distribution": "jazzy",
+      "canonical_url": "https://docs.ros.org/en/jazzy/Concepts/Intermediate/About-Tf2.html",
+      "license": "Local paraphrased fact card: MIT; upstream documentation: see canonical source",
+      "content_file": "sources/ros2_jazzy_tf2_time.md",
+      "content_sha256": "105de25336c0cdfb97c9e7f8257ecbac61d038fd45009d251af1f350f97269ca",
+      "language": "bilingual",
+      "tags": ["ros2", "jazzy", "tf2", "time", "simulation"],
+      "retrieved_at": "2026-07-20"
+    },
+    {
+      "source_id": "nav2.keepout_filters",
+      "version": "nav2-docs-2026-07-20",
+      "source_type": "official_documentation",
+      "title": "Nav2 Keepout Filter 事实卡",
+      "product": "nav2",
+      "distribution": "jazzy",
+      "canonical_url": "https://docs.nav2.org/configuration/packages/costmap-plugins/keepout_filter.html",
+      "license": "Local paraphrased fact card: MIT; upstream documentation: see canonical source",
+      "content_file": "sources/nav2_keepout_filters.md",
+      "content_sha256": "dc5bfea911e8da4aee64f7c87edb0e4c0c45686ec3377438857f7733be660b5d",
+      "language": "bilingual",
+      "tags": ["nav2", "jazzy", "keepout", "costmap", "safety"],
+      "retrieved_at": "2026-07-20"
+    },
+    {
+      "source_id": "nav2.lifecycle_manager",
+      "version": "nav2-docs-2026-07-20",
+      "source_type": "official_documentation",
+      "title": "Nav2 Lifecycle Manager 事实卡",
+      "product": "nav2",
+      "distribution": "jazzy",
+      "canonical_url": "https://docs.nav2.org/configuration/packages/configuring-lifecycle.html",
+      "license": "Local paraphrased fact card: MIT; upstream documentation: see canonical source",
+      "content_file": "sources/nav2_lifecycle_manager.md",
+      "content_sha256": "376d415e6f5afa70d0f98899c20dcbb315b6a64f87b55483598e36869085e98e",
+      "language": "bilingual",
+      "tags": ["nav2", "jazzy", "lifecycle", "health", "bond"],
+      "retrieved_at": "2026-07-20"
+    },
+    {
+      "source_id": "project1.semantic_keepout_interfaces",
+      "version": "b7ef838ad6ce8ce8dfb741ed5b087e708082c8c7",
+      "source_type": "project_interface",
+      "title": "项目一动态语义 Keepout 接口事实卡",
+      "product": "wsl_ros2",
+      "distribution": "project1-v1",
+      "canonical_url": "https://github.com/rrrrwewwew-cmd/wsl_ros2/tree/b7ef838ad6ce8ce8dfb741ed5b087e708082c8c7",
+      "license": "MIT",
+      "content_file": "sources/project1_semantic_keepout_interfaces.md",
+      "content_sha256": "392eefb6ae8276be072178f6ddcb0e377cb8b0f3d1a9b3bd02759e7831a3dc88",
+      "language": "bilingual",
+      "tags": ["project1", "grounded_vlm", "keepout", "diagnostics", "ros2_interfaces"]
+    },
+    {
+      "source_id": "project2.skill_governance",
+      "version": "7ef9a6ea1ec7eab70ec0b467e4f23095be974982",
+      "source_type": "skill_contract",
+      "title": "项目二 Skill 治理事实卡",
+      "product": "robot_agent",
+      "distribution": "project2-v1",
+      "canonical_url": "https://github.com/rrrrwewwew-cmd/ros2_agent_skill_platform/tree/7ef9a6ea1ec7eab70ec0b467e4f23095be974982",
+      "license": "MIT",
+      "content_file": "sources/project2_skill_governance.md",
+      "content_sha256": "f909f8c2a9fb90b3c41e34fb8c6a9aa98d9855876295e5fd9b654dcc7a893cc6",
+      "language": "bilingual",
+      "tags": ["project2", "skill", "registry", "runtime", "approval", "agent_loop"]
+    },
+    {
+      "source_id": "ros2.humble.qos_distractor",
+      "version": "humble-eval-only",
+      "source_type": "evaluation_distractor",
+      "title": "ROS 2 Humble QoS 版本干扰卡",
+      "product": "ros2",
+      "distribution": "humble",
+      "canonical_url": "https://docs.ros.org/en/humble/Concepts/Intermediate/About-Quality-of-Service-Settings.html",
+      "license": "Local evaluation fact card: MIT; upstream documentation: see canonical source",
+      "content_file": "sources/ros2_humble_qos_distractor.md",
+      "content_sha256": "a2174da8473fbedd82cc5acbea592b2187a5beda9facf207413fb0407501559b",
+      "language": "bilingual",
+      "tags": ["ros2", "humble", "qos", "evaluation_distractor"],
+      "retrieved_at": "2026-07-20"
+    }
+  ]
+}

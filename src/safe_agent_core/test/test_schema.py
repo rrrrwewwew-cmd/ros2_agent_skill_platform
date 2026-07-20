@@ -13,7 +13,7 @@ REPOSITORY_ROOT = Path(__file__).resolve().parents[3]
 def test_json_schemas_are_valid_json():
     """Every machine-readable contract remains parseable Draft 2020-12."""
     schema_paths = sorted((REPOSITORY_ROOT / 'schemas').glob('*.schema.json'))
-    assert len(schema_paths) == 19
+    assert len(schema_paths) == 24
     for schema_path in schema_paths:
         schema = json.loads(schema_path.read_text(encoding='utf-8'))
         assert schema['$schema'].endswith('2020-12/schema')

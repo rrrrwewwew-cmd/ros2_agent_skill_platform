@@ -135,6 +135,11 @@ Skill manifest 声明所需 ROS topic/service/action 权限。执行进程后续
 运行时不进行开放 Web 搜索。检索结果必须包含 source id、版本、路径/URL 和片段 hash。传感器
 文本与用户输入均视为不可信数据，不能作为系统指令注入。
 
+首个 `robot_rag@0.1.0` 切片已经把该边界实现为 source manifest → 源文件 hash → 确定性 Markdown
+分块 → chunk hash → canonical index hash → 发行版过滤 → 带引用检索。当前 BM25 + feature hash
+只作为零外部模型的可复算 baseline；学习型 embedding 必须锁定模型 revision、维度和构建参数，并
+与 baseline 在同一冻结评测集上 A/B，不能静默替换索引语义。
+
 ## 8. 代码生成边界
 
 生成器只能从批准模板创建 ROS 2 包，依赖项受 allowlist 控制。生成代码在 sandbox 中运行，

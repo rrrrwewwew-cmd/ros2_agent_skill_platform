@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "robotics_core_retrieval_v1",
+  "description": "Small deterministic smoke set for citation, version filtering, project interfaces, TF, QoS, Nav2 and Skill governance.",
+  "cases": [
+    {
+      "case_id": "semantic_safety_false",
+      "query": "semantic_keepout safety_ok 为 false 是否一定代表机器人已经进入水坑禁区？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_source_ids": ["project1.semantic_keepout_interfaces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "keepout_global_local",
+      "query": "为什么 Nav2 Keepout 要同时配置 global costmap 和 local costmap？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_source_ids": ["nav2.keepout_filters"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "jazzy_sensor_qos",
+      "query": "ROS 2 Jazzy 相机和雷达传感器订阅为什么常用 best effort，收不到消息要检查什么？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_source_ids": ["ros2.jazzy.qos"],
+      "forbidden_source_ids": ["ros2.humble.qos_distractor"]
+    },
+    {
+      "case_id": "tf_extrapolation_past",
+      "query": "Lookup would require extrapolation into the past 应该检查消息时间戳还是直接使用最新 TF？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_source_ids": ["ros2.jazzy.tf2_time"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "nav2_active_health",
+      "query": "看到 Nav2 进程启动是否就能认为导航可用，如何确认 lifecycle active？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_source_ids": ["nav2.lifecycle_manager"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "skill_motion_approval",
+      "query": "LLM 可以直接调用 navigate_to_approved_pose 或发布 cmd_vel 吗？受控运动需要哪些治理条件？",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_source_ids": ["project2.skill_governance"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "project1_mask_topics",
+      "query": "项目一动态水坑禁区的 OccupancyGrid mask 和安全布尔量分别发布到什么 topic？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_source_ids": ["project1.semantic_keepout_interfaces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "tool_success_not_safe",
+      "query": "为什么 Agent 的 Tool status succeeded 仍不能直接继续执行后续机器人动作？",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_source_ids": ["project2.skill_governance"],
+      "forbidden_source_ids": []
+    }
+  ]
+}

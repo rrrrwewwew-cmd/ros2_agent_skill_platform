@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/rag_retrieval_result.schema.json",
+  "title": "Cited RAG retrieval result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "query",
+    "filters",
+    "corpus_id",
+    "corpus_version",
+    "index_content_sha256",
+    "retrieval_config",
+    "hits"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "query": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "filters": {
+      "type": "object",
+      "additionalProperties": false,
+      "properties": {
+        "distribution": {"type": "string"},
+        "product": {"type": "string"},
+        "source_type": {"type": "string"}
+      }
+    },
+    "corpus_id": {"type": "string"},
+    "corpus_version": {"type": "string"},
+    "index_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "retrieval_config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "bm25_weight", "feature_hash_weight", "top_k"],
+      "properties": {
+        "algorithm": {"const": "bm25_feature_hash_v1"},
+        "bm25_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "feature_hash_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "top_k": {"type": "integer", "minimum": 1, "maximum": 10}
+      }
+    },
+    "hits": {
+      "type": "array",
+      "maxItems": 10,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "rank",
+          "score",
+          "bm25_score",
+          "feature_hash_score",
+          "chunk_id",
+          "heading",
+          "text",
+          "citation"
+        ],
+        "properties": {
+          "rank": {"type": "integer", "minimum": 1},
+          "score": {"type": "number"},
+          "bm25_score": {"type": "number"},
+          "feature_hash_score": {"type": "number"},
+          "chunk_id": {"type": "string"},
+          "heading": {"type": "string"},
+          "text": {"type": "string"},
+          "citation": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": [
+              "source_id",
+              "source_version",
+              "source_content_sha256",
+              "chunk_sha256",
+              "canonical_url",
+              "distribution"
+            ],
+            "properties": {
+              "source_id": {"type": "string"},
+              "source_version": {"type": "string"},
+              "source_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "chunk_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+              "canonical_url": {"type": "string"},
+              "distribution": {"type": "string"}
+            }
+          }
+        }
+      }
+    }
+  }
+}

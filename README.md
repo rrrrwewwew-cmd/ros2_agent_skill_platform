@@ -30,7 +30,7 @@ source ~/robot_agent_ws/install/setup.bash
 
 ## 当前状态
 
-确定性安全底座、真实 MiMo 规划评测和只读 Agent Loop 已完成。仓库已包含：
+确定性安全底座、真实 MiMo 规划评测、只读 Agent Loop 和版本化 RAG 首个切片已完成。仓库已包含：
 
 - [最新进度检查点与下次恢复入口](docs/current_progress.md)；
 - [系统架构](docs/architecture.md)；
@@ -46,6 +46,7 @@ source ~/robot_agent_ws/install/setup.bash
 - [`navigate_to_approved_pose` 一次性批准导航 Skill](docs/approved_navigation_skill.md)；
 - [Xiaomi MiMo plan-only LLM Gateway 与 Prompt Registry](docs/llm_gateway.md)；
 - [持久化只读 Agent Loop、证据门控与父子 Trace](docs/read_only_agent_loop.md)；
+- [版本化 RAG、引用信任链与检索评测](docs/versioned_rag.md)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
 - [第二个只读 Skill：`query_semantic_target`](skills/query_semantic_target)；
@@ -62,7 +63,9 @@ hash 和 Ed25519 发布证明的 `ACTIVE` artifact 进入固定适配器的 Skil
 状态建立证据和治理边界。MiMo plan-only LLM Gateway、Prompt Registry、可断点续跑评测器和
 有界只读 Agent Loop 已完成。真实 Prompt 基线、修复回归和 rbot 现场闭环均已冻结：MiMo 规划
 `health → route preview`，两个 signed ACTIVE Skill 通过 Runtime 与证据门控执行，生成父子 Trace，
-且明确没有发送运动命令。下一项进入版本化 RAG 和检索评测，受控导航暂不暴露给模型。
+且明确没有发送运动命令。`robot_rag@0.1.0` 已提供 7 个版本化来源、22 个确定性 chunk、带 hash
+引用的本地检索和 8-case smoke evaluation。下一项扩展到 30+ development/holdout 查询，并加入
+锁定版本的学习型多语言 embedding A/B；受控导航暂不暴露给模型。
 
 ## 仓库结构
 
@@ -76,6 +79,8 @@ robot_agent_ws/
 ├── src/robot_controlled_navigation_skills/ # 一次性批准的固定 Nav2 动作适配器
 ├── src/robot_llm_gateway/     # MiMo plan-only Gateway、Prompt Registry 与 Schema 门控
 ├── src/robot_agent_orchestrator/ # 持久化只读 Agent Loop、证据门控与父子 Trace
+├── src/robot_rag/             # 版本化来源、确定性索引、带引用检索与评测
+├── rag/                       # 冻结 corpus manifest、事实卡和检索用例
 ├── artifacts/                 # 版本化 Skill artifact file locks
 ├── skills/                    # 版本化、可评测的机器人/Agent Skill
 ├── schemas/                   # 机器可读契约
@@ -86,7 +91,6 @@ robot_agent_ws/
 
 后续包将按验收阶段加入，而不是一次性建立空框架：
 
-- `robot_rag`；
 - `robot_mcp_tools`；
 - `robot_skill_author`；
 - `safe_agent_eval`。
@@ -151,6 +155,23 @@ ros2 run robot_agent_orchestrator run_read_only_agent \
 
 循环只执行 Prompt catalog 中的只读 Skill。每个步骤仍会重新验证 ACTIVE Registry、artifact、
 Ed25519、权限、输入和结果；健康证据不安全时不会调用路径预览。
+
+构建版本化 RAG 索引并运行带引用检索：
+
+```bash
+ros2 run robot_rag rag_build
+
+ros2 run robot_rag rag_query \
+  'semantic_keepout safety_ok 为 false 是否一定已经进入水坑？' \
+  --distribution project1-v1 \
+  --top-k 3
+
+ros2 run robot_rag rag_evaluate \
+  --output-dir ~/.ros/robot_agent/rag/robotics_core_v1/evaluation
+```
+
+索引在加载时验证 source、chunk 和 canonical index hash。当前混合通道是 BM25 加 deterministic
+feature hashing，不是学习型语义 embedding；8/8 smoke 只验证最小检索与评测装置。
 
 运行冻结的抖动实验证据分析：
 

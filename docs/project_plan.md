@@ -80,6 +80,11 @@
 最低评测规模：30 个查询，覆盖正确文档、错误发行版干扰、项目一接口、TF/QoS/Lifecycle 故障
 和 Skill 选择。报告 Recall@K、版本命中率、引用正确率和接口幻觉率。
 
+当前已完成最小垂直切片：`robot_rag@0.1.0`、5 份 RAG JSON Schema、7 个版本化事实卡来源、22 个
+确定性 chunk、BM25 + feature-hash baseline、发行版 filter、hash-bound citations 和 8-case smoke
+evaluation。Smoke 为 8/8、MRR 100%、版本过滤与引用完整性 100%；该小样本只证明装置有效，尚未
+达到 30-query 质量验收，也尚未加入学习型语义 embedding 和无 RAG 对照。
+
 ## Phase 3：LLM API、Prompt Registry、MCP 与 Agent Loop
 
 交付：
