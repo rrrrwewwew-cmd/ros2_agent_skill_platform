@@ -47,6 +47,7 @@ source ~/robot_agent_ws/install/setup.bash
 - [Xiaomi MiMo plan-only LLM Gateway 与 Prompt Registry](docs/llm_gateway.md)；
 - [持久化只读 Agent Loop、证据门控与父子 Trace](docs/read_only_agent_loop.md)；
 - [版本化 RAG、引用信任链与检索评测](docs/versioned_rag.md)；
+- [官方 MCP stdio 实验诊断工具、隔离 RAG 与协议证据](docs/diagnosis_mcp.md)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
 - [第二个只读 Skill：`query_semantic_target`](skills/query_semantic_target)；
@@ -65,8 +66,9 @@ hash 和 Ed25519 发布证明的 `ACTIVE` artifact 进入固定适配器的 Skil
 `health → route preview`，两个 signed ACTIVE Skill 通过 Runtime 与证据门控执行，生成父子 Trace，
 且明确没有发送运动命令。`robot_rag@0.2.0` 已提供 13 个版本化来源、41 个确定性 chunk、
 feature-hash baseline、固定 revision 的 BGE-M3 混合检索、hash-bound citation 和 30 条
-development/holdout A/B；learned 候选已通过一次性 holdout 晋级门。下一项是只读 MCP 实验诊断
-Agent；受控导航暂不暴露给模型。
+development/holdout A/B；learned 候选已通过一次性 holdout 晋级门。五个实验诊断 MCP Tool 也已
+通过真实 stdio 协议、BGE-M3 cited retrieval、报告幂等和源日志不变验证。下一项是 MiMo 诊断
+Prompt 与强制证据顺序的 Agent Loop；受控导航暂不暴露给模型。
 
 ## 仓库结构
 
@@ -81,6 +83,7 @@ robot_agent_ws/
 ├── src/robot_llm_gateway/     # MiMo plan-only Gateway、Prompt Registry 与 Schema 门控
 ├── src/robot_agent_orchestrator/ # 持久化只读 Agent Loop、证据门控与父子 Trace
 ├── src/robot_rag/             # 版本化来源、确定性索引、带引用检索与评测
+├── src/robot_diagnosis_mcp/   # 官方 FastMCP stdio、诊断 Tool 与隔离 RAG adapter
 ├── rag/                       # 冻结 corpus manifest、事实卡和检索用例
 ├── artifacts/                 # 版本化 Skill artifact file locks
 ├── skills/                    # 版本化、可评测的机器人/Agent Skill
@@ -92,7 +95,7 @@ robot_agent_ws/
 
 后续包将按验收阶段加入，而不是一次性建立空框架：
 
-- `robot_mcp_tools`；
+- `robot_diagnosis_agent`；
 - `robot_skill_author`；
 - `safe_agent_eval`。
 
@@ -171,8 +174,9 @@ ros2 run robot_rag rag_evaluate \
   --output-dir ~/.ros/robot_agent/rag/robotics_core_v1/evaluation
 ```
 
-索引在加载时验证 source、chunk 和 canonical index hash。当前混合通道是 BM25 加 deterministic
-feature hashing，不是学习型语义 embedding；8/8 smoke 只验证最小检索与评测装置。
+索引在加载时验证 source、chunk 和 canonical index hash。deterministic feature-hash 通道保留为
+CI/回滚 baseline；固定 revision 的 BGE-M3 已通过 30-case development/holdout 晋级门，并通过
+MCP 隔离子进程返回 hash-bound citations。
 
 运行冻结的抖动实验证据分析：
 

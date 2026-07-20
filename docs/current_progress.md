@@ -7,16 +7,17 @@
 
 ## 当前结论
 
-项目二已完成确定性安全底座、真实 MiMo 接入、Prompt 评测、只读 Agent Loop 现场闭环，以及
-版本化 RAG 的学习型 embedding A/B 晋级。生产 LLM 只使用 Xiaomi MiMo；`FakeProvider` 仅服务
-无网络 CI，不是第二个 API。当前 Agent 仍只执行只读 Skill，不触发审批，也不控制机器人。下一
-主线是把已晋级的 BGE-M3 retriever 通过只读 MCP 工具接入实验日志诊断 Agent。
+项目二已完成确定性安全底座、真实 MiMo 接入、Prompt 评测、只读 Agent Loop 现场闭环、版本化
+RAG 学习型 embedding A/B 晋级，以及实验诊断 MCP 五工具真实 stdio 垂直切片。生产 LLM 只使用
+Xiaomi MiMo；`FakeProvider` 仅服务无网络 CI，不是第二个 API。当前 MCP 可完成 run 查询、hash
+检查、Python 异常分析、BGE-M3 引用检索和幂等报告，但尚未接入 MiMo 诊断专用状态机。下一主线
+是实现强制证据顺序的诊断 Agent Loop 与冻结评测。
 
 - 工作区：`/home/li/robot_agent_ws`
 - Git 分支：`feature/skill-registry-state-machine`
 - 前四个 Skill：均已签名并处于 `ACTIVE`
-- ROS 2 包：9 个
-- 当前测试基线：183 项，0 error、0 failure、0 skipped
+- ROS 2 包：10 个
+- 当前测试基线：199 项，0 error、0 failure、0 skipped
 - LLM 真实后端：Xiaomi MiMo Chat Completions
 - 当前默认 Prompt：`robot_task_planner@0.2.0`
 - Prompt canonical SHA-256：
@@ -29,6 +30,8 @@
 - `robot_agent_orchestrator@0.1.0`：13 项测试通过，含真实 Registry/签名/Runtime 集成
 - MiMo+rbot 真实只读 Agent Loop：`agent_route_live_001` 成功；两步 gate 均通过，未发送运动命令
 - `robot_rag@0.2.0`：13 来源、41 chunks、30 条 development/holdout 用例；BGE-M3 已通过晋级门
+- `robot_diagnosis_mcp@0.1.0`：五个 Tool、两份 Schema、官方 MCP 1.28.1 stdio 回归已通过
+- BGE-M3 MCP 路径：检索与报告各带 3 条 hash-bound citation，7 个源实验文件保持不变
 - 项目一与项目二仍是独立仓库；项目二仅复用项目一安装后的 ROS 2 接口
 - 当前成果仅本地保存，本检查点没有远端 push 或合并
 
@@ -163,6 +166,35 @@ Calling 是否成功。
 `docs/versioned_rag.md`；新脱敏证据位于 `evidence/rag/robotics_core_v2_bge_m3_ab.json`，旧 smoke
 和失败历史均保留。
 
+## 已完成的实验诊断 MCP 垂直切片
+
+新增第 10 个 ROS 2 包 `robot_diagnosis_mcp@0.1.0`。该包不是任意文件或 Python 后门，而是在四个
+信任根（experiment root、artifact root、RAG index、Schema directory）上配置的本地 stdio
+Server：
+
+1. `list_experiment_runs` 只列出 source hash 全部通过的 run；
+2. `inspect_experiment_run` 返回 frame/time base 与逐源 hash；
+3. `analyze_experiment_run` 调用确定性 Python，返回矩阵 hash、异常窗、控制证据和候选机制；
+4. `retrieve_robotics_knowledge` 只允许三个 distribution、top-k≤3，并返回 citation 或 abstain；
+5. `materialize_diagnosis_report` 只在独立 artifact root 幂等写 JSON/SVG/Markdown，不修改源日志。
+
+协议层使用官方 `mcp==1.28.1` 稳定线、stdio transport 和结构化输出。四个查询工具 annotation 为
+read-only/non-destructive/idempotent/closed-world；报告工具为 artifact-write/non-destructive/
+idempotent/closed-world。所有输出通过 `mcp_tool_result.schema.json`，绑定 canonical input/evidence
+SHA-256；报告再通过 `diagnosis_report_bundle.schema.json`。
+
+BGE-M3 运行在固定 Qwen Python 的无 shell 子进程，Server 不加载模型。实现保留 virtualenv Python
+符号链接，防止 `Path.resolve()` 悄悄退回系统解释器；子进程删除代理并强制 Hugging Face/
+Transformers offline，只读取固定 revision 的本地缓存。这个修复把原先 120 秒网络等待恢复为约
+6–9 秒查询。
+
+验证：包级 16/16；deterministic stdio 五工具通过且正确 abstain；BGE-M3 stdio 五工具通过，
+retrieval/report 各 3 条引用；两次运行的 7 个 source snapshot hash 均完全不变。证据位于
+`evidence/mcp/`，详细路线、命令、故障复盘和边界见 `docs/diagnosis_mcp.md`。
+
+本里程碑全工作区 10 个包已重新构建，`colcon test-result --verbose` 为 199 tests、0 errors、
+0 failures、0 skipped。
+
 ## 架构决策修正
 
 早期检查点要求先手写 `observe_and_avoid_water_risk` 和 `return_home_safely`，再接 LLM。经过架构
@@ -175,11 +207,10 @@ approval、动态前置条件和后置条件处理。
 
 ## 下次唯一主线
 
-1. 定义只读 MCP 诊断工具契约：查询实验 run、读取 Trace、运行确定性分析、检索引用和生成报告；
-2. 把晋级的 BGE-M3 retriever 封装为有界、可引用、可拒答的 MCP tool；
-3. 实现“日志查询 → 距离矩阵 → 异常窗口 → 控制关联 → evidence-backed hypothesis → 报告”的
-   有界 Agent Loop；
-4. 每个结论绑定 tool output hash、RAG source/chunk hash 和 Agent Trace；
+1. 发布诊断专用 Prompt 与允许五个 MCP Tool 的精确输入 catalog；
+2. 实现强制 `list → inspect → analyze → retrieve → report` 的持久化 Agent 状态机；
+3. 每个步骤绑定 MCP input/evidence hash、RAG source/chunk hash 和 Agent Trace；
+4. 使用 MiMo 做计划/假设表述，确定性工具继续掌握事实与计算，不让模型覆盖分析结果；
 5. 冻结正常、缺数据、恶意注入和错误因果断言评测，再与无 RAG 对照；
 6. 诊断 Agent 达标后进入 RAG-assisted Skill Author；受控导航仍不向模型开放。
 
@@ -222,6 +253,10 @@ ros2 run robot_rag rag_query \
 ros2 run robot_rag rag_evaluate \
   --manifest ~/robot_agent_ws/rag/corpora/robotics_core_v1/evals/retrieval_dev_v2.json \
   --output-dir ~/.ros/robot_agent/rag/robotics_core_v2/baseline_development
+
+# MCP 使用专用环境和 stdio；完整 baseline/BGE 参数见 docs/diagnosis_mcp.md
+PYTHONPATH=src/robot_diagnosis_mcp:src/robot_rag:src/safe_agent_core \
+  ~/robot_agent_mcp_env/bin/python -m robot_diagnosis_mcp.server_cli --help
 ```
 
 该现场命令已经通过；重复运行必须更换 `run-id` 与 `trace-id`。输出不应出现 API key，且路径预览

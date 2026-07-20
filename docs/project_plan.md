@@ -104,6 +104,11 @@ Agent 中连同引用忠实度和无证据因果断言率一起评测。
 验收：Agent 的每个结论能追溯到 Trace、工具输出和 RAG source id；MCP 不能绕过 Skill Registry、
 审批和 ROS 权限；达到步骤、工具调用或时间上限时必须终止并保存可 Replay Trace。
 
+当前已完成 Phase 3 的前半段：MiMo plan-only Gateway、Prompt Registry、只读机器人 Agent Loop，
+以及 `robot_diagnosis_mcp@0.1.0` 五工具 stdio 垂直切片。MCP 已在 deterministic abstention 和
+BGE-M3 cited retrieval 两条路径通过真实协议，源日志保持不变。尚未完成的是 MiMo 诊断专用 Prompt、
+强制证据顺序的诊断状态机，以及正常/缺数据/注入/错误因果断言和无 RAG A/B 评测。
+
 ## Phase 4：受控 Skill 自动编写
 
 交付：

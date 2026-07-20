@@ -1,0 +1,102 @@
+{
+  "anyio_version": "4.14.2",
+  "calls": {
+    "analyze_experiment_run": {
+      "citation_count": 0,
+      "evidence_sha256": "6edf57e43f644e61598f9c527188bbe977d4f3a20abe2f3bf8555508cfba1fab",
+      "input_sha256": "33a44ddda499dba91635ff413ac15593722540b898c413d659733c17035445b6",
+      "safety_class": "read_only"
+    },
+    "inspect_experiment_run": {
+      "citation_count": 0,
+      "evidence_sha256": "7de8411139c328da0d1bcb484a45fad933571435594e20f89ab4c1bfd0d8145d",
+      "input_sha256": "33a44ddda499dba91635ff413ac15593722540b898c413d659733c17035445b6",
+      "safety_class": "read_only"
+    },
+    "list_experiment_runs": {
+      "citation_count": 0,
+      "evidence_sha256": "9f89e48d3b78dae91b054d7cc8e3d045e45643706094c2feb77abf96a91905d9",
+      "input_sha256": "44136fa355b3678a1146ad16f7e8649e94fb4fc21fe77e8310c060f61caaff8a",
+      "safety_class": "read_only"
+    },
+    "materialize_diagnosis_report": {
+      "citation_count": 0,
+      "evidence_sha256": "01b3e1a8cb447232bfb4ac5cb16c594222b913a2795d48448fc90c522be5edd2",
+      "input_sha256": "c324c69da1e0ddd365e17721ae0c786684d3050bc90e88419e2bf064bd1ecad0",
+      "safety_class": "artifact_write"
+    },
+    "retrieve_robotics_knowledge": {
+      "citation_count": 0,
+      "evidence_sha256": "9415f9b6c802c1e7ded96e0a4824901b8f8f67160a1d6e23174c2860d12904a2",
+      "input_sha256": "29f9fd7007c1b90bfccfabdfd3ae9241d14070766fff37b2911dd7f92c7874cd",
+      "safety_class": "read_only"
+    }
+  },
+  "mcp_sdk_version": "1.28.1",
+  "protocol_version": "2025-11-25",
+  "report_artifact_directory": "jitter_demo_001/78ef4380092d46ab",
+  "report_artifact_hashes": {
+    "analysis_json": "68aad9f4b0afe59491175c64120177321a9d5e19778f6674ebf18af1452bca82",
+    "diagnosis_bundle": "e74033680e1a245e45493b9578fab8e023757b526d2f25f8254efdf58a09e32a",
+    "motion_svg": "fd9f3928d2371065992d241b2d83b55842d275557b7eeef7772346a979c88878",
+    "report_markdown": "d5e64aa0d2ba0edc22e423e9dc369000f91f1dd0a4ccbc392da1304b78e43dbf",
+    "trajectory_svg": "3703cd26bfc6ed14fd82e3dfb31d22cee1c206040b34642cc425a2759d625bec"
+  },
+  "schema_version": 1,
+  "server": {
+    "icons": null,
+    "name": "robot-experiment-diagnosis",
+    "title": null,
+    "version": "1.28.1",
+    "websiteUrl": null
+  },
+  "source_file_count": 7,
+  "source_files_unchanged": true,
+  "source_snapshot_sha256": "44dd2af42442c1efa08c1b8edc97a274589f262bf586bc4c8bc18229a4b4f741",
+  "status": "passed",
+  "tool_annotations": {
+    "analyze_experiment_run": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": null
+    },
+    "inspect_experiment_run": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": null
+    },
+    "list_experiment_runs": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": null
+    },
+    "materialize_diagnosis_report": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": false,
+      "title": null
+    },
+    "retrieve_robotics_knowledge": {
+      "destructiveHint": false,
+      "idempotentHint": true,
+      "openWorldHint": false,
+      "readOnlyHint": true,
+      "title": null
+    }
+  },
+  "tool_names": [
+    "list_experiment_runs",
+    "inspect_experiment_run",
+    "analyze_experiment_run",
+    "retrieve_robotics_knowledge",
+    "materialize_diagnosis_report"
+  ],
+  "transport": "stdio"
+}
