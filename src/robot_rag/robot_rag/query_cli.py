@@ -18,6 +18,8 @@ def _parser():
     parser.add_argument('--distribution')
     parser.add_argument('--product')
     parser.add_argument('--source-type')
+    parser.add_argument('--allow-model-download', action='store_true')
+    parser.add_argument('--embedding-device')
     return parser
 
 
@@ -38,6 +40,8 @@ def main(argv=None):
             args.query,
             top_k=args.top_k,
             filters=filters,
+            allow_model_download=args.allow_model_download,
+            embedding_device=args.embedding_device,
         )
     except RagError as error:
         print(json.dumps({

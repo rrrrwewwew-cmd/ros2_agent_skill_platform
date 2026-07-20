@@ -4,9 +4,9 @@ import json
 from pathlib import Path
 
 from robot_rag.chunking import chunk_markdown
+from robot_rag.embedding import create_embedder
 from robot_rag.util import (
     canonical_sha256,
-    feature_hash_vector,
     RagError,
     sha256_bytes,
     sha256_text,
@@ -55,11 +55,54 @@ def load_manifest(path, schema_dir=None):
     return manifest_path, manifest
 
 
-def build_index(manifest_path, output_path=None, schema_dir=None):
+def load_embedding_profile(path, manifest_path, schema_dir=None):
+    """Load a learned embedding profile bound to exact manifest bytes."""
+    profile_path = Path(path).expanduser().resolve()
+    profile = _read_json(profile_path, 'RAG embedding profile')
+    validate_document(profile, 'rag_embedding_profile', schema_dir)
+    actual_manifest_hash = sha256_bytes(Path(manifest_path).read_bytes())
+    if profile['base_manifest_sha256'] != actual_manifest_hash:
+        raise RagError(
+            'embedding profile base_manifest_sha256 does not match '
+            'the selected source manifest'
+        )
+    return profile_path, profile
+
+
+def build_index(
+    manifest_path,
+    output_path=None,
+    schema_dir=None,
+    embedder=None,
+    embedding_profile_path=None,
+    allow_model_download=False,
+    embedding_device=None,
+):
     """Build a deterministic JSON index from one verified corpus manifest."""
     path, manifest = load_manifest(manifest_path, schema_dir)
     config = manifest['chunking']
-    dimensions = manifest['embedding']['dimensions']
+    profile_id = 'manifest_default'
+    embedding_config = manifest['embedding']
+    retrieval_policy = manifest['retrieval_policy']
+    if embedding_profile_path is not None:
+        _, profile = load_embedding_profile(
+            embedding_profile_path,
+            path,
+            schema_dir,
+        )
+        profile_id = profile['profile_id']
+        embedding_config = profile['embedding']
+        retrieval_policy = profile['retrieval_policy']
+    dimensions = embedding_config['dimensions']
+    encoder = embedder or create_embedder(
+        embedding_config,
+        allow_download=allow_model_download,
+        device=embedding_device,
+    )
+    if encoder.provider != embedding_config['provider']:
+        raise RagError('injected embedder does not match manifest provider')
+    if encoder.dimensions != dimensions:
+        raise RagError('injected embedder does not match manifest dimensions')
     chunks = []
     for source in manifest['sources']:
         content_path = path.parent / source['content_file']
@@ -85,8 +128,19 @@ def build_index(manifest_path, output_path=None, schema_dir=None):
                 'text': text,
                 'text_sha256': sha256_text(text),
                 'terms': tokenize(text),
-                'vector': feature_hash_vector(text, dimensions),
             })
+    vector_inputs = [
+        f"{chunk['heading']}\n{chunk['text']}" for chunk in chunks
+    ]
+    vectors = encoder.encode(vector_inputs)
+    if len(vectors) != len(chunks):
+        raise RagError('embedding provider returned the wrong vector count')
+    for chunk, vector in zip(chunks, vectors):
+        if len(vector) != dimensions:
+            raise RagError(
+                f"embedding size mismatch for {chunk['chunk_id']}"
+            )
+        chunk['vector'] = vector
     index = {
         'schema_version': 1,
         'corpus_id': manifest['corpus_id'],
@@ -96,8 +150,11 @@ def build_index(manifest_path, output_path=None, schema_dir=None):
             'splitter': config['splitter'],
             'max_terms': config['max_terms'],
             'overlap_terms': config['overlap_terms'],
-            'embedding_provider': manifest['embedding']['provider'],
+            'embedding_provider': embedding_config['provider'],
             'embedding_dimensions': dimensions,
+            'embedding_config': embedding_config,
+            'embedding_profile_id': profile_id,
+            'retrieval_policy': retrieval_policy,
         },
         'chunks': chunks,
     }
@@ -121,6 +178,19 @@ def load_index(path, schema_dir=None):
             f'index content hash mismatch: expected {claimed}, got {actual}'
         )
     dimensions = index['build_config']['embedding_dimensions']
+    embedding_config = index['build_config']['embedding_config']
+    if index['build_config']['embedding_provider'] != (
+        embedding_config['provider']
+    ):
+        raise RagError('index embedding provider metadata is inconsistent')
+    if dimensions != embedding_config['dimensions']:
+        raise RagError('index embedding dimensions metadata is inconsistent')
+    retrieval_policy = index['build_config']['retrieval_policy']
+    if abs(
+        retrieval_policy['bm25_weight'] +
+        retrieval_policy['embedding_weight'] - 1.0
+    ) > 1e-9:
+        raise RagError('index retrieval policy weights must sum to 1.0')
     chunk_ids = set()
     for chunk in index['chunks']:
         if chunk['chunk_id'] in chunk_ids:

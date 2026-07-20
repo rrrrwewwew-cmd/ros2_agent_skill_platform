@@ -11,6 +11,7 @@
     "description",
     "chunking",
     "embedding",
+    "retrieval_policy",
     "sources"
   ],
   "properties": {
@@ -33,10 +34,31 @@
       "additionalProperties": false,
       "required": ["provider", "dimensions"],
       "properties": {
-        "provider": {"const": "feature_hash_v1"},
-        "dimensions": {"type": "integer", "minimum": 64, "maximum": 2048}
-      }
+        "provider": {"enum": ["feature_hash_v1", "bge_m3_transformers_v1"]},
+        "dimensions": {"type": "integer", "minimum": 64, "maximum": 2048},
+        "model_id": {"type": "string", "minLength": 1, "maxLength": 200},
+        "model_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "normalize": {"type": "boolean"},
+        "pooling": {"enum": ["cls"]},
+        "max_length": {"type": "integer", "minimum": 32, "maximum": 8192},
+        "batch_size": {"type": "integer", "minimum": 1, "maximum": 128},
+        "vector_precision_decimals": {"type": "integer", "minimum": 4, "maximum": 12}
+      },
+      "allOf": [
+        {
+          "if": {"properties": {"provider": {"const": "bge_m3_transformers_v1"}}},
+          "then": {
+            "required": ["model_id", "model_revision", "normalize", "pooling", "max_length", "batch_size", "vector_precision_decimals"],
+            "properties": {
+              "dimensions": {"const": 1024},
+              "normalize": {"const": true},
+              "pooling": {"const": "cls"}
+            }
+          }
+        }
+      ]
     },
+    "retrieval_policy": {"$ref": "#/$defs/retrieval_policy"},
     "sources": {
       "type": "array",
       "minItems": 1,
@@ -65,6 +87,8 @@
               "official_documentation",
               "project_interface",
               "skill_contract",
+              "agent_contract",
+              "evaluation_contract",
               "evaluation_distractor"
             ]
           },
@@ -87,6 +111,22 @@
           },
           "retrieved_at": {"type": "string", "format": "date"}
         }
+      }
+    }
+  },
+  "$defs": {
+    "retrieval_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bm25_weight", "embedding_weight", "minimum_score", "minimum_embedding_score", "bm25_saturation"],
+      "properties": {
+        "bm25_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "embedding_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "minimum_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "minimum_embedding_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "bm25_saturation": {"type": "number", "exclusiveMinimum": 0},
+        "require_embedding_gate": {"type": "boolean"},
+        "reject_unknown_identifiers": {"type": "boolean"}
       }
     }
   }

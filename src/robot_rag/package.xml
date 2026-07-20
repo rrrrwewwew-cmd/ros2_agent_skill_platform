@@ -1,8 +1,8 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>robot_rag</name>
-  <version>0.1.0</version>
-  <description>Versioned, cited and reproducibly evaluated RAG retrieval for the governed robot Agent.</description>
+  <version>0.2.0</version>
+  <description>Versioned hybrid RAG with learned multilingual embeddings, abstention and reproducible A/B evaluation.</description>
   <maintainer email="maintainer@example.com">rrrrwewwew-cmd</maintainer>
   <license>MIT</license>
 

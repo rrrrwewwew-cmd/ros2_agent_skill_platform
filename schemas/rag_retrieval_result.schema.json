@@ -12,6 +12,9 @@
     "corpus_version",
     "index_content_sha256",
     "retrieval_config",
+    "abstained",
+    "abstention_reason",
+    "unsupported_identifiers",
     "hits"
   ],
   "properties": {
@@ -32,13 +35,26 @@
     "retrieval_config": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["algorithm", "bm25_weight", "feature_hash_weight", "top_k"],
+      "required": ["algorithm", "bm25_weight", "embedding_weight", "embedding_provider", "minimum_score", "minimum_embedding_score", "bm25_saturation", "require_embedding_gate", "reject_unknown_identifiers", "top_k"],
       "properties": {
-        "algorithm": {"const": "bm25_feature_hash_v1"},
+        "algorithm": {"const": "bm25_embedding_abstention_v2"},
         "bm25_weight": {"type": "number", "minimum": 0, "maximum": 1},
-        "feature_hash_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "embedding_weight": {"type": "number", "minimum": 0, "maximum": 1},
+        "embedding_provider": {"enum": ["feature_hash_v1", "bge_m3_transformers_v1"]},
+        "minimum_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "minimum_embedding_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "bm25_saturation": {"type": "number", "exclusiveMinimum": 0},
+        "require_embedding_gate": {"type": "boolean"},
+        "reject_unknown_identifiers": {"type": "boolean"},
         "top_k": {"type": "integer", "minimum": 1, "maximum": 10}
       }
+    },
+    "abstained": {"type": "boolean"},
+    "abstention_reason": {"type": ["string", "null"]},
+    "unsupported_identifiers": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": {"type": "string"}
     },
     "hits": {
       "type": "array",
@@ -46,11 +62,12 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": [
-          "rank",
-          "score",
-          "bm25_score",
-          "feature_hash_score",
+          "required": [
+            "rank",
+            "score",
+            "bm25_raw_score",
+            "bm25_score",
+            "embedding_score",
           "chunk_id",
           "heading",
           "text",
@@ -59,8 +76,9 @@
         "properties": {
           "rank": {"type": "integer", "minimum": 1},
           "score": {"type": "number"},
+          "bm25_raw_score": {"type": "number", "minimum": 0},
           "bm25_score": {"type": "number"},
-          "feature_hash_score": {"type": "number"},
+          "embedding_score": {"type": "number"},
           "chunk_id": {"type": "string"},
           "heading": {"type": "string"},
           "text": {"type": "string"},

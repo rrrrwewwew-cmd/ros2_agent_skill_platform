@@ -34,12 +34,15 @@
     "metrics": {
       "type": "object",
       "additionalProperties": false,
-      "required": ["recall_at_k", "mean_reciprocal_rank", "version_filter_accuracy", "citation_integrity_rate"],
+      "required": ["recall_at_k", "mean_reciprocal_rank", "version_filter_accuracy", "citation_integrity_rate", "answerability_accuracy", "no_answer_accuracy", "interface_hallucination_rate"],
       "properties": {
         "recall_at_k": {"type": "number", "minimum": 0, "maximum": 1},
         "mean_reciprocal_rank": {"type": "number", "minimum": 0, "maximum": 1},
         "version_filter_accuracy": {"type": "number", "minimum": 0, "maximum": 1},
-        "citation_integrity_rate": {"type": "number", "minimum": 0, "maximum": 1}
+        "citation_integrity_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "answerability_accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "no_answer_accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "interface_hallucination_rate": {"type": "number", "minimum": 0, "maximum": 1}
       }
     },
     "case_results": {
@@ -47,10 +50,13 @@
       "items": {
         "type": "object",
         "additionalProperties": false,
-        "required": ["case_id", "passed", "retrieved_source_ids", "first_relevant_rank", "citation_integrity"],
+        "required": ["case_id", "passed", "expected_answerable", "predicted_answerable", "answerability_correct", "retrieved_source_ids", "first_relevant_rank", "citation_integrity"],
         "properties": {
           "case_id": {"type": "string"},
           "passed": {"type": "boolean"},
+          "expected_answerable": {"type": "boolean"},
+          "predicted_answerable": {"type": "boolean"},
+          "answerability_correct": {"type": "boolean"},
           "retrieved_source_ids": {"type": "array", "items": {"type": "string"}},
           "first_relevant_rank": {"type": ["integer", "null"], "minimum": 1},
           "citation_integrity": {"type": "boolean"}

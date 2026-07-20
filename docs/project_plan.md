@@ -80,10 +80,15 @@
 最低评测规模：30 个查询，覆盖正确文档、错误发行版干扰、项目一接口、TF/QoS/Lifecycle 故障
 和 Skill 选择。报告 Recall@K、版本命中率、引用正确率和接口幻觉率。
 
-当前已完成最小垂直切片：`robot_rag@0.1.0`、5 份 RAG JSON Schema、7 个版本化事实卡来源、22 个
-确定性 chunk、BM25 + feature-hash baseline、发行版 filter、hash-bound citations 和 8-case smoke
-evaluation。Smoke 为 8/8、MRR 100%、版本过滤与引用完整性 100%；该小样本只证明装置有效，尚未
-达到 30-query 质量验收，也尚未加入学习型语义 embedding 和无 RAG 对照。
+当前 Phase 2 的检索晋级切片已完成：`robot_rag@0.2.0`、13 个版本化来源、41 个 chunk、
+feature-hash baseline、固定 revision 的 BGE-M3 dense provider、BM25+dense 混合排序、双分数门、
+unknown identifier 拒答、hash-bound citations 和 A/B 评测器。20-case development 上两者均为
+20/20；从未运行的 10-case holdout v3 只运行一次，BGE-M3 为 10/10、baseline 为 8/10，候选
+no-answer 100%、接口幻觉 0。首次 learned v1 的失败结果仍保留，已揭盲数据已降级为回归集。
+
+这满足当前 30-query 检索门和 learned-vs-deterministic A/B，但 10 条 holdout 仍是小样本，不能
+外推为生产准确率。Phase 2 尚缺“无 RAG 对照下的最终回答质量”；该对照将在 Phase 3 的 MCP 诊断
+Agent 中连同引用忠实度和无证据因果断言率一起评测。
 
 ## Phase 3：LLM API、Prompt Registry、MCP 与 Agent Loop
 

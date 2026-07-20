@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/rag_ab_evaluation_summary.schema.json",
+  "title": "RAG baseline versus candidate evaluation summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "comparison_id", "evaluation_id", "baseline", "candidate", "metric_delta", "acceptance", "winner", "status"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "comparison_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,63}$"},
+    "evaluation_id": {"type": "string"},
+    "baseline": {"$ref": "#/$defs/arm"},
+    "candidate": {"$ref": "#/$defs/arm"},
+    "metric_delta": {
+      "type": "object",
+      "additionalProperties": {"type": "number"}
+    },
+    "acceptance": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["passed", "checks"],
+      "properties": {
+        "passed": {"type": "boolean"},
+        "checks": {
+          "type": "object",
+          "additionalProperties": {"type": "boolean"}
+        }
+      }
+    },
+    "winner": {"enum": ["baseline", "candidate", "tie"]},
+    "status": {"enum": ["complete", "failed"]}
+  },
+  "$defs": {
+    "arm": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["embedding_provider", "embedding_profile_id", "index_content_sha256", "counts", "metrics"],
+      "properties": {
+        "embedding_provider": {"type": "string"},
+        "embedding_profile_id": {"type": "string"},
+        "index_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "counts": {"type": "object"},
+        "metrics": {"type": "object"}
+      }
+    }
+  }
+}

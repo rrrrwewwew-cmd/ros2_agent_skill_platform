@@ -25,7 +25,7 @@ for path in sorted(corpus_root.rglob('*')):
 
 setup(
     name=package_name,
-    version='0.1.0',
+    version='0.2.0',
     packages=find_packages(exclude=['test']),
     data_files=[
         ('share/ament_index/resource_index/packages',
@@ -39,8 +39,8 @@ setup(
     maintainer='rrrrwewwew-cmd',
     maintainer_email='maintainer@example.com',
     description=(
-        'Versioned, cited and reproducibly evaluated RAG retrieval for the '
-        'governed robot Agent.'
+        'Versioned hybrid RAG with learned multilingual embeddings, '
+        'abstention and reproducible A/B evaluation.'
     ),
     license='MIT',
     tests_require=['pytest'],
@@ -49,6 +49,7 @@ setup(
             'rag_build = robot_rag.build_cli:main',
             'rag_query = robot_rag.query_cli:main',
             'rag_evaluate = robot_rag.evaluate_cli:main',
+            'rag_ab_evaluate = robot_rag.ab_evaluate_cli:main',
         ],
     },
 )

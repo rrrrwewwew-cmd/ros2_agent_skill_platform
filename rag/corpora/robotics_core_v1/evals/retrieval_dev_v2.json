@@ -1,0 +1,187 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "robotics_core_retrieval_dev_v2",
+  "description": "Frozen 20-query development split for multilingual relevance, version isolation, citations and no-answer calibration.",
+  "cases": [
+    {
+      "case_id": "dev_qos_sensor_best_effort",
+      "query": "Jazzy 中相机和激光雷达为什么通常使用 best effort QoS？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.qos"],
+      "forbidden_source_ids": ["ros2.humble.qos_distractor"]
+    },
+    {
+      "case_id": "dev_qos_transient_local",
+      "query": "后加入的订阅者需要收到最近一次状态，durability 应该如何设置？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.qos"],
+      "forbidden_source_ids": ["ros2.humble.qos_distractor"]
+    },
+    {
+      "case_id": "dev_tf_past_extrapolation",
+      "query": "tf2 报 extrapolation into the past 时，为什么不能直接拿 latest transform 代替观测时间？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.tf2_time"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_sim_clock_old_data",
+      "query": "Gazebo 重启后出现 TF_OLD_DATA，应该排查 use_sim_time、clock 还是残留仿真进程？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.tf2_time"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_interface_continuous_stream",
+      "query": "连续发布 camera、scan 和 odometry 数据应该选择 Topic、Service 还是 Action？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.interfaces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_interface_cancel_feedback",
+      "query": "一个耗时任务需要持续 feedback 并支持 cancel，ROS 2 应使用哪种接口？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.interfaces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_keepout_global_local",
+      "query": "为何语义禁区需要同时进入 Nav2 global 和 local costmap？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.keepout_filters"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_keepout_inflation_clearance",
+      "query": "禁区中心栅格是 lethal 是否已经证明机器人 footprint 有足够安全净空？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.keepout_filters"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_lifecycle_active",
+      "query": "Nav2 process started 后还要用什么 lifecycle 证据确认导航栈真正可用？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.lifecycle_manager"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_lifecycle_bond",
+      "query": "Nav2 Lifecycle Manager 如何利用 bond 发现服务器失联并执行安全关闭？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.lifecycle_manager"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_compute_path_no_motion",
+      "query": "调用 ComputePathToPose 成功是否代表小车已经导航到目标？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.planning_actions"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_compute_path_contract",
+      "query": "ComputePathToPose 的 goal、use_start、planner_id 和结果 path 分别是什么？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.planning_actions"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_project1_safety_false",
+      "query": "项目一 safety_ok=false 除了进入水坑外还可能表示哪些 unknown 状态？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project1.semantic_keepout_interfaces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_project1_grounded_roles",
+      "query": "水坑级联里 GroundingDINO、确定性 RGB-D 门控和 Qwen-VL 各自负责什么？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project1.grounded_vlm_evaluation"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_project2_motion_approval",
+      "query": "navigate_to_approved_pose 为什么必须绑定一次性 approval、路径 hash 和语义地图 hash？",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project2.skill_governance"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_project2_prompt_gate",
+      "query": "MiMo 生成计划后，本地为什么还要验证 prompt SHA、Skill artifact hash 和输入 Schema？",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project2.llm_gateway"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_no_answer_battery_soc",
+      "query": "该项目规定的电池 SOC 低电量自动返航阈值具体是多少？",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_no_answer_micro_ros_baud",
+      "query": "micro-ROS 串口 transport 的默认 baud rate 和 MCU firmware 参数是什么？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_no_answer_slam_loop_closure",
+      "query": "slam_toolbox 回环检测 scan matcher 的数值阈值应该配置成多少？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "dev_no_answer_lidar_calibration",
+      "query": "项目一使用的激光雷达厂家标定文件序列号与角度补偿表在哪里？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    }
+  ]
+}

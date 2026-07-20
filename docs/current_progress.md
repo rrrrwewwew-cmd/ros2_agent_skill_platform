@@ -8,15 +8,15 @@
 ## 当前结论
 
 项目二已完成确定性安全底座、真实 MiMo 接入、Prompt 评测、只读 Agent Loop 现场闭环，以及
-版本化 RAG 的第一个可复算垂直切片。生产 LLM 只使用 Xiaomi MiMo；`FakeProvider` 仅服务无网络
-CI，不是第二个 API。当前 Agent 仍只执行只读 Skill，不触发审批，也不控制机器人。下一主线是把
-RAG smoke 扩展为 30+ development/holdout 评测，并加入锁定版本的学习型 embedding A/B。
+版本化 RAG 的学习型 embedding A/B 晋级。生产 LLM 只使用 Xiaomi MiMo；`FakeProvider` 仅服务
+无网络 CI，不是第二个 API。当前 Agent 仍只执行只读 Skill，不触发审批，也不控制机器人。下一
+主线是把已晋级的 BGE-M3 retriever 通过只读 MCP 工具接入实验日志诊断 Agent。
 
 - 工作区：`/home/li/robot_agent_ws`
 - Git 分支：`feature/skill-registry-state-machine`
 - 前四个 Skill：均已签名并处于 `ACTIVE`
 - ROS 2 包：9 个
-- 当前测试基线：172 项，0 error、0 failure、0 skipped
+- 当前测试基线：183 项，0 error、0 failure、0 skipped
 - LLM 真实后端：Xiaomi MiMo Chat Completions
 - 当前默认 Prompt：`robot_task_planner@0.2.0`
 - Prompt canonical SHA-256：
@@ -28,7 +28,7 @@ RAG smoke 扩展为 30+ development/holdout 评测，并加入锁定版本的学
 - v0.2.0 MiMo 路径定向回归：1/1 PASS；Skill 选择和四项输入全部正确
 - `robot_agent_orchestrator@0.1.0`：13 项测试通过，含真实 Registry/签名/Runtime 集成
 - MiMo+rbot 真实只读 Agent Loop：`agent_route_live_001` 成功；两步 gate 均通过，未发送运动命令
-- `robot_rag@0.1.0`：7 来源、22 chunks、8/8 smoke；版本过滤和 hash-bound citation 通过
+- `robot_rag@0.2.0`：13 来源、41 chunks、30 条 development/holdout 用例；BGE-M3 已通过晋级门
 - 项目一与项目二仍是独立仓库；项目二仅复用项目一安装后的 ROS 2 接口
 - 当前成果仅本地保存，本检查点没有远端 push 或合并
 
@@ -135,23 +135,33 @@ Calling 是否成功。
 因此该证据覆盖 Nav2、TF 和 Keepout，但没有逐 topic 证明传感器新鲜度。后续安全执行评测前应把
 关键传感器集合变成可信运行配置或强制输入，不能依赖 `expected_evidence` 自然语言字段。
 
-## 已完成的版本化 RAG 最小切片
+## 已完成的版本化 RAG A/B
 
-新增第 9 个 ROS 2 包 `robot_rag@0.1.0`：
+第 9 个 ROS 2 包已升级为 `robot_rag@0.2.0`：
 
-1. 5 份机器契约覆盖 source manifest、index、retrieval result、evaluation manifest 和 summary；
-2. `robotics_core@1.0.0` 含 7 个来源和 22 个 chunk，包括一个 Humble 错版本干扰源；
-3. manifest 强制 source id、version、distribution、canonical URL 和原始内容 SHA-256；
-4. 内容路径限制在 corpus 根目录，路径穿越、字节变化、重复 source id 全部拒绝；
-5. Markdown heading + sentence window 确定性分块，chunk 和完整 index 均有 SHA-256；
-6. bilingual BM25 + `feature_hash_v1` 两通道检索，支持 distribution/product/source type filter；
-7. 每个 hit 携带 source/version/content/chunk hash 和 canonical URL；
-8. 8-case 安装态 smoke 为 8/8，Recall@K、MRR、版本过滤、引用完整性均为 100%；
-9. 新包 16 项测试通过，全仓 172 项测试通过。
+1. `robotics_core@1.1.0` 含 13 个来源、41 个确定性 chunk，覆盖 ROS 2 Jazzy/Nav2、项目一接口、
+   项目二 Gateway/Trace/诊断契约和一个 Humble 错版本干扰源；
+2. manifest/source/chunk/index/profile 均由 SHA-256 绑定，路径穿越、字节变化、provider/维度冲突
+   和索引篡改全部 fail closed；
+3. 保留 bilingual BM25 + `feature_hash_v1` 作为无模型 CI/回滚 baseline；
+4. 新增固定 revision 的 `BAAI/bge-m3` dense provider：1024 维、CLS pooling、L2 normalize；
+5. learned policy 使用 BM25+dense、combined/embedding 双门和 unknown identifier 拒答；
+6. 每个结果带原始/归一化 BM25、embedding、combined score 和 hash-bound citation；
+7. 评测覆盖 Recall@K、MRR、版本过滤、引用完整性、answerability、no-answer 和接口幻觉；
+8. development v2：baseline 与候选均 20/20；
+9. 首次 learned v1 在旧 v2 评测中 8/10，失败证据保留，数据揭盲后降级为回归集；
+10. learned v2 在揭盲回归集 10/10，在从未运行的 holdout v3 一次完成 10/10；baseline 在两组
+    10-case 集均为 8/10；
+11. holdout v3 候选 Recall@K/MRR/no-answer/版本/引用均为 100%，接口幻觉 0；baseline 的
+    no-answer 为 50%、接口幻觉为 50%；
+12. learned provider 是隔离的本地可选依赖，尚未接入 MCP/Agent 生产路径。
 
-`feature_hash_v1` 是可重复 lexical feature baseline，不是学习型 semantic embedding。8-case 也只是
-验证数据链和评测器，不能作为最终 RAG 泛化结论。设计见 `docs/versioned_rag.md`，脱敏证据位于
-`evidence/rag/robotics_core_v1_smoke.json`。
+安装态 `robot_rag` 为 27 项测试通过；全仓 9 个包共 183 项测试通过，0 error、0 failure、
+0 skipped。
+
+10 条 holdout 的 100% 只能说明这组冻结样本通过，不能宣称开放世界准确率。设计与复算命令见
+`docs/versioned_rag.md`；新脱敏证据位于 `evidence/rag/robotics_core_v2_bge_m3_ab.json`，旧 smoke
+和失败历史均保留。
 
 ## 架构决策修正
 
@@ -165,12 +175,13 @@ approval、动态前置条件和后置条件处理。
 
 ## 下次唯一主线
 
-1. 先把检索评测扩展到至少 30 个冻结查询，并拆分 development 与 holdout；
-2. 增加 no-answer、错误发行版、TF/QoS/Lifecycle、项目一接口、Skill 选择和代码编写用例；
-3. 加入版本锁定的多语言学习型 embedding provider，与当前 deterministic baseline 做同集 A/B；
-4. 报告 Recall@K、MRR、版本命中、引用正确率、接口幻觉率和 no-answer 准确率；
-5. 达标后才把 RAG 接入 MCP 实验诊断 Agent，再进入 RAG-assisted Skill Author；
-6. 受控导航只有在传感器基线和暂停/审批/恢复状态契约完成后才向模型暴露。
+1. 定义只读 MCP 诊断工具契约：查询实验 run、读取 Trace、运行确定性分析、检索引用和生成报告；
+2. 把晋级的 BGE-M3 retriever 封装为有界、可引用、可拒答的 MCP tool；
+3. 实现“日志查询 → 距离矩阵 → 异常窗口 → 控制关联 → evidence-backed hypothesis → 报告”的
+   有界 Agent Loop；
+4. 每个结论绑定 tool output hash、RAG source/chunk hash 和 Agent Trace；
+5. 冻结正常、缺数据、恶意注入和错误因果断言评测，再与无 RAG 对照；
+6. 诊断 Agent 达标后进入 RAG-assisted Skill Author；受控导航仍不向模型开放。
 
 不要在下一步增加 DeepSeek、模型投票、自动 Provider 切换或多 Agent。
 
@@ -203,13 +214,14 @@ ros2 run robot_agent_orchestrator run_read_only_agent \
   --trace-id trace_route_live_001 \
   --output ~/.ros/robot_agent/agent_route_live_001.json
 
-# 完全离线的版本化 RAG 构建、查询和 smoke evaluation
+# 完全离线的 deterministic RAG 构建与查询；learned A/B 见 versioned_rag.md
 ros2 run robot_rag rag_build
 ros2 run robot_rag rag_query \
   'semantic_keepout safety_ok 为 false 是否一定已经进入水坑？' \
   --distribution project1-v1 --top-k 3
 ros2 run robot_rag rag_evaluate \
-  --output-dir ~/.ros/robot_agent/rag/robotics_core_v1/evaluation
+  --manifest ~/robot_agent_ws/rag/corpora/robotics_core_v1/evals/retrieval_dev_v2.json \
+  --output-dir ~/.ros/robot_agent/rag/robotics_core_v2/baseline_development
 ```
 
 该现场命令已经通过；重复运行必须更换 `run-id` 与 `trace-id`。输出不应出现 API key，且路径预览

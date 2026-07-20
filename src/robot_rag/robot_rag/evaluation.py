@@ -4,6 +4,7 @@ import csv
 import json
 from pathlib import Path
 
+from robot_rag.embedding import create_embedder
 from robot_rag.retrieval import retrieve
 from robot_rag.util import RagError, validate_document, write_json
 
@@ -37,29 +38,51 @@ def _citation_is_intact(hit, index_chunks):
     ])
 
 
-def evaluate_retrieval(index, manifest_path, output_dir=None, schema_dir=None):
+def evaluate_retrieval(
+    index,
+    manifest_path,
+    output_dir=None,
+    schema_dir=None,
+    embedder=None,
+    allow_model_download=False,
+    embedding_device=None,
+):
     """Evaluate retrieval relevance, version filtering and citation hashes."""
     manifest = _load_manifest(manifest_path, schema_dir)
+    encoder = embedder or create_embedder(
+        index['build_config']['embedding_config'],
+        allow_download=allow_model_download,
+        device=embedding_device,
+    )
     index_chunks = {chunk['chunk_id']: chunk for chunk in index['chunks']}
     results = []
     recalls = []
     reciprocal_ranks = []
     version_checks = []
     citation_checks = []
+    answerability_checks = []
+    no_answer_checks = []
+    answerable_count = 0
     for case in manifest['cases']:
         retrieval = retrieve(
             index,
             case['query'],
             top_k=case['top_k'],
             filters=case['filters'],
+            embedder=encoder,
+            allow_model_download=allow_model_download,
+            embedding_device=embedding_device,
             schema_dir=schema_dir,
         )
         source_ids = [
             hit['citation']['source_id'] for hit in retrieval['hits']
         ]
+        expected_answerable = case.get('expected_answerable', True)
+        predicted_answerable = bool(retrieval['hits'])
+        answerability_correct = expected_answerable == predicted_answerable
         expected = set(case['expected_source_ids'])
         found = expected.intersection(source_ids)
-        recall = len(found) / len(expected)
+        recall = len(found) / len(expected) if expected else 1.0
         first_rank = next((
             rank for rank, source_id in enumerate(source_ids, start=1)
             if source_id in expected
@@ -78,21 +101,35 @@ def evaluate_retrieval(index, manifest_path, output_dir=None, schema_dir=None):
             _citation_is_intact(hit, index_chunks)
             for hit in retrieval['hits']
         )
-        passed = (
-            recall == 1.0 and forbidden_absent and
-            filter_respected and citations_intact
+        relevance_passed = (
+            recall == 1.0 if expected_answerable else not source_ids
         )
+        passed = all([
+            relevance_passed,
+            answerability_correct,
+            forbidden_absent,
+            filter_respected,
+            citations_intact,
+        ])
         results.append({
             'case_id': case['case_id'],
             'passed': passed,
+            'expected_answerable': expected_answerable,
+            'predicted_answerable': predicted_answerable,
+            'answerability_correct': answerability_correct,
             'retrieved_source_ids': source_ids,
             'first_relevant_rank': first_rank,
             'citation_integrity': citations_intact,
         })
-        recalls.append(recall)
-        reciprocal_ranks.append(1.0 / first_rank if first_rank else 0.0)
+        if expected_answerable:
+            answerable_count += 1
+            recalls.append(recall)
+            reciprocal_ranks.append(1.0 / first_rank if first_rank else 0.0)
+        else:
+            no_answer_checks.append(answerability_correct)
         version_checks.append(forbidden_absent and filter_respected)
         citation_checks.append(citations_intact)
+        answerability_checks.append(answerability_correct)
     passed_count = sum(result['passed'] for result in results)
     total = len(results)
     summary = {
@@ -107,10 +144,24 @@ def evaluate_retrieval(index, manifest_path, output_dir=None, schema_dir=None):
             'failed': total - passed_count,
         },
         'metrics': {
-            'recall_at_k': sum(recalls) / total,
-            'mean_reciprocal_rank': sum(reciprocal_ranks) / total,
+            'recall_at_k': (
+                sum(recalls) / answerable_count if answerable_count else 1.0
+            ),
+            'mean_reciprocal_rank': (
+                sum(reciprocal_ranks) / answerable_count
+                if answerable_count else 1.0
+            ),
             'version_filter_accuracy': sum(version_checks) / total,
             'citation_integrity_rate': sum(citation_checks) / total,
+            'answerability_accuracy': sum(answerability_checks) / total,
+            'no_answer_accuracy': (
+                sum(no_answer_checks) / len(no_answer_checks)
+                if no_answer_checks else 1.0
+            ),
+            'interface_hallucination_rate': (
+                1.0 - sum(no_answer_checks) / len(no_answer_checks)
+                if no_answer_checks else 0.0
+            ),
         },
         'case_results': results,
         'status': 'complete' if passed_count == total else 'failed',
@@ -126,6 +177,9 @@ def evaluate_retrieval(index, manifest_path, output_dir=None, schema_dir=None):
             writer = csv.DictWriter(stream, fieldnames=[
                 'case_id',
                 'passed',
+                'expected_answerable',
+                'predicted_answerable',
+                'answerability_correct',
                 'first_relevant_rank',
                 'citation_integrity',
                 'retrieved_source_ids',

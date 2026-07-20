@@ -63,9 +63,10 @@ hash 和 Ed25519 发布证明的 `ACTIVE` artifact 进入固定适配器的 Skil
 状态建立证据和治理边界。MiMo plan-only LLM Gateway、Prompt Registry、可断点续跑评测器和
 有界只读 Agent Loop 已完成。真实 Prompt 基线、修复回归和 rbot 现场闭环均已冻结：MiMo 规划
 `health → route preview`，两个 signed ACTIVE Skill 通过 Runtime 与证据门控执行，生成父子 Trace，
-且明确没有发送运动命令。`robot_rag@0.1.0` 已提供 7 个版本化来源、22 个确定性 chunk、带 hash
-引用的本地检索和 8-case smoke evaluation。下一项扩展到 30+ development/holdout 查询，并加入
-锁定版本的学习型多语言 embedding A/B；受控导航暂不暴露给模型。
+且明确没有发送运动命令。`robot_rag@0.2.0` 已提供 13 个版本化来源、41 个确定性 chunk、
+feature-hash baseline、固定 revision 的 BGE-M3 混合检索、hash-bound citation 和 30 条
+development/holdout A/B；learned 候选已通过一次性 holdout 晋级门。下一项是只读 MCP 实验诊断
+Agent；受控导航暂不暴露给模型。
 
 ## 仓库结构
 

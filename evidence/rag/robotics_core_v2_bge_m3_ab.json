@@ -1,0 +1,113 @@
+{
+  "schema_version": 1,
+  "evidence_type": "versioned_rag_learned_embedding_ab",
+  "captured_at": "2026-07-20",
+  "package": {
+    "name": "robot_rag",
+    "version": "0.2.0"
+  },
+  "corpus": {
+    "corpus_id": "robotics_core",
+    "corpus_version": "1.1.0",
+    "source_count": 13,
+    "chunk_count": 41,
+    "manifest_sha256": "3511dfd21536fc7c52f194d70dd98ce249b4f5625f149d5d48e7076093bae4d0"
+  },
+  "baseline": {
+    "provider": "feature_hash_v1",
+    "index_content_sha256": "a401922f999188b108678eee5e82a4c4cac7beaf97c2558e6c64277e82937ba4"
+  },
+  "candidate": {
+    "provider": "bge_m3_transformers_v1",
+    "profile_id": "bge_m3_dense_v2",
+    "profile_file_sha256": "ea2aa7ffae94582c457fd9aa9e4f03e3dae7c9113f2d23efe2f4546de9c6b1b2",
+    "model_id": "BAAI/bge-m3",
+    "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "dimensions": 1024,
+    "pooling": "cls",
+    "normalized": true,
+    "index_content_sha256": "485af1d3c9219707ba65003c67d0611b01af7f0c7f940017e868e26c90b1ae51",
+    "index_file_sha256": "b7c59b5b0f09253ba3ec21ea0d4ef4a20b3c8877973027c76c1c3ca380ecf3a1",
+    "policy": {
+      "bm25_weight": 0.5,
+      "embedding_weight": 0.5,
+      "minimum_score": 0.25,
+      "minimum_embedding_score": 0.48,
+      "require_embedding_gate": true,
+      "reject_unknown_identifiers": true
+    }
+  },
+  "evaluation_history": {
+    "failed_candidate_v1": {
+      "evaluation_id": "robotics_core_retrieval_holdout_v2",
+      "status": "failed",
+      "candidate_passed": 8,
+      "candidate_total": 10,
+      "candidate_recall_at_k": 0.75,
+      "candidate_mean_reciprocal_rank": 0.75,
+      "comparison_file_sha256": "62292754bd6e5665f4ec22f5befe41d4c7b240d8e222d22299e40e9815ded3cc",
+      "disposition": "revealed_and_reclassified_as_development"
+    },
+    "development_v2": {
+      "manifest_sha256": "4ca78050bc647673470dda7aa4d104106bb2373828ba2e7cf08a664cf2566d33",
+      "candidate_passed": 20,
+      "candidate_total": 20,
+      "candidate_metrics": {
+        "recall_at_k": 1.0,
+        "mean_reciprocal_rank": 1.0,
+        "answerability_accuracy": 1.0,
+        "no_answer_accuracy": 1.0,
+        "version_filter_accuracy": 1.0,
+        "citation_integrity_rate": 1.0,
+        "interface_hallucination_rate": 0.0
+      },
+      "comparison_file_sha256": "d237b4cf4119b83e674d126d4bfe6ac45288761de171ba64bee4350bf697d79c"
+    },
+    "revealed_v2_regression": {
+      "manifest_sha256": "e65391c64db9fcd6cec15996538c8bf4f6f3bf717fb63e99ea9217cb3ae2a21a",
+      "candidate_passed": 10,
+      "candidate_total": 10,
+      "candidate_recall_at_k": 1.0,
+      "candidate_mean_reciprocal_rank": 0.9375,
+      "candidate_no_answer_accuracy": 1.0,
+      "candidate_interface_hallucination_rate": 0.0,
+      "comparison_file_sha256": "4dbc86e6abac8ab9446f7c37f28c4850c4560460db9444167bfa54d67763f72f"
+    },
+    "single_run_holdout_v3": {
+      "manifest_sha256": "7da20f783ea64f7e6e95307f2841c41e12d07a4430eb1a2dc427e2fb82f0e1a1",
+      "run_count": 1,
+      "baseline_passed": 8,
+      "candidate_passed": 10,
+      "total": 10,
+      "candidate_metrics": {
+        "recall_at_k": 1.0,
+        "mean_reciprocal_rank": 1.0,
+        "answerability_accuracy": 1.0,
+        "no_answer_accuracy": 1.0,
+        "version_filter_accuracy": 1.0,
+        "citation_integrity_rate": 1.0,
+        "interface_hallucination_rate": 0.0
+      },
+      "baseline_no_answer_accuracy": 0.5,
+      "baseline_interface_hallucination_rate": 0.5,
+      "acceptance_passed": true,
+      "winner": "candidate",
+      "comparison_file_sha256": "eb8a85b3a8448cc39d7b6a6f8ecf5190ea99412db2008f7ae5eab615f2cfbe25"
+    }
+  },
+  "quality_gate": {
+    "workspace_packages": 9,
+    "workspace_tests": 183,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0,
+    "robot_rag_tests": 27
+  },
+  "limitations": [
+    "The untouched holdout contains only ten cases; 100% is evidence for this frozen set, not a universal retrieval claim.",
+    "The first learned profile failed its revealed evaluation and is retained as negative evidence rather than hidden.",
+    "Facts are concise, versioned source cards with upstream canonical URLs, not a complete mirror of ROS documentation.",
+    "The learned provider is an optional local build/query dependency and is not yet wired into the MCP diagnosis agent."
+  ],
+  "conclusion": "The pinned BGE-M3 candidate passed the promotion gate on one untouched holdout and may advance to MCP/RAG integration while the deterministic baseline remains available for offline CI and rollback."
+}

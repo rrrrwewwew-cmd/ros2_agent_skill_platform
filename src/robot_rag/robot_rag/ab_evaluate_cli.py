@@ -1,19 +1,20 @@
-"""CLI for frozen deterministic RAG retrieval evaluation."""
+"""CLI for frozen baseline-versus-learned RAG evaluation."""
 
 import argparse
 import json
 from pathlib import Path
 
+from robot_rag.ab_evaluation import compare_retrievers
 from robot_rag.corpus import load_index
-from robot_rag.evaluation import evaluate_retrieval
-from robot_rag.paths import default_corpus_root, default_index_path
 from robot_rag.util import RagError
 
 
 def _parser():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument('--index', type=Path, default=default_index_path())
-    parser.add_argument('--manifest', type=Path)
+    parser.add_argument('--baseline-index', type=Path, required=True)
+    parser.add_argument('--candidate-index', type=Path, required=True)
+    parser.add_argument('--manifest', type=Path, required=True)
+    parser.add_argument('--comparison-id', required=True)
     parser.add_argument('--output-dir', type=Path, required=True)
     parser.add_argument('--allow-model-download', action='store_true')
     parser.add_argument('--embedding-device')
@@ -21,18 +22,15 @@ def _parser():
 
 
 def main(argv=None):
-    """Evaluate an index and persist JSON plus CSV evidence."""
+    """Run both retrieval arms and persist their evidence separately."""
     args = _parser().parse_args(argv)
-    manifest = (
-        args.manifest or
-        default_corpus_root() / 'evals/retrieval_eval_v1.json'
-    )
     try:
-        index = load_index(args.index)
-        summary = evaluate_retrieval(
-            index,
-            manifest,
-            output_dir=args.output_dir,
+        result = compare_retrievers(
+            load_index(args.baseline_index),
+            load_index(args.candidate_index),
+            args.manifest,
+            args.comparison_id,
+            args.output_dir,
             allow_model_download=args.allow_model_download,
             embedding_device=args.embedding_device,
         )
@@ -43,8 +41,8 @@ def main(argv=None):
             'error': str(error),
         }, ensure_ascii=False, indent=2))
         return 3
-    print(json.dumps(summary, ensure_ascii=False, indent=2))
-    return 0 if summary['counts']['failed'] == 0 else 4
+    print(json.dumps(result, ensure_ascii=False, indent=2))
+    return 0 if result['acceptance']['passed'] else 4
 
 
 if __name__ == '__main__':

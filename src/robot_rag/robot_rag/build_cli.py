@@ -12,7 +12,10 @@ from robot_rag.util import RagError
 def _parser():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--manifest', type=Path)
+    parser.add_argument('--embedding-profile', type=Path)
     parser.add_argument('--output', type=Path, default=default_index_path())
+    parser.add_argument('--allow-model-download', action='store_true')
+    parser.add_argument('--embedding-device')
     return parser
 
 
@@ -21,7 +24,13 @@ def main(argv=None):
     args = _parser().parse_args(argv)
     manifest = args.manifest or default_corpus_root() / 'manifest.json'
     try:
-        index = build_index(manifest, args.output)
+        index = build_index(
+            manifest,
+            args.output,
+            embedding_profile_path=args.embedding_profile,
+            allow_model_download=args.allow_model_download,
+            embedding_device=args.embedding_device,
+        )
     except RagError as error:
         print(json.dumps({
             'schema_version': 1,
@@ -35,6 +44,7 @@ def main(argv=None):
         'corpus_id': index['corpus_id'],
         'corpus_version': index['corpus_version'],
         'chunks': len(index['chunks']),
+        'embedding_provider': index['build_config']['embedding_provider'],
         'index_content_sha256': index['index_content_sha256'],
         'output': str(args.output.expanduser().resolve()),
     }, ensure_ascii=False, indent=2))
