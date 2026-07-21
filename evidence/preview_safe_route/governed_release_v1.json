@@ -1,0 +1,95 @@
+{
+  "schema_version": 1,
+  "skill": {
+    "name": "preview_safe_route",
+    "version": "0.1.0",
+    "artifact_hash": "d05c5c0aed6be59dbfb0f82c118b59099831c9c25db5c055fb56fb0326c7c7ca",
+    "implementation_commit": "09314c2"
+  },
+  "quality_gate": {
+    "colcon_tests": 95,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "governance": {
+    "approval": {
+      "decision": "APPROVED",
+      "actor": "read_only_release_policy",
+      "basis": "manifest is read_only, requires_human_approval=false, and live no-motion rbot preview passed"
+    },
+    "signature": {
+      "algorithm": "ed25519",
+      "artifact_hash_algorithm": "sha256-file-list-v1",
+      "public_key_fingerprint": "23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a",
+      "signer": "local_read_only_release_authority",
+      "private_key_mode": "0600",
+      "runtime_reverification_required": true
+    },
+    "lifecycle": [
+      "DRAFT",
+      "GENERATED",
+      "STATIC_VALIDATED",
+      "BUILT",
+      "UNIT_TESTED",
+      "SIMULATION_TESTED",
+      "HUMAN_APPROVED",
+      "SIGNED",
+      "ACTIVE"
+    ],
+    "final_state": "ACTIVE"
+  },
+  "live_simulation_validation": {
+    "world": "rbot_small_warehouse_semantic_risks_v1",
+    "goal": {
+      "frame_id": "map",
+      "x": 4.5,
+      "y": 0.0,
+      "yaw_deg": 0.0
+    },
+    "keepout_profile": "rbot_water_puddle_v2",
+    "risk_target_id": "water_puddle",
+    "risk_center_m": {
+      "x": 1.67105,
+      "y": 0.007173
+    },
+    "risk_radius_m": 0.6,
+    "global_center_cost": 254,
+    "semantic_source_content_sha256": "a568d31d7f321ced61db4b43b2161aebca0ac521c7b104a832fa7518a009f928",
+    "route": {
+      "pose_count": 173,
+      "length_m": 5.113481343331553,
+      "minimum_center_distance_m": 0.9823659811081585,
+      "minimum_clearance_m": 0.38236598110815856,
+      "intersects": false,
+      "goal_position_error_m": 0.0,
+      "path_sha256": "821dcc0ac53d084a6e88d29687ad702007e58394794602bb740c34e2afbceadf"
+    },
+    "result_state": "safe",
+    "safe_to_execute": true,
+    "motion_command_sent": false,
+    "post_preview_odom_position_m": {
+      "x": 9.591680139688102e-09,
+      "y": -3.2910046116179048e-21,
+      "z": 0.0
+    }
+  },
+  "runtime_validation": {
+    "run_id": "preview_runtime_active_001",
+    "trace_id": "trace_preview_runtime_active_001",
+    "runtime_status": "succeeded",
+    "agent_state": "SUCCEEDED",
+    "result_state": "safe",
+    "safe_to_execute": true,
+    "motion_command_sent": false,
+    "trace_events": 11
+  },
+  "security_properties": {
+    "navigate_action_permitted": false,
+    "velocity_topic_write_permitted": false,
+    "caller_supplied_ros_names": false,
+    "caller_supplied_file_paths": false,
+    "result_schema_and_semantic_postconditions_verified": true
+  },
+  "secrets_committed": false
+}

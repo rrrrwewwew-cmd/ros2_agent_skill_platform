@@ -1,0 +1,32 @@
+{
+  "schema_version": 1,
+  "skill": "preview_safe_route",
+  "skill_version": "0.1.0",
+  "cases": [
+    {
+      "id": "active_keepout_detour",
+      "expected_state": "safe",
+      "notes": "Nav2 returns a map path outside the lethal semantic zone."
+    },
+    {
+      "id": "path_crosses_keepout",
+      "expected_state": "unsafe",
+      "notes": "Line-segment geometry catches a crossing between sparse path poses."
+    },
+    {
+      "id": "keepout_filter_inactive",
+      "expected_state": "unsafe",
+      "notes": "A detour is insufficient when the global costmap does not contain the risk."
+    },
+    {
+      "id": "planner_or_costmap_missing",
+      "expected_state": "unavailable",
+      "notes": "Missing live evidence fails closed without sending motion."
+    },
+    {
+      "id": "goal_or_profile_escape",
+      "expected_state": "rejected",
+      "notes": "Manifest and adapter bounds block arbitrary ROS and filesystem inputs."
+    }
+  ]
+}

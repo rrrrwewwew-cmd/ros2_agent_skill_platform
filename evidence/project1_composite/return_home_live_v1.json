@@ -1,0 +1,41 @@
+{
+  "schema_version": 1,
+  "evidence_type": "governed_composite_skill_live_execution",
+  "recorded_on": "2026-07-21",
+  "run_id": "return_home_live_002",
+  "trace_id": "trace_return_home_live_002",
+  "trace_file": "/home/li/.ros/robot_agent/traces/return_home_live_002.jsonl",
+  "trace_sha256": "8171c155e162196bba1a93a5fef6f21d07d2439054fe68def3bc5c0da58f448b",
+  "skill": {
+    "name": "return_home_safely",
+    "version": "0.1.0",
+    "artifact_hash": "1c8968d1e246ac7ff371ee9a9985902265dfa3f6e4216863eb47b87ae00eca63"
+  },
+  "approval": {
+    "approval_id": "approval_return_home_live_002",
+    "actor": "human_li",
+    "decision": "APPROVED",
+    "invocation_hash": "0c3bfb4d1f8db548956b616dcdfc8b7a034a51f46c51320907f35bc7405122b3",
+    "consumed_by_run_id": "return_home_live_002",
+    "single_use_consumed": true
+  },
+  "result": {
+    "agent_state": "SUCCEEDED",
+    "goal_reached": true,
+    "motion_command_sent": true,
+    "route_length_m": 5.230164205465237,
+    "planned_minimum_clearance_m": 0.3649719301847032,
+    "observed_minimum_center_distance_m": 0.9244743879796019,
+    "entered_keepout": false,
+    "safety_remained_ok": true,
+    "robot_stopped": true,
+    "goal_position_error_m": 0.08468299841258192,
+    "goal_yaw_error_deg": 5.037692448516594
+  },
+  "identity": {
+    "path_sha256": "9168cc2bbece4bc00af83704827c54a9a323d145adf0fba6431a73547fce4d81",
+    "semantic_map_sha256": "b8b1f853706eaf10762288aaca02b5e00cfcf3978eb757e12adfb3c65cb8bb49",
+    "path_identity_matches": true,
+    "semantic_identity_matches": true
+  }
+}

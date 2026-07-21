@@ -1,0 +1,44 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/composite-skill-result.schema.json",
+  "title": "Evidence-gated Composite Robot Skill Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "skill", "skill_version", "state", "goal_reached", "motion_command_sent", "request", "steps", "reasons"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "skill": {"enum": ["observe_and_avoid_water_risk", "return_home_safely"]},
+    "skill_version": {"const": "0.1.0"},
+    "state": {"enum": ["succeeded", "aborted", "failed"]},
+    "goal_reached": {"type": "boolean"},
+    "motion_command_sent": {"type": "boolean"},
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["goal_x", "goal_y", "goal_yaw_deg", "keepout_profile"],
+      "properties": {
+        "goal_x": {"type": "number", "minimum": -20, "maximum": 20},
+        "goal_y": {"type": "number", "minimum": -20, "maximum": 20},
+        "goal_yaw_deg": {"type": "number", "minimum": -180, "maximum": 180},
+        "keepout_profile": {"const": "rbot_water_puddle_v2"}
+      }
+    },
+    "steps": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "name", "status", "evidence_sha256", "output"],
+        "properties": {
+          "step_id": {"type": "integer", "minimum": 1, "maximum": 5},
+          "name": {"enum": ["check_robot_health", "observe_water_risk", "query_semantic_target", "preview_safe_route", "navigate_to_approved_pose"]},
+          "status": {"enum": ["pass", "block", "fail"]},
+          "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "output": {"type": "object"}
+        }
+      }
+    },
+    "reasons": {"type": "array", "items": {"type": "string", "minLength": 1}, "uniqueItems": true}
+  }
+}

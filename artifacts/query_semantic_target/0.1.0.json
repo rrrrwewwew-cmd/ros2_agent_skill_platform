@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "query_semantic_target",
+  "version": "0.1.0",
+  "hash_algorithm": "sha256-file-list-v1",
+  "artifact_hash": "e4f6cddb16757bdee6b46163295152033a5f60a9aea7030fa5659eca2716200e",
+  "files": [
+    "skills/query_semantic_target/SKILL.md",
+    "skills/query_semantic_target/evals/evals.json",
+    "skills/query_semantic_target/schemas/semantic_target_query_result.schema.json",
+    "skills/query_semantic_target/skill-card.md",
+    "skills/query_semantic_target/skill.yaml",
+    "src/robot_semantic_skills/package.xml",
+    "src/robot_semantic_skills/setup.py",
+    "src/robot_semantic_skills/robot_semantic_skills/__init__.py",
+    "src/robot_semantic_skills/robot_semantic_skills/query.py",
+    "src/robot_semantic_skills/robot_semantic_skills/query_cli.py",
+    "src/robot_semantic_skills/test/test_query.py",
+    "src/robot_semantic_skills/test/test_result_schema.py"
+  ]
+}

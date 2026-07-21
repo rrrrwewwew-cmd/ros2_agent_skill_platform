@@ -1,0 +1,68 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/rag_evaluation_summary.schema.json",
+  "title": "RAG retrieval evaluation summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "evaluation_id",
+    "corpus_id",
+    "corpus_version",
+    "index_content_sha256",
+    "counts",
+    "metrics",
+    "case_results",
+    "status"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "evaluation_id": {"type": "string"},
+    "corpus_id": {"type": "string"},
+    "corpus_version": {"type": "string"},
+    "index_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["total", "passed", "failed"],
+      "properties": {
+        "total": {"type": "integer", "minimum": 0},
+        "passed": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["recall_at_k", "mean_reciprocal_rank", "version_filter_accuracy", "citation_integrity_rate", "answerability_accuracy", "no_answer_accuracy", "interface_hallucination_rate"],
+      "properties": {
+        "recall_at_k": {"type": "number", "minimum": 0, "maximum": 1},
+        "mean_reciprocal_rank": {"type": "number", "minimum": 0, "maximum": 1},
+        "version_filter_accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "citation_integrity_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "answerability_accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "no_answer_accuracy": {"type": "number", "minimum": 0, "maximum": 1},
+        "interface_hallucination_rate": {"type": "number", "minimum": 0, "maximum": 1}
+      }
+    },
+    "case_results": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["case_id", "passed", "expected_answerable", "predicted_answerable", "answerability_correct", "retrieved_source_ids", "first_relevant_rank", "citation_integrity"],
+        "properties": {
+          "case_id": {"type": "string"},
+          "passed": {"type": "boolean"},
+          "expected_answerable": {"type": "boolean"},
+          "predicted_answerable": {"type": "boolean"},
+          "answerability_correct": {"type": "boolean"},
+          "retrieved_source_ids": {"type": "array", "items": {"type": "string"}},
+          "first_relevant_rank": {"type": ["integer", "null"], "minimum": 1},
+          "citation_integrity": {"type": "boolean"}
+        }
+      }
+    },
+    "status": {"enum": ["complete", "failed"]}
+  }
+}

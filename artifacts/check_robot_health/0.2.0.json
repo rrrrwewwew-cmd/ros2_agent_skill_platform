@@ -1,0 +1,20 @@
+{
+  "schema_version": 1,
+  "name": "check_robot_health",
+  "version": "0.2.0",
+  "hash_algorithm": "sha256-file-list-v1",
+  "artifact_hash": "1df7df2354693c025c850368661656c6014db9636c5b19914245c8ba26914e8f",
+  "files": [
+    "schemas/robot_health_result.schema.json",
+    "skills/check_robot_health/SKILL.md",
+    "skills/check_robot_health/evals/evals.json",
+    "skills/check_robot_health/skill-card.md",
+    "skills/check_robot_health/skill.yaml",
+    "src/safe_agent_core/package.xml",
+    "src/safe_agent_core/setup.py",
+    "src/safe_agent_core/safe_agent_core/health.py",
+    "src/safe_agent_core/safe_agent_core/health_ros.py",
+    "src/safe_agent_core/test/test_health.py",
+    "src/safe_agent_core/test/test_health_ros.py"
+  ]
+}

@@ -1,0 +1,37 @@
+{
+  "schema_version": 1,
+  "skill": "query_semantic_target",
+  "skill_version": "0.1.0",
+  "cases": [
+    {
+      "id": "known_green_box",
+      "expected_state": "found",
+      "notes": "Return map-frame position, uncertainty, counts, evidence, and source hash."
+    },
+    {
+      "id": "known_water_puddle",
+      "expected_state": "found",
+      "notes": "The rbot profile resolves only its fixed approved store."
+    },
+    {
+      "id": "valid_map_missing_target",
+      "expected_state": "not_found",
+      "notes": "Absence is a valid query outcome, not fabricated evidence."
+    },
+    {
+      "id": "approved_store_missing",
+      "expected_state": "unavailable",
+      "notes": "Missing evidence remains distinct from target absence."
+    },
+    {
+      "id": "inconsistent_observation_counters",
+      "expected_state": "invalid",
+      "notes": "Malformed persistent evidence fails closed."
+    },
+    {
+      "id": "caller_supplied_path_or_alias",
+      "expected_state": "rejected",
+      "notes": "Inputs cannot expand the fixed file profiles or canonical target allowlist."
+    }
+  ]
+}

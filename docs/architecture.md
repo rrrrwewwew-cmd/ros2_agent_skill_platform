@@ -135,6 +135,12 @@ Skill manifest 声明所需 ROS topic/service/action 权限。执行进程后续
 运行时不进行开放 Web 搜索。检索结果必须包含 source id、版本、路径/URL 和片段 hash。传感器
 文本与用户输入均视为不可信数据，不能作为系统指令注入。
 
+`robot_rag@0.2.0` 已把该边界实现为 source manifest → 源文件 hash → 确定性 Markdown 分块 →
+chunk hash → version-pinned embedding profile → canonical index hash → 发行版过滤 → 混合排序与
+拒答 → 带引用检索。BM25 + feature hash 保留为零模型依赖的 CI/回滚 baseline；固定 revision 的
+BGE-M3 候选已在相同 development 和一次性 holdout 上完成 A/B。任何 learned provider、维度、
+pooling、阈值或拒答策略变化都会形成新 profile/index，而不是静默替换检索语义。
+
 ## 8. 代码生成边界
 
 生成器只能从批准模板创建 ROS 2 包，依赖项受 allowlist 控制。生成代码在 sandbox 中运行，
@@ -181,20 +187,25 @@ Skill manifest 声明所需 ROS topic/service/action 权限。执行进程后续
 确定性工具只报告观测、阈值和候选机制，不能把相关性冒充因果性。LLM 必须区分 `evidence`、
 `hypothesis` 和 `unknown`，每条原因假设都引用时间窗口、工具输出和 RAG source id。
 
-首批 MCP Tool 规划为：
+首个已实现的 MCP 垂直切片把细粒度 Python 运算封装在五个有界 Tool 后面：
 
-- `query_experiment_runs`；
-- `load_ros_timeseries`；
-- `compute_distance_matrix`；
-- `detect_anomaly_windows`；
-- `correlate_control_commands`；
-- `retrieve_failure_knowledge`；
-- `generate_experiment_report`；
-- `request_skill_approval`。
+- `list_experiment_runs`；
+- `inspect_experiment_run`；
+- `analyze_experiment_run`；
+- `retrieve_robotics_knowledge`；
+- `materialize_diagnosis_report`。
+
+距离矩阵、异常窗和控制关联仍是独立、可测试的 Python 函数，但不拆成多个允许 LLM 任意乱序调用
+的网络工具。MCP Server 使用本地 stdio、不监听端口；前四项严格只读，第五项只向独立 artifact
+root 幂等写派生文件。详细契约和协议证据见 [实验诊断 MCP 垂直切片](diagnosis_mcp.md)。
+
+`robot_diagnosis_agent@0.1.0` 已在 MCP 之上实现第二层状态机：MiMo 可以解释用户意图并填充查询，
+但本地代码强制五步顺序、工具 pin、run id、source hash、analysis hash、citation/abstention 和报告
+bundle 绑定。完整实现见 [MiMo + MCP 实验诊断 Agent](diagnosis_agent.md)。
 
 ## 11. LLM、Prompt、Agent 与状态边界
 
-- LLM Provider 使用统一接口；测试使用 deterministic fake，真实 Provider 由部署配置选择；
+- 真实 LLM Provider 固定为 Xiaomi MiMo；deterministic fake 只用于无网络 CI，不是第二个线上 API；
 - Prompt 存入 Prompt Registry，记录版本、hash、输入/输出 schema 和评测结果；
 - Tool Calling 参数必须先通过 JSON Schema，再经过权限和运行时前置条件校验；
 - Agent Loop 具有最大步骤、最大工具调用、墙钟超时、取消和失败终止条件；
@@ -206,3 +217,26 @@ Skill manifest 声明所需 ROS topic/service/action 权限。执行进程后续
 作品集 v1 的部署目标是单机可复现环境：锁定 Python/ROS 依赖，提供 ROS 2 launch、MCP Server、
 RAG 索引构建、Agent API、Registry/Trace 存储、健康检查、CI 和版本化 Release。真机安全认证、
 生产现场高可用和无人监管运行属于后续工程，不作为 v1 结论。
+
+当前统一入口为 `scripts/final_verify.sh`。它除了全量 colcon 构建/测试，还真实构建和测试六个冻结
+Skill Author 候选，并执行 42 场景确定性策略 replay。依赖和证据边界见
+[最终评测与可复现部署](final_evaluation_and_deployment.md)。
+
+## 13. Registry 持久化
+
+Phase 1 使用 SQLite 作为单机事实源，详细契约见
+[Skill Registry 与持久化 Agent 状态机](registry_state_machine.md)。Skill 的 `name + version`
+不可覆盖，审批和签名绑定 artifact hash；所有写操作使用事务和 expected-state 检查。该层只管理
+治理状态，不执行 ROS 动作。未来 MCP、LLM Planner 和 Executor 均不能绕过 Registry 直接加载
+Skill。
+
+## 14. 已实现的受控生成和复合能力
+
+Skill Author 采用“模型生成结构化 workflow、代码生成器渲染固定模板”的设计，不允许模型源码
+直接进入 sandbox。候选通过 schema、AST/权限、build、unit 和 simulation 后只到
+`SIMULATION_TESTED`；人工审批、签名和 adapter review 仍不可省略。详见
+[受治理 ROS 2 Skill Author](governed_skill_author.md)。
+
+项目一能力通过 `observe_and_avoid_water_risk` 与 `return_home_safely` 两个 controlled composite
+adapter 接入。组合层只编排既有原子 adapter，不直接发布 `/cmd_vel`，路径与语义地图 hash 在同一
+次执行中生成并传递。详见 [项目一能力接入与复合 Skill](project1_composite_skills.md)。

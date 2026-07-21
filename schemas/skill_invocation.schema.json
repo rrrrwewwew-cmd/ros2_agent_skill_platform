@@ -1,0 +1,35 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/skill-invocation.schema.json",
+  "title": "Governed Skill Invocation",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "skill_name",
+    "skill_version",
+    "artifact_hash",
+    "inputs"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{3,96}$"},
+    "trace_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{3,96}$"},
+    "skill_name": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,63}$"
+    },
+    "skill_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "approval_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{3,96}$"
+    },
+    "inputs": {"type": "object"}
+  }
+}

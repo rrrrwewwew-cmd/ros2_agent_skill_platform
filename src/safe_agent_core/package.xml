@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <package format="3">
   <name>safe_agent_core</name>
-  <version>0.2.0</version>
+  <version>0.3.0</version>
   <description>Contracts, evidence analytics, and safety primitives for ROS 2 agent skills.</description>
   <maintainer email="maintainer@example.com">rrrrwewwew-cmd</maintainer>
   <license>MIT</license>
@@ -9,9 +9,16 @@
   <buildtool_depend>ament_python</buildtool_depend>
 
   <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>diagnostic_msgs</exec_depend>
+  <exec_depend>rclpy</exec_depend>
+  <exec_depend>rosidl_runtime_py</exec_depend>
+  <exec_depend>std_msgs</exec_depend>
+  <exec_depend>std_srvs</exec_depend>
+  <exec_depend>tf2_ros_py</exec_depend>
 
   <test_depend>ament_flake8</test_depend>
   <test_depend>ament_pep257</test_depend>
+  <test_depend>geometry_msgs</test_depend>
   <test_depend>python3-jsonschema</test_depend>
   <test_depend>python3-pytest</test_depend>
 

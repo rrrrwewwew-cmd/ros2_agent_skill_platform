@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "evidence_type": "rbot_live_grounded_water_risk_observation",
+  "captured_at": "2026-07-20T22:23:59+08:00",
+  "status": "succeeded",
+  "skill_candidate": {
+    "name": "observe_and_avoid_water_risk",
+    "version": "0.1.0",
+    "artifact_hash": "3b4158d71f8b3485d2fb85fb59aed37af6e0c32387c96114c505008b763e916a"
+  },
+  "preflight_health": {
+    "safe_to_proceed": true,
+    "passed_checks": 6,
+    "required_sensors": [
+      "/scan",
+      "/camera/image",
+      "/camera/depth_image"
+    ],
+    "semantic_keepout_safety_ok": true,
+    "nearest_keepout_clearance_m": 1.04
+  },
+  "perception": {
+    "grounding_label": "water puddle",
+    "grounding_score": 0.734859,
+    "verified_score": 0.467895,
+    "sensor_verified": true,
+    "depth_median_m": 1.386545,
+    "physical_width_m": 0.623948,
+    "physical_height_m": 0.086659,
+    "grounding_peak_allocated_gib": 1.716,
+    "qwen_model": "Qwen2.5-VL-7B-Instruct-AWQ",
+    "qwen_risk_found": true,
+    "qwen_risk_type": "water_puddle",
+    "qwen_policy_consistent": true,
+    "qwen_safety_fallback_used": false,
+    "qwen_peak_allocated_gib": 6.624
+  },
+  "projection": {
+    "map_frame": "map",
+    "map_x_m": 1.6710497263551003,
+    "map_y_m": 0.007173170267359282,
+    "map_z_m": 0.004796178720437819,
+    "transform_time_offset_ms": 0.0,
+    "catalog_error_m": 0.3290284743038798,
+    "enclosing_radius_m": 0.6054550928951565
+  },
+  "semantic_store": {
+    "target_id": "water_puddle",
+    "landmark_updated": true,
+    "accepted_observations": 2
+  },
+  "local_integrity": {
+    "observation_result_sha256": "49955e69e2577b1e35ffe93b85922081602b372a0e1581a54d69d5197cad0f84",
+    "pipeline_result_sha256": "0de3ade53694799d9736b2c30210f9f71c11d7f6f67e4025b3af659dc4bc569d",
+    "rgb_sha256": "65ff8ed421a379030f9e92ff830a118e716bbbee4feac7917aa9f34111ae00cc"
+  },
+  "regression_fix": {
+    "failure": "Path.resolve dereferenced virtualenv Python symlinks into the system interpreter",
+    "grounding_environment_preserved": true,
+    "qwen_environment_preserved": true,
+    "targeted_tests_passed": 6
+  },
+  "safety": {
+    "motion_command_sent": false,
+    "raw_model_artifacts_committed": false,
+    "credentials_persisted": false
+  }
+}

@@ -1,0 +1,104 @@
+{
+  "schema_version": 1,
+  "skill": {
+    "name": "navigate_to_approved_pose",
+    "version": "0.1.0",
+    "artifact_hash": "24c2dca959382b9a4db1fed850577a42172403322dd5225eeee50f562ea6865a",
+    "implementation_commit": "d854b90",
+    "simulation_evidence_commit": "1c77006"
+  },
+  "quality_gate": {
+    "colcon_packages": 6,
+    "colcon_tests": 115,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "governance": {
+    "release_approval": {
+      "decision": "APPROVED",
+      "actor": "human_li",
+      "basis": "Human reviewed the controlled navigation contract, automated tests, and rbot controlled-motion evidence."
+    },
+    "signature": {
+      "algorithm": "ed25519",
+      "artifact_hash_algorithm": "sha256-file-list-v1",
+      "public_key_fingerprint": "23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a",
+      "signer": "local_controlled_release_authority",
+      "runtime_reverification_required": true
+    },
+    "lifecycle": [
+      "DRAFT",
+      "GENERATED",
+      "STATIC_VALIDATED",
+      "BUILT",
+      "UNIT_TESTED",
+      "SIMULATION_TESTED",
+      "HUMAN_APPROVED",
+      "SIGNED",
+      "ACTIVE"
+    ],
+    "final_state": "ACTIVE"
+  },
+  "authoring_simulation_validation": {
+    "evidence_file": "evidence/navigate_to_approved_pose/rbot_live_simulation_v1.json",
+    "goal": {
+      "frame_id": "map",
+      "x": 4.5,
+      "y": 0.0,
+      "yaw_deg": 0.0
+    },
+    "result_state": "succeeded",
+    "goal_position_error_m": 0.044222684275930985,
+    "minimum_center_distance_m": 0.9395917045440836,
+    "entered_keepout": false,
+    "safety_remained_ok": true,
+    "robot_stopped": true
+  },
+  "governed_runtime_validation": {
+    "run_id": "navigate_home_active_001",
+    "trace_id": "trace_navigate_home_active_001",
+    "approval_id": "approval_navigate_home_active_001",
+    "approval_actor": "human_li",
+    "approval_decision": "APPROVED",
+    "approval_invocation_hash": "ff2967819ce4de591f9bf90707e2b153354702cf3fcedda8475d29d1b6917b82",
+    "approval_consumed_once": true,
+    "approval_consumed_by_run_id": "navigate_home_active_001",
+    "runtime_status": "succeeded",
+    "agent_state": "SUCCEEDED",
+    "trace_events": 13,
+    "trace_contains_waiting_approval": true,
+    "trace_contains_postcondition_verification": true,
+    "goal": {
+      "frame_id": "map",
+      "x": 0.0,
+      "y": 0.0,
+      "yaw_deg": 180.0
+    },
+    "approved_path_sha256": "a72608f8a149eb84bf4152bd8fe8ba027603801b3aafc8acb75760d5183683f7",
+    "approved_semantic_map_sha256": "a568d31d7f321ced61db4b43b2161aebca0ac521c7b104a832fa7518a009f928",
+    "path_identity_matches": true,
+    "semantic_identity_matches": true,
+    "global_center_cost": 254,
+    "goal_position_error_m": 0.04359534684478466,
+    "goal_yaw_error_deg": 13.263614088554249,
+    "minimum_center_distance_m": 0.8891187257827118,
+    "entered_keepout": false,
+    "safety_remained_ok": true,
+    "robot_stopped": true
+  },
+  "security_properties": {
+    "per_execution_human_approval": true,
+    "approval_exact_invocation_bound": true,
+    "approval_ttl_bounded": true,
+    "approval_single_use_transactional": true,
+    "navigate_action_fixed": true,
+    "velocity_topic_write_permitted": false,
+    "caller_supplied_ros_names": false,
+    "caller_supplied_file_paths": false,
+    "artifact_reverified_before_execution": true,
+    "result_schema_and_physical_postconditions_verified": true,
+    "automatic_retry_after_motion": false
+  },
+  "secrets_committed": false
+}

@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package format="3">
+  <name>robot_skill_registry</name>
+  <version>0.3.0</version>
+  <description>Persistent governed Skill registry and bounded Agent state store.</description>
+  <maintainer email="maintainer@example.com">rrrrwewwew-cmd</maintainer>
+  <license>MIT</license>
+
+  <buildtool_depend>ament_python</buildtool_depend>
+
+  <exec_depend>python3-yaml</exec_depend>
+  <exec_depend>python3-cryptography</exec_depend>
+  <exec_depend>safe_agent_core</exec_depend>
+
+  <test_depend>ament_flake8</test_depend>
+  <test_depend>ament_pep257</test_depend>
+  <test_depend>python3-jsonschema</test_depend>
+  <test_depend>python3-pytest</test_depend>
+
+  <export>
+    <build_type>ament_python</build_type>
+  </export>
+</package>

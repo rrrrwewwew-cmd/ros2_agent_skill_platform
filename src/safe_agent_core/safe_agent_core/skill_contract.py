@@ -58,8 +58,10 @@ def validate_skill_manifest(manifest):
     approval = manifest['requires_human_approval']
     if not isinstance(approval, bool):
         raise SkillContractError('requires_human_approval must be boolean')
-    if safety_level == 'high' and not approval:
-        raise SkillContractError('high safety Skills require human approval')
+    if safety_level in {'controlled', 'high'} and not approval:
+        raise SkillContractError(
+            'controlled and high safety Skills require human approval'
+        )
     timeout = manifest['timeout_sec']
     if isinstance(timeout, bool) or not isinstance(timeout, (int, float)):
         raise SkillContractError('timeout_sec must be numeric')

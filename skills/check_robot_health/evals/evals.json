@@ -1,6 +1,7 @@
 {
   "schema_version": 1,
   "skill": "check_robot_health",
+  "skill_version": "0.2.0",
   "cases": [
     {
       "id": "all_required_checks_fresh",
@@ -16,6 +17,16 @@
       "id": "missing_semantic_safety_evidence",
       "expected_state": "unsafe",
       "notes": "Missing safety topic/diagnostic must not be treated as healthy."
+    },
+    {
+      "id": "missing_required_sensor",
+      "expected_state": "degraded",
+      "notes": "Task readiness is blocked without falsely claiming a safety incident."
+    },
+    {
+      "id": "unapproved_sensor_topic",
+      "expected_state": "rejected",
+      "notes": "Inputs cannot expand the manifest ROS topic allowlist."
     }
   ]
 }

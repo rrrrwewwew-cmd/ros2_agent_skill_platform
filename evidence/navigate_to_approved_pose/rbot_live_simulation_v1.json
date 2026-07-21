@@ -1,0 +1,86 @@
+{
+  "schema_version": 1,
+  "skill": {
+    "name": "navigate_to_approved_pose",
+    "version": "0.1.0",
+    "artifact_hash": "24c2dca959382b9a4db1fed850577a42172403322dd5225eeee50f562ea6865a",
+    "implementation_commit": "d854b90"
+  },
+  "validation": {
+    "type": "human_authorized_controlled_motion_simulation",
+    "world": "rbot_small_warehouse_semantic_risks_v1",
+    "operator_approval": "explicit approval received before motion",
+    "runtime_path": "fixed_ros_authoring_adapter_before_registry_activation",
+    "result_state": "succeeded",
+    "goal_reached": true,
+    "motion_command_sent": true
+  },
+  "request": {
+    "goal": {
+      "frame_id": "map",
+      "x": 4.5,
+      "y": 0.0,
+      "yaw_deg": 0.0
+    },
+    "keepout_profile": "rbot_water_puddle_v2",
+    "approved_path_sha256": "821dcc0ac53d084a6e88d29687ad702007e58394794602bb740c34e2afbceadf",
+    "approved_semantic_map_sha256": "a568d31d7f321ced61db4b43b2161aebca0ac521c7b104a832fa7518a009f928"
+  },
+  "preflight": {
+    "allowed": true,
+    "health_state": "healthy",
+    "preview_state": "safe",
+    "path_identity_matches": true,
+    "semantic_identity_matches": true,
+    "global_center_cost": 254,
+    "keepout_center_m": {
+      "x": 1.67105,
+      "y": 0.007173
+    },
+    "keepout_radius_m": 0.6,
+    "minimum_clearance_m": 0.38236598110815856,
+    "reasons": []
+  },
+  "navigation": {
+    "action": "/navigate_to_pose",
+    "goal_accepted": true,
+    "result_status": 4,
+    "nav2_error_code": 0,
+    "nav2_error_message": "",
+    "cancel_requested": false,
+    "started_at_ns": 134303000000,
+    "completed_at_ns": 164487000000
+  },
+  "postcondition": {
+    "final_pose": {
+      "frame_id": "map",
+      "x": 4.491876913351115,
+      "y": 0.04347023427430985,
+      "yaw_deg": -13.300766796845965,
+      "observed_at_ns": 164542000000
+    },
+    "goal_position_error_m": 0.044222684275930985,
+    "goal_yaw_error_deg": 13.300766796845977,
+    "minimum_center_distance_m": 0.9395917045440836,
+    "entered_keepout": false,
+    "safety_remained_ok": true,
+    "robot_stopped": true,
+    "final_linear_speed_mps": 1.389999226830696e-11,
+    "final_angular_speed_rps": 0.019487181374677753
+  },
+  "quality_gate": {
+    "colcon_packages": 6,
+    "colcon_tests": 115,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "security_properties": {
+    "velocity_topic_write_permitted": false,
+    "caller_supplied_ros_names": false,
+    "caller_supplied_file_paths": false,
+    "fresh_health_and_preview_required": true,
+    "result_schema_and_physical_postconditions_verified": true,
+    "automatic_retry_after_motion": false
+  }
+}

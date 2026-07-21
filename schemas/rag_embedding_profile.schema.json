@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/rag_embedding_profile.schema.json",
+  "title": "Version-pinned RAG embedding build profile",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "profile_id", "base_manifest_sha256", "embedding", "retrieval_policy"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "profile_id": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,63}$"},
+    "base_manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "embedding": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["provider", "dimensions", "model_id", "model_revision", "normalize", "pooling", "max_length", "batch_size", "vector_precision_decimals"],
+      "properties": {
+        "provider": {"const": "bge_m3_transformers_v1"},
+        "dimensions": {"const": 1024},
+        "model_id": {"const": "BAAI/bge-m3"},
+        "model_revision": {"type": "string", "pattern": "^[0-9a-f]{40}$"},
+        "normalize": {"const": true},
+        "pooling": {"const": "cls"},
+        "max_length": {"type": "integer", "minimum": 32, "maximum": 8192},
+        "batch_size": {"type": "integer", "minimum": 1, "maximum": 128},
+        "vector_precision_decimals": {"type": "integer", "minimum": 4, "maximum": 12}
+      }
+    },
+    "retrieval_policy": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["bm25_weight", "embedding_weight", "minimum_score", "minimum_embedding_score", "bm25_saturation"],
+      "properties": {
+        "bm25_weight": {"const": 0.5},
+        "embedding_weight": {"const": 0.5},
+        "minimum_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "minimum_embedding_score": {"type": "number", "minimum": 0, "maximum": 1},
+        "bm25_saturation": {"type": "number", "exclusiveMinimum": 0},
+        "require_embedding_gate": {"type": "boolean"},
+        "reject_unknown_identifiers": {"type": "boolean"}
+      }
+    }
+  }
+}

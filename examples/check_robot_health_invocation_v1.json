@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "run_id": "health_runtime_example_001",
+  "trace_id": "trace_health_runtime_example_001",
+  "skill_name": "check_robot_health",
+  "skill_version": "0.2.0",
+  "artifact_hash": "1df7df2354693c025c850368661656c6014db9636c5b19914245c8ba26914e8f",
+  "inputs": {
+    "required_sensors": [
+      "/scan",
+      "/camera/image",
+      "/camera/depth_image"
+    ]
+  }
+}

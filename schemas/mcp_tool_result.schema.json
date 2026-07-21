@@ -1,0 +1,57 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/mcp-tool-result.schema.json",
+  "title": "Governed MCP Tool Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "tool_name",
+    "tool_version",
+    "safety_class",
+    "input_sha256",
+    "evidence_sha256",
+    "evidence",
+    "citations"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "tool_name": {
+      "enum": [
+        "list_experiment_runs",
+        "inspect_experiment_run",
+        "analyze_experiment_run",
+        "retrieve_robotics_knowledge",
+        "materialize_diagnosis_report"
+      ]
+    },
+    "tool_version": {"const": "0.1.0"},
+    "safety_class": {"enum": ["read_only", "artifact_write"]},
+    "input_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidence_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "evidence": {"type": "object"},
+    "citations": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "source_id",
+          "source_version",
+          "source_content_sha256",
+          "chunk_sha256",
+          "canonical_url",
+          "distribution"
+        ],
+        "properties": {
+          "source_id": {"type": "string"},
+          "source_version": {"type": "string"},
+          "source_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "chunk_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "canonical_url": {"type": "string", "format": "uri"},
+          "distribution": {"type": "string"}
+        }
+      }
+    }
+  }
+}

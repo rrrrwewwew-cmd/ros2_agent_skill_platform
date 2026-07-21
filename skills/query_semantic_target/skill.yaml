@@ -1,0 +1,32 @@
+schema_version: 1
+name: query_semantic_target
+version: 0.1.0
+description: Read one canonical target from an approved persistent project-one semantic map.
+entrypoint: robot_semantic_skills.query:query_semantic_target
+safety_level: read_only
+requires_human_approval: false
+timeout_sec: 3.0
+cancel_supported: true
+idempotent: true
+inputs:
+  map_profile:
+    type: string
+    enum:
+      - semantic_landmarks_v1
+      - rbot_water_puddle_v2
+  target_id:
+    type: string
+    enum:
+      - blue_cylinder
+      - green_box
+      - red_cube
+      - restricted_area
+      - water_puddle
+preconditions: []
+effects:
+  - reads_persistent_semantic_map
+ros_permissions:
+  topics_read: []
+  topics_write: []
+  services: []
+  actions: []

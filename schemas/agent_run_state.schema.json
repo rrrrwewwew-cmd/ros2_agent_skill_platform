@@ -1,0 +1,43 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/agent-run-state.schema.json",
+  "title": "Persistent Bounded Agent Run",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "state",
+    "request",
+    "plan",
+    "terminal_reason",
+    "created_at_ns",
+    "updated_at_ns"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "state": {
+      "enum": [
+        "IDLE",
+        "RETRIEVING",
+        "PLANNING",
+        "VALIDATING",
+        "WAITING_APPROVAL",
+        "EXECUTING",
+        "VERIFYING",
+        "SUCCEEDED",
+        "FAILED",
+        "ABORTED",
+        "EMERGENCY_STOP"
+      ]
+    },
+    "request": {"type": "object"},
+    "plan": {"type": ["object", "null"]},
+    "terminal_reason": {"type": ["string", "null"]},
+    "created_at_ns": {"type": "integer", "minimum": 0},
+    "updated_at_ns": {"type": "integer", "minimum": 0}
+  }
+}

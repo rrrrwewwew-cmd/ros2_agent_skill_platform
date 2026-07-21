@@ -1,0 +1,56 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/llm-plan-request.schema.json",
+  "title": "Bounded LLM Plan Request",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "request_id",
+    "provider",
+    "model",
+    "prompt_id",
+    "prompt_version",
+    "prompt_sha256",
+    "task",
+    "max_output_tokens",
+    "timeout_sec",
+    "temperature"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "request_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{3,96}$"
+    },
+    "provider": {"enum": ["xiaomi_mimo", "fake"]},
+    "model": {"type": "string", "minLength": 1, "maxLength": 128},
+    "prompt_id": {
+      "type": "string",
+      "pattern": "^[a-z][a-z0-9_]{2,63}$"
+    },
+    "prompt_version": {
+      "type": "string",
+      "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+    },
+    "prompt_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "task": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["user_request"],
+      "properties": {
+        "user_request": {"type": "string", "minLength": 1, "maxLength": 2000},
+        "context": {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": {
+            "type": ["string", "number", "integer", "boolean", "null"]
+          }
+        }
+      }
+    },
+    "max_output_tokens": {"type": "integer", "minimum": 128, "maximum": 2048},
+    "timeout_sec": {"type": "number", "minimum": 1.0, "maximum": 120.0},
+    "temperature": {"type": "number", "minimum": 0.0, "maximum": 1.0}
+  }
+}

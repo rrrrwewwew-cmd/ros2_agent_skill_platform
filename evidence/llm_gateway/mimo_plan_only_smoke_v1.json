@@ -1,0 +1,43 @@
+{
+  "error": null,
+  "model": "mimo-v2.5-pro",
+  "plan": {
+    "clarification": null,
+    "decision": "plan",
+    "schema_version": 1,
+    "steps": [
+      {
+        "artifact_hash": "1df7df2354693c025c850368661656c6014db9636c5b19914245c8ba26914e8f",
+        "expected_evidence": [
+          "Nav2状态（如控制器、规划器、恢复行为是否就绪）",
+          "TF树是否完整且最新",
+          "语义Keepout区域约束是否激活",
+          "关键传感器（如激光雷达、里程计）数据是否新鲜"
+        ],
+        "inputs": {},
+        "reason": "读取Nav2、TF、语义Keepout安全状态和所需传感器新鲜度，以评估机器人整体健康状况。",
+        "skill_name": "check_robot_health",
+        "skill_version": "0.2.0",
+        "step_id": 1
+      }
+    ],
+    "summary": "检查机器人健康状态，评估是否可以继续规划。"
+  },
+  "prompt_id": "robot_task_planner",
+  "prompt_sha256": "7699bac29b1d5e7a08fdb8d666f7dff39ec758f3c203eb6e2d8f7e734b8179f2",
+  "prompt_version": "0.1.0",
+  "provider": "xiaomi_mimo",
+  "request_id": "mimo_smoke_003",
+  "request_sha256": "8d642fcf547868509dc0dedaa6732612d5784258d8b3a05375b3f2b07ba4ea77",
+  "runtime": {
+    "latency_ms": 6522.272,
+    "provider_request_id": "d8bfc73c1ad74354a741eac0015209b8",
+    "usage": {
+      "input_tokens": 964,
+      "output_tokens": 249,
+      "total_tokens": 1213
+    }
+  },
+  "schema_version": 1,
+  "state": "succeeded"
+}

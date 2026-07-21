@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "robotics_core_retrieval_holdout_v2",
+  "description": "Frozen 10-query holdout split; execute only after development thresholds are fixed.",
+  "cases": [
+    {
+      "case_id": "holdout_tf_timestamp_english",
+      "query": "Why can a transform exist now but still be unavailable at the RGB-D observation timestamp?",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.tf2_time"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_grounding_negative_gate",
+      "query": "候选分数不够时为什么 Qwen 不应该看到整张图并自由判断水坑？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project1.grounded_vlm_evaluation"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_parent_child_trace",
+      "query": "How are the parent Agent trace and each child Skill trace linked for audit and replay?",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project2.agent_traces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_diagnosis_causality",
+      "query": "发现抖动异常窗口后，报告为什么只能写 evidence-backed hypothesis 而不能直接断言原因？",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project2.experiment_diagnosis_contract"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_jazzy_humble_filter",
+      "query": "ROS 2 Jazzy 订阅 sensor data 时 reliability 和 durability 不兼容会发生什么？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.qos"],
+      "forbidden_source_ids": ["ros2.humble.qos_distractor"]
+    },
+    {
+      "case_id": "holdout_camera_interface",
+      "query": "A camera stream is asynchronous one-way data with many subscribers; which ROS interface fits it?",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.interfaces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_keepout_geometry",
+      "query": "为何动态禁区半径还必须考虑定位误差、footprint 和跟踪误差？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.keepout_filters"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_read_only_navigation_boundary",
+      "query": "Which Nav2 action may a read-only route preview call, and which action would actually move the robot?",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.planning_actions"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_no_answer_moveit_group",
+      "query": "MoveIt 2 机械臂的 planning group 名称和 joint trajectory controller 配置是什么？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout_no_answer_gazebo_material",
+      "query": "rbot 仓库场景中金属货架的 Ogre material script 和纹理文件名是什么？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    }
+  ]
+}

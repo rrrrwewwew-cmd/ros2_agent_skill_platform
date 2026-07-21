@@ -1,0 +1,91 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.com/schemas/rag_index.schema.json",
+  "title": "Deterministic local RAG index",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "corpus_id",
+    "corpus_version",
+    "manifest_sha256",
+    "build_config",
+    "chunks",
+    "index_content_sha256"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "corpus_id": {"type": "string", "minLength": 1},
+    "corpus_version": {"type": "string", "minLength": 1},
+    "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "build_config": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["splitter", "max_terms", "overlap_terms", "embedding_provider", "embedding_dimensions", "embedding_config", "embedding_profile_id", "retrieval_policy"],
+      "properties": {
+        "splitter": {"const": "markdown_sections_v1"},
+        "max_terms": {"type": "integer", "minimum": 20},
+        "overlap_terms": {"type": "integer", "minimum": 0},
+        "embedding_provider": {"enum": ["feature_hash_v1", "bge_m3_transformers_v1"]},
+        "embedding_dimensions": {"type": "integer", "minimum": 64},
+        "embedding_config": {"type": "object"},
+        "embedding_profile_id": {"type": "string", "minLength": 1},
+        "retrieval_policy": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["bm25_weight", "embedding_weight", "minimum_score", "minimum_embedding_score", "bm25_saturation"],
+          "properties": {
+            "bm25_weight": {"type": "number", "minimum": 0, "maximum": 1},
+            "embedding_weight": {"type": "number", "minimum": 0, "maximum": 1},
+            "minimum_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "minimum_embedding_score": {"type": "number", "minimum": 0, "maximum": 1},
+            "bm25_saturation": {"type": "number", "exclusiveMinimum": 0},
+            "require_embedding_gate": {"type": "boolean"},
+            "reject_unknown_identifiers": {"type": "boolean"}
+          }
+        }
+      }
+    },
+    "chunks": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "chunk_id",
+          "source_id",
+          "source_version",
+          "source_type",
+          "source_content_sha256",
+          "product",
+          "distribution",
+          "canonical_url",
+          "ordinal",
+          "heading",
+          "text",
+          "text_sha256",
+          "terms",
+          "vector"
+        ],
+        "properties": {
+          "chunk_id": {"type": "string", "minLength": 1},
+          "source_id": {"type": "string", "minLength": 1},
+          "source_version": {"type": "string", "minLength": 1},
+          "source_type": {"type": "string", "minLength": 1},
+          "source_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "product": {"type": "string", "minLength": 1},
+          "distribution": {"type": "string", "minLength": 1},
+          "canonical_url": {"type": "string", "minLength": 1},
+          "ordinal": {"type": "integer", "minimum": 0},
+          "heading": {"type": "string", "minLength": 1},
+          "text": {"type": "string", "minLength": 1},
+          "text_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "terms": {"type": "array", "items": {"type": "string"}},
+          "vector": {"type": "array", "minItems": 64, "items": {"type": "number"}}
+        }
+      }
+    },
+    "index_content_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+  }
+}

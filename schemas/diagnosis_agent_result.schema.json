@@ -1,0 +1,75 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/diagnosis-agent-result.schema.json",
+  "title": "Persistent Experiment Diagnosis Agent Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "run_id",
+    "trace_id",
+    "status",
+    "agent_state",
+    "planner_decision",
+    "experiment_run_id",
+    "gateway_result",
+    "plan",
+    "steps",
+    "conclusion",
+    "recovered_runs",
+    "halt_reason",
+    "error",
+    "started_at_ns",
+    "completed_at_ns",
+    "trace_file"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "run_id": {"type": "string", "minLength": 1},
+    "trace_id": {"type": "string", "minLength": 1},
+    "status": {
+      "enum": ["succeeded", "failed", "clarification_required", "refused", "blocked_by_evidence"]
+    },
+    "agent_state": {
+      "enum": ["SUCCEEDED", "FAILED", "ABORTED"]
+    },
+    "planner_decision": {"type": ["string", "null"], "enum": ["plan", "clarify", "refuse", null]},
+    "experiment_run_id": {"type": ["string", "null"]},
+    "gateway_result": {"type": ["object", "null"]},
+    "plan": {"type": ["object", "null"]},
+    "steps": {
+      "type": "array",
+      "maxItems": 5,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id", "tool_name", "tool_version", "contract_sha256",
+          "input_sha256", "evidence_sha256", "safety_class",
+          "citation_count", "status", "evidence_gate_passed",
+          "evidence_gate_reason"
+        ],
+        "properties": {
+          "step_id": {"type": "integer", "minimum": 1, "maximum": 5},
+          "tool_name": {"type": "string", "minLength": 1},
+          "tool_version": {"type": "string", "minLength": 1},
+          "contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "input_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "evidence_sha256": {"type": ["string", "null"], "pattern": "^[0-9a-f]{64}$"},
+          "safety_class": {"type": ["string", "null"]},
+          "citation_count": {"type": "integer", "minimum": 0},
+          "status": {"enum": ["succeeded", "failed"]},
+          "evidence_gate_passed": {"type": "boolean"},
+          "evidence_gate_reason": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    "conclusion": {"type": ["object", "null"]},
+    "recovered_runs": {"type": "array", "items": {"type": "string"}, "uniqueItems": true},
+    "halt_reason": {"type": ["string", "null"]},
+    "error": {"type": ["string", "null"]},
+    "started_at_ns": {"type": "integer", "minimum": 0},
+    "completed_at_ns": {"type": "integer", "minimum": 0},
+    "trace_file": {"type": "string", "minLength": 1}
+  }
+}

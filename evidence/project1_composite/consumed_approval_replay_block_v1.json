@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "evidence_type": "execution_approval_fail_closed",
+  "recorded_on": "2026-07-21",
+  "run_id": "observe_avoid_replay_block_001",
+  "trace_id": "trace_observe_avoid_replay_block_001",
+  "trace_file": "/home/li/.ros/robot_agent/traces/observe_avoid_replay_block_001.jsonl",
+  "trace_sha256": "13b8932a17b62c1ba7f6aca93b65aff92250940637b28910b82e0c2c075f17df",
+  "skill": {
+    "name": "observe_and_avoid_water_risk",
+    "version": "0.1.0",
+    "artifact_hash": "3b4158d71f8b3485d2fb85fb59aed37af6e0c32387c96114c505008b763e916a"
+  },
+  "replayed_approval_id": "approval_observe_avoid_east_live_005",
+  "result": {
+    "agent_state": "FAILED",
+    "error": "execution approval has already been consumed",
+    "failed_at_state": "WAITING_APPROVAL",
+    "tool_call_count": 0,
+    "skill_output": null,
+    "motion_command_sent": false
+  }
+}

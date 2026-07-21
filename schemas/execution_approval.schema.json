@@ -1,0 +1,42 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/execution-approval.schema.json",
+  "title": "One-time Governed Skill Execution Approval",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "approval_id",
+    "run_id",
+    "skill_name",
+    "skill_version",
+    "artifact_hash",
+    "invocation_hash",
+    "decision",
+    "actor",
+    "reason",
+    "created_at_ns",
+    "expires_at_ns",
+    "consumed_at_ns",
+    "consumed_by_run_id"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "approval_id": {
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_.-]{3,96}$"
+    },
+    "run_id": {"type": "string", "pattern": "^[A-Za-z0-9_.-]{3,96}$"},
+    "skill_name": {"type": "string", "minLength": 3},
+    "skill_version": {"type": "string", "minLength": 5},
+    "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "invocation_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "decision": {"enum": ["APPROVED", "REJECTED"]},
+    "actor": {"type": "string", "minLength": 1},
+    "reason": {"type": "string", "minLength": 1},
+    "created_at_ns": {"type": "integer", "minimum": 0},
+    "expires_at_ns": {"type": "integer", "minimum": 0},
+    "consumed_at_ns": {"type": ["integer", "null"], "minimum": 0},
+    "consumed_by_run_id": {"type": ["string", "null"]}
+  }
+}

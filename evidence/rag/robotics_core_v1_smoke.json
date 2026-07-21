@@ -1,0 +1,58 @@
+{
+  "schema_version": 1,
+  "evidence_type": "deterministic_rag_retrieval_smoke",
+  "captured_at": "2026-07-20",
+  "package": {
+    "name": "robot_rag",
+    "version": "0.1.0"
+  },
+  "corpus": {
+    "corpus_id": "robotics_core",
+    "corpus_version": "1.0.0",
+    "source_count": 7,
+    "chunk_count": 22,
+    "manifest_sha256": "bc184287b1fa1be5bb22ee3aa07562aa3ffe1de15133d38c17aa017793ccf2eb",
+    "index_content_sha256": "6cd9b70e464c8d5c478136e22a56d446725b8841d9e176f0f784fb45a8be2b93"
+  },
+  "retrieval": {
+    "algorithm": "bm25_feature_hash_v1",
+    "bm25_weight": 0.65,
+    "feature_hash_weight": 0.35,
+    "learned_semantic_embedding": false,
+    "citations_bind_source_and_chunk_hashes": true,
+    "distribution_filter_enforced": true
+  },
+  "evaluation": {
+    "evaluation_id": "robotics_core_retrieval_v1",
+    "manifest_sha256": "02b9cb7a0ea2dc1f5f615fa37b2fcca32255fb20e9f239ff70a9173a67194801",
+    "total_cases": 8,
+    "passed": 8,
+    "failed": 0,
+    "metrics": {
+      "recall_at_k": 1.0,
+      "mean_reciprocal_rank": 1.0,
+      "version_filter_accuracy": 1.0,
+      "citation_integrity_rate": 1.0
+    }
+  },
+  "quality_gate": {
+    "workspace_packages": 9,
+    "workspace_tests": 172,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "security": {
+    "network_access_during_build_or_query": false,
+    "llm_called": false,
+    "remote_content_committed": false,
+    "source_path_escape_rejected": true,
+    "source_or_index_tampering_rejected": true
+  },
+  "limitations": [
+    "The eight cases are a smoke set for the data and evaluation pipeline, not the final Phase 2 quality evaluation.",
+    "feature_hash_v1 is a deterministic lexical feature baseline, not a learned semantic embedding model.",
+    "The corpus stores concise local fact cards with upstream citations rather than full upstream web pages."
+  ],
+  "conclusion": "The first versioned RAG vertical slice is reproducible, citation-bound, distribution-aware and fail-closed; larger holdout evaluation and a pinned learned embedding A/B are still required."
+}

@@ -1,0 +1,97 @@
+{
+  "schema_version": 1,
+  "evaluation_id": "robotics_core_retrieval_holdout_v3",
+  "description": "Second-round frozen holdout created after v2 was revealed; never used to tune bge_m3_dense_v2.",
+  "cases": [
+    {
+      "case_id": "holdout3_qos_graph_but_no_data",
+      "query": "A ROS 2 publisher is visible in the graph but a Jazzy subscriber receives no samples; which QoS policies must be compared?",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.qos"],
+      "forbidden_source_ids": ["ros2.humble.qos_distractor"]
+    },
+    {
+      "case_id": "holdout3_tf_future",
+      "query": "tf2 future extrapolation 表示观测时间晚于 buffer 中最新变换时，应该检查哪些时间源？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.tf2_time"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_long_running_interface",
+      "query": "需要取消、feedback 和最终 result 的长时机器人运动为什么不应实现成 Service？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["ros2.jazzy.interfaces"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_nav2_process_not_ready",
+      "query": "Why does seeing Nav2 processes in ps output not prove that all managed nodes are active and ready?",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.lifecycle_manager"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_keepout_mask_metadata",
+      "query": "CostmapFilterInfo 的 mask_topic 为什么必须和发布 OccupancyGrid 禁区 mask 的 topic 对齐？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "nav2"},
+      "expected_answerable": true,
+      "expected_source_ids": ["nav2.keepout_filters"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_hard_negative_no_qwen",
+      "query": "项目一的 5 个 hard negative 为什么 Qwen 调用次数应当是零？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project1.grounded_vlm_evaluation"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_fake_provider_boundary",
+      "query": "Why is FakeProvider an offline CI fixture rather than a second production model beside Xiaomi MiMo?",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project2.llm_gateway"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_jitter_evidence_chain",
+      "query": "写机器人抖动假设前，如何把距离矩阵、异常时间窗、控制指令和 Trace 关联成证据链？",
+      "top_k": 3,
+      "filters": {"distribution": "project2-v1"},
+      "expected_answerable": true,
+      "expected_source_ids": ["project2.experiment_diagnosis_contract"],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_no_answer_dds_security",
+      "query": "本项目 DDS Security keystore 的证书轮换周期和 enclave 密码策略是什么？",
+      "top_k": 3,
+      "filters": {"distribution": "jazzy", "product": "ros2"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    },
+    {
+      "case_id": "holdout3_no_answer_gripper_urdf",
+      "query": "项目一夹爪 URDF 中 mimic joint 的 multiplier 和 mechanical reduction 数值是多少？",
+      "top_k": 3,
+      "filters": {"distribution": "project1-v1"},
+      "expected_answerable": false,
+      "expected_source_ids": [],
+      "forbidden_source_ids": []
+    }
+  ]
+}

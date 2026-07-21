@@ -1,0 +1,84 @@
+{
+  "schema_version": 1,
+  "skill": {
+    "name": "query_semantic_target",
+    "version": "0.1.0",
+    "artifact_hash": "e4f6cddb16757bdee6b46163295152033a5f60a9aea7030fa5659eca2716200e"
+  },
+  "quality_gate": {
+    "colcon_tests": 77,
+    "failures": 0,
+    "errors": 0,
+    "skipped": 0
+  },
+  "governance": {
+    "approval": {
+      "decision": "APPROVED",
+      "actor": "read_only_release_policy",
+      "basis": "manifest requires_human_approval=false and both approved project-one map profiles passed installed validation"
+    },
+    "signature": {
+      "algorithm": "ed25519",
+      "artifact_hash_algorithm": "sha256-file-list-v1",
+      "public_key_fingerprint": "23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a",
+      "signer": "local_read_only_release_authority",
+      "private_key_mode": "0600",
+      "runtime_reverification_required": true
+    },
+    "lifecycle": [
+      "DRAFT",
+      "GENERATED",
+      "STATIC_VALIDATED",
+      "BUILT",
+      "UNIT_TESTED",
+      "SIMULATION_TESTED",
+      "HUMAN_APPROVED",
+      "SIGNED",
+      "ACTIVE"
+    ],
+    "final_state": "ACTIVE"
+  },
+  "runtime_validations": [
+    {
+      "run_id": "semantic_runtime_active_001",
+      "trace_id": "trace_semantic_runtime_active_001",
+      "runtime_status": "succeeded",
+      "agent_state": "SUCCEEDED",
+      "map_profile": "semantic_landmarks_v1",
+      "target_id": "green_box",
+      "query_state": "found",
+      "source_content_sha256": "a5019ad5c4e620d9e9d4c18a13b0fd54fb28d629738350b4029350c4edc078e6",
+      "mean_position_m": {
+        "x": -1.968639,
+        "y": -0.694886,
+        "z": 0.562705
+      },
+      "accepted_observations": 2,
+      "trace_events": 11
+    },
+    {
+      "run_id": "semantic_runtime_active_002",
+      "trace_id": "trace_semantic_runtime_active_002",
+      "runtime_status": "succeeded",
+      "agent_state": "SUCCEEDED",
+      "map_profile": "rbot_water_puddle_v2",
+      "target_id": "water_puddle",
+      "query_state": "found",
+      "source_content_sha256": "a568d31d7f321ced61db4b43b2161aebca0ac521c7b104a832fa7518a009f928",
+      "mean_position_m": {
+        "x": 1.67105,
+        "y": 0.007173,
+        "z": 0.004796
+      },
+      "accepted_observations": 1,
+      "trace_events": 11
+    }
+  ],
+  "security_properties": {
+    "agent_supplied_file_paths": false,
+    "profile_to_path_mapping_owned_by_runtime": true,
+    "shell_execution": false,
+    "result_schema_and_semantic_postconditions_verified": true
+  },
+  "secrets_committed": false
+}

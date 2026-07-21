@@ -1,0 +1,13 @@
+{
+  "schema_version": 1,
+  "skill": "observe_and_avoid_water_risk",
+  "version": "0.1.0",
+  "cases": [
+    {"id": "all_evidence_valid", "expected_state": "succeeded"},
+    {"id": "health_unsafe", "expected_state": "aborted"},
+    {"id": "risk_not_grounded", "expected_state": "failed"},
+    {"id": "semantic_hash_missing", "expected_state": "aborted"},
+    {"id": "route_intersects_keepout", "expected_state": "aborted"},
+    {"id": "navigation_safety_stop", "expected_state": "aborted"}
+  ]
+}

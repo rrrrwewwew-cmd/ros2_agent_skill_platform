@@ -1,0 +1,46 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/registry-skill-record.schema.json",
+  "title": "Governed Skill Registry Record",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "name",
+    "version",
+    "artifact_hash",
+    "manifest",
+    "safety_level",
+    "state",
+    "signature",
+    "signer",
+    "created_at_ns",
+    "updated_at_ns"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,63}$"},
+    "version": {"type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+$"},
+    "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "manifest": {"type": "object"},
+    "safety_level": {"enum": ["read_only", "controlled", "high", "emergency"]},
+    "state": {
+      "enum": [
+        "DRAFT",
+        "GENERATED",
+        "STATIC_VALIDATED",
+        "BUILT",
+        "UNIT_TESTED",
+        "SIMULATION_TESTED",
+        "HUMAN_APPROVED",
+        "SIGNED",
+        "ACTIVE",
+        "DEPRECATED"
+      ]
+    },
+    "signature": {"type": ["string", "null"]},
+    "signer": {"type": ["string", "null"]},
+    "created_at_ns": {"type": "integer", "minimum": 0},
+    "updated_at_ns": {"type": "integer", "minimum": 0}
+  }
+}

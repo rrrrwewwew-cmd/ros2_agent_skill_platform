@@ -1,0 +1,156 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/safe-route-preview-result.schema.json",
+  "title": "Safe Route Preview Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill",
+    "skill_version",
+    "state",
+    "safe_to_execute",
+    "motion_command_sent",
+    "request",
+    "planner",
+    "route",
+    "keepout",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "skill": {"const": "preview_safe_route"},
+    "skill_version": {"const": "0.1.0"},
+    "state": {"enum": ["safe", "unsafe", "unavailable", "invalid"]},
+    "safe_to_execute": {"type": "boolean"},
+    "motion_command_sent": {"const": false},
+    "request": {"$ref": "#/$defs/request"},
+    "planner": {"$ref": "#/$defs/planner"},
+    "route": {
+      "oneOf": [
+        {"type": "null"},
+        {"$ref": "#/$defs/route"}
+      ]
+    },
+    "keepout": {"$ref": "#/$defs/keepout"},
+    "reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "point2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": {"type": "number"},
+        "y": {"type": "number"}
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["goal", "keepout_profile"],
+      "properties": {
+        "goal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["frame_id", "x", "y", "yaw_deg"],
+          "properties": {
+            "frame_id": {"const": "map"},
+            "x": {"type": "number", "minimum": -20, "maximum": 20},
+            "y": {"type": "number", "minimum": -20, "maximum": 20},
+            "yaw_deg": {"type": "number", "minimum": -180, "maximum": 180}
+          }
+        },
+        "keepout_profile": {"const": "rbot_water_puddle_v2"}
+      }
+    },
+    "planner": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "available",
+        "error_code",
+        "error_message",
+        "planning_time_ms",
+        "path_frame",
+        "observed_at_ns"
+      ],
+      "properties": {
+        "action": {"const": "/compute_path_to_pose"},
+        "available": {"type": "boolean"},
+        "error_code": {"type": ["integer", "null"], "minimum": 0},
+        "error_message": {"type": "string"},
+        "planning_time_ms": {"type": ["number", "null"], "minimum": 0},
+        "path_frame": {"type": ["string", "null"]},
+        "observed_at_ns": {"type": "integer", "minimum": 0}
+      }
+    },
+    "route": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "pose_count",
+        "length_m",
+        "start_m",
+        "end_m",
+        "goal_position_error_m",
+        "path_sha256"
+      ],
+      "properties": {
+        "pose_count": {"type": "integer", "minimum": 1},
+        "length_m": {"type": "number", "minimum": 0},
+        "start_m": {"$ref": "#/$defs/point2"},
+        "end_m": {"$ref": "#/$defs/point2"},
+        "goal_position_error_m": {"type": "number", "minimum": 0},
+        "path_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      }
+    },
+    "keepout": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "profile",
+        "target_id",
+        "source_content_sha256",
+        "source_updated_at",
+        "center_m",
+        "radius_m",
+        "global_center_cost",
+        "active_in_global_costmap",
+        "minimum_center_distance_m",
+        "minimum_clearance_m",
+        "intersects"
+      ],
+      "properties": {
+        "profile": {"const": "rbot_water_puddle_v2"},
+        "target_id": {"const": "water_puddle"},
+        "source_content_sha256": {
+          "type": ["string", "null"],
+          "pattern": "^[0-9a-f]{64}$"
+        },
+        "source_updated_at": {"type": "string"},
+        "center_m": {
+          "oneOf": [
+            {"type": "null"},
+            {"$ref": "#/$defs/point2"}
+          ]
+        },
+        "radius_m": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "global_center_cost": {
+          "type": ["integer", "null"],
+          "minimum": 0,
+          "maximum": 255
+        },
+        "active_in_global_costmap": {"type": ["boolean", "null"]},
+        "minimum_center_distance_m": {"type": ["number", "null"], "minimum": 0},
+        "minimum_clearance_m": {"type": ["number", "null"]},
+        "intersects": {"type": ["boolean", "null"]}
+      }
+    }
+  }
+}

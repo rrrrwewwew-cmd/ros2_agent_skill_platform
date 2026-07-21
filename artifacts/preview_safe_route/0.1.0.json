@@ -1,0 +1,21 @@
+{
+  "schema_version": 1,
+  "name": "preview_safe_route",
+  "version": "0.1.0",
+  "hash_algorithm": "sha256-file-list-v1",
+  "artifact_hash": "d05c5c0aed6be59dbfb0f82c118b59099831c9c25db5c055fb56fb0326c7c7ca",
+  "files": [
+    "skills/preview_safe_route/SKILL.md",
+    "skills/preview_safe_route/evals/evals.json",
+    "skills/preview_safe_route/schemas/safe_route_preview_result.schema.json",
+    "skills/preview_safe_route/skill-card.md",
+    "skills/preview_safe_route/skill.yaml",
+    "src/robot_navigation_skills/package.xml",
+    "src/robot_navigation_skills/setup.py",
+    "src/robot_navigation_skills/robot_navigation_skills/__init__.py",
+    "src/robot_navigation_skills/robot_navigation_skills/preview.py",
+    "src/robot_navigation_skills/robot_navigation_skills/preview_ros.py",
+    "src/robot_navigation_skills/test/test_preview.py",
+    "src/robot_navigation_skills/test/test_result_schema.py"
+  ]
+}

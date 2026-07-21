@@ -1,0 +1,200 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/navigation-result.schema.json",
+  "title": "Approved Pose Navigation Result",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "skill",
+    "skill_version",
+    "state",
+    "goal_reached",
+    "motion_command_sent",
+    "request",
+    "preflight",
+    "navigation",
+    "postcondition",
+    "reasons"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "skill": {"const": "navigate_to_approved_pose"},
+    "skill_version": {"const": "0.1.0"},
+    "state": {
+      "enum": [
+        "succeeded",
+        "rejected",
+        "failed",
+        "canceled",
+        "safety_stopped",
+        "unavailable"
+      ]
+    },
+    "goal_reached": {"type": "boolean"},
+    "motion_command_sent": {"type": "boolean"},
+    "request": {"$ref": "#/$defs/request"},
+    "preflight": {"$ref": "#/$defs/preflight"},
+    "navigation": {"$ref": "#/$defs/navigation"},
+    "postcondition": {"$ref": "#/$defs/postcondition"},
+    "reasons": {
+      "type": "array",
+      "items": {"type": "string", "minLength": 1},
+      "uniqueItems": true
+    }
+  },
+  "$defs": {
+    "hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "point2": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["x", "y"],
+      "properties": {
+        "x": {"type": "number"},
+        "y": {"type": "number"}
+      }
+    },
+    "pose": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["frame_id", "x", "y", "yaw_deg", "observed_at_ns"],
+      "properties": {
+        "frame_id": {"const": "map"},
+        "x": {"type": "number"},
+        "y": {"type": "number"},
+        "yaw_deg": {"type": "number"},
+        "observed_at_ns": {"type": "integer", "minimum": 0}
+      }
+    },
+    "request": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["goal", "keepout_profile", "approved_preview"],
+      "properties": {
+        "goal": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["frame_id", "x", "y", "yaw_deg"],
+          "properties": {
+            "frame_id": {"const": "map"},
+            "x": {"type": "number", "minimum": -20, "maximum": 20},
+            "y": {"type": "number", "minimum": -20, "maximum": 20},
+            "yaw_deg": {"type": "number", "minimum": -180, "maximum": 180}
+          }
+        },
+        "keepout_profile": {"const": "rbot_water_puddle_v2"},
+        "approved_preview": {
+          "type": "object",
+          "additionalProperties": false,
+          "required": ["path_sha256", "semantic_map_sha256"],
+          "properties": {
+            "path_sha256": {"$ref": "#/$defs/hash"},
+            "semantic_map_sha256": {"$ref": "#/$defs/hash"}
+          }
+        }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "allowed",
+        "health_state",
+        "health_observed_at_ns",
+        "preview_state",
+        "preview_observed_at_ns",
+        "current_path_sha256",
+        "approved_path_sha256",
+        "path_identity_matches",
+        "current_semantic_map_sha256",
+        "approved_semantic_map_sha256",
+        "semantic_identity_matches",
+        "keepout_center_m",
+        "keepout_radius_m",
+        "global_center_cost",
+        "minimum_clearance_m",
+        "reasons"
+      ],
+      "properties": {
+        "allowed": {"type": "boolean"},
+        "health_state": {"enum": ["healthy", "degraded", "unsafe", "unavailable"]},
+        "health_observed_at_ns": {"type": "integer", "minimum": 0},
+        "preview_state": {"enum": ["safe", "unsafe", "unavailable", "invalid"]},
+        "preview_observed_at_ns": {"type": "integer", "minimum": 0},
+        "current_path_sha256": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/hash"}]
+        },
+        "approved_path_sha256": {"$ref": "#/$defs/hash"},
+        "path_identity_matches": {"type": "boolean"},
+        "current_semantic_map_sha256": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/hash"}]
+        },
+        "approved_semantic_map_sha256": {"$ref": "#/$defs/hash"},
+        "semantic_identity_matches": {"type": "boolean"},
+        "keepout_center_m": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/point2"}]
+        },
+        "keepout_radius_m": {"type": ["number", "null"], "exclusiveMinimum": 0},
+        "global_center_cost": {"type": ["integer", "null"], "minimum": 0, "maximum": 255},
+        "minimum_clearance_m": {"type": ["number", "null"]},
+        "reasons": {
+          "type": "array",
+          "items": {"type": "string", "minLength": 1},
+          "uniqueItems": true
+        }
+      }
+    },
+    "navigation": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "action",
+        "goal_accepted",
+        "result_status",
+        "nav2_error_code",
+        "nav2_error_message",
+        "started_at_ns",
+        "completed_at_ns",
+        "cancel_requested"
+      ],
+      "properties": {
+        "action": {"const": "/navigate_to_pose"},
+        "goal_accepted": {"type": "boolean"},
+        "result_status": {"type": ["integer", "null"], "minimum": 0},
+        "nav2_error_code": {"type": ["integer", "null"], "minimum": 0},
+        "nav2_error_message": {"type": "string"},
+        "started_at_ns": {"type": "integer", "minimum": 0},
+        "completed_at_ns": {"type": "integer", "minimum": 0},
+        "cancel_requested": {"type": "boolean"}
+      }
+    },
+    "postcondition": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "final_pose",
+        "goal_position_error_m",
+        "goal_yaw_error_deg",
+        "minimum_center_distance_m",
+        "entered_keepout",
+        "safety_remained_ok",
+        "robot_stopped",
+        "final_linear_speed_mps",
+        "final_angular_speed_rps"
+      ],
+      "properties": {
+        "final_pose": {
+          "oneOf": [{"type": "null"}, {"$ref": "#/$defs/pose"}]
+        },
+        "goal_position_error_m": {"type": ["number", "null"], "minimum": 0},
+        "goal_yaw_error_deg": {"type": ["number", "null"], "minimum": 0, "maximum": 180},
+        "minimum_center_distance_m": {"type": ["number", "null"], "minimum": 0},
+        "entered_keepout": {"type": ["boolean", "null"]},
+        "safety_remained_ok": {"type": "boolean"},
+        "robot_stopped": {"type": "boolean"},
+        "final_linear_speed_mps": {"type": ["number", "null"], "minimum": 0},
+        "final_angular_speed_rps": {"type": ["number", "null"], "minimum": 0}
+      }
+    }
+  }
+}

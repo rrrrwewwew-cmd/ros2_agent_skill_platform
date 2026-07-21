@@ -1,0 +1,89 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/agent-plan.schema.json",
+  "title": "Read-only Robot Agent Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": [
+    "schema_version",
+    "decision",
+    "summary",
+    "steps",
+    "clarification"
+  ],
+  "properties": {
+    "schema_version": {"const": 1},
+    "decision": {"enum": ["plan", "clarify", "refuse"]},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "steps": {
+      "type": "array",
+      "maxItems": 6,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "step_id",
+          "skill_name",
+          "skill_version",
+          "artifact_hash",
+          "inputs",
+          "reason",
+          "expected_evidence"
+        ],
+        "properties": {
+          "step_id": {"type": "integer", "minimum": 1, "maximum": 6},
+          "skill_name": {
+            "enum": [
+              "check_robot_health",
+              "query_semantic_target",
+              "preview_safe_route"
+            ]
+          },
+          "skill_version": {
+            "type": "string",
+            "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
+          },
+          "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "inputs": {"type": "object", "maxProperties": 32},
+          "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+          "expected_evidence": {
+            "type": "array",
+            "minItems": 1,
+            "maxItems": 8,
+            "items": {"type": "string", "minLength": 1, "maxLength": 200}
+          }
+        }
+      }
+    },
+    "clarification": {"type": ["string", "null"], "maxLength": 1000}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "plan"}}},
+      "then": {
+        "properties": {
+          "steps": {"minItems": 1},
+          "clarification": {"type": "null"}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"decision": {"const": "clarify"}}},
+      "then": {
+        "properties": {
+          "steps": {"maxItems": 0},
+          "clarification": {"type": "string", "minLength": 1}
+        }
+      }
+    },
+    {
+      "if": {"properties": {"decision": {"const": "refuse"}}},
+      "then": {
+        "properties": {
+          "steps": {"maxItems": 0},
+          "clarification": {"type": "null"}
+        }
+      }
+    }
+  ]
+}

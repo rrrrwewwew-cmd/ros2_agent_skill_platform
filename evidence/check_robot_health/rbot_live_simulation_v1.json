@@ -1,0 +1,115 @@
+{
+  "schema_version": 1,
+  "skill": "check_robot_health",
+  "skill_version": "0.2.0",
+  "observation_timestamp_ns": 41519000000,
+  "state": "healthy",
+  "safe_to_proceed": true,
+  "checks": [
+    {
+      "name": "nav2_active",
+      "status": "pass",
+      "safety_critical": true,
+      "observed_at_ns": 41519000000,
+      "reason": "Nav2 managed nodes are active",
+      "evidence": {
+        "active": true,
+        "message": "",
+        "observed_at_ns": 41031000000,
+        "response_received": true
+      }
+    },
+    {
+      "name": "map_to_robot_transform",
+      "status": "pass",
+      "safety_critical": true,
+      "observed_at_ns": 41519000000,
+      "reason": "Required transform is available and fresh",
+      "evidence": {
+        "age_sec": 0.0,
+        "available": true,
+        "source_frame": "base_footprint",
+        "stamp_ns": 41519000000,
+        "target_frame": "map"
+      }
+    },
+    {
+      "name": "semantic_keepout_safety",
+      "status": "pass",
+      "safety_critical": true,
+      "observed_at_ns": 41296000000,
+      "reason": "Semantic Keepout safety evidence is current and OK",
+      "evidence": {
+        "diagnostic_age_sec": 0.223,
+        "diagnostic_level": 0,
+        "diagnostic_message": "Robot is outside the semantic keepout zone",
+        "diagnostic_name": "/keepout_safety_monitor: semantic keepout safety",
+        "diagnostic_received": true,
+        "diagnostic_stamp_ns": 41296000000,
+        "diagnostic_values": {
+          "grid_column": "199",
+          "grid_row": "199",
+          "mask_cost": "0",
+          "mask_frame": "map",
+          "mask_topic": "/local_keepout_filter_mask",
+          "nearest_keepout_clearance_m": "1.040",
+          "occupied_cells": "452",
+          "position_x_m": "-0.000",
+          "position_y_m": "0.000",
+          "robot_frame": "base_footprint",
+          "safety_ok": "true",
+          "transform_age_sec": "0.017"
+        },
+        "topic_ok": true,
+        "topic_received": true,
+        "topic_received_at_ns": 41297000000
+      }
+    },
+    {
+      "name": "sensor:/scan",
+      "status": "pass",
+      "safety_critical": false,
+      "observed_at_ns": 41400000000,
+      "reason": "Required sensor /scan is publishing fresh data",
+      "evidence": {
+        "age_sec": 0.119,
+        "message_received": true,
+        "publisher_count": 1,
+        "received_at_ns": 41469000000,
+        "stamp_ns": 41400000000,
+        "types": ["sensor_msgs/msg/LaserScan"]
+      }
+    },
+    {
+      "name": "sensor:/camera/image",
+      "status": "pass",
+      "safety_critical": false,
+      "observed_at_ns": 41400000000,
+      "reason": "Required sensor /camera/image is publishing fresh data",
+      "evidence": {
+        "age_sec": 0.119,
+        "message_received": true,
+        "publisher_count": 1,
+        "received_at_ns": 41438000000,
+        "stamp_ns": 41400000000,
+        "types": ["sensor_msgs/msg/Image"]
+      }
+    },
+    {
+      "name": "sensor:/camera/depth_image",
+      "status": "pass",
+      "safety_critical": false,
+      "observed_at_ns": 41400000000,
+      "reason": "Required sensor /camera/depth_image is publishing fresh data",
+      "evidence": {
+        "age_sec": 0.119,
+        "message_received": true,
+        "publisher_count": 1,
+        "received_at_ns": 41436000000,
+        "stamp_ns": 41400000000,
+        "types": ["sensor_msgs/msg/Image"]
+      }
+    }
+  ],
+  "reasons": []
+}

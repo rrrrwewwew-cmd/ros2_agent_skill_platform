@@ -1,0 +1,15 @@
+{
+  "schema_version": 1,
+  "request_id": "mimo_plan_example_001",
+  "provider": "xiaomi_mimo",
+  "model": "mimo-v2.5-pro",
+  "prompt_id": "robot_task_planner",
+  "prompt_version": "0.1.0",
+  "prompt_sha256": "7699bac29b1d5e7a08fdb8d666f7dff39ec758f3c203eb6e2d8f7e734b8179f2",
+  "task": {
+    "user_request": "检查机器人健康状态，并告诉我是否可以继续规划"
+  },
+  "max_output_tokens": 1024,
+  "timeout_sec": 60.0,
+  "temperature": 0.0
+}

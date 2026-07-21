@@ -1,0 +1,23 @@
+{
+  "schema_version": 1,
+  "profile_id": "bge_m3_dense_v1",
+  "base_manifest_sha256": "3511dfd21536fc7c52f194d70dd98ce249b4f5625f149d5d48e7076093bae4d0",
+  "embedding": {
+    "provider": "bge_m3_transformers_v1",
+    "dimensions": 1024,
+    "model_id": "BAAI/bge-m3",
+    "model_revision": "5617a9f61b028005a4858fdac845db406aefb181",
+    "normalize": true,
+    "pooling": "cls",
+    "max_length": 512,
+    "batch_size": 8,
+    "vector_precision_decimals": 8
+  },
+  "retrieval_policy": {
+    "bm25_weight": 0.5,
+    "embedding_weight": 0.5,
+    "minimum_score": 0.55,
+    "minimum_embedding_score": 0.45,
+    "bm25_saturation": 3.0
+  }
+}
