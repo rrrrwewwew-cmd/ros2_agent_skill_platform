@@ -43,3 +43,12 @@ stdio、BGE-M3、只读 Agent Loop 和项目一 rbot 仿真的证据独立保存
 
 作品集 v1 的“部署完成”指单机可复现构建、锁定依赖、CI、配置、健康检查、MCP/Agent CLI 和版本化
 Release，不表示完成真机安全认证、生产高可用或无人监管上线。
+
+## 正式发布记录
+
+- Pull Request：<https://github.com/rrrrwewwew-cmd/ros2_agent_skill_platform/pull/2>；
+- 合并提交：`75ea77aa8c9a47908f2e7a720ce74b53982e2b44`；
+- `main` CI：<https://github.com/rrrrwewwew-cmd/ros2_agent_skill_platform/actions/runs/29800618107>；
+- Release：<https://github.com/rrrrwewwew-cmd/ros2_agent_skill_platform/releases/tag/v1.0.0>。
+
+Pull Request CI 和合并后的 `main` CI 均在全新 ROS 2 Jazzy 容器中完成 14 包构建与 229 项测试。
