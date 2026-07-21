@@ -72,10 +72,13 @@ class PromptRegistry:
     @staticmethod
     def _validate_skill_catalog(definition):
         """Reject duplicate Skills and malformed embedded input contracts."""
-        names = [item['name'] for item in definition['allowed_skills']]
+        catalog = (
+            definition.get('allowed_skills') or definition.get('allowed_tools')
+        )
+        names = [item['name'] for item in catalog]
         if len(names) != len(set(names)):
             raise PromptRegistryError('prompt Skill names must be unique')
-        for item in definition['allowed_skills']:
+        for item in catalog:
             if 'input_schema' not in item:
                 continue
             try:

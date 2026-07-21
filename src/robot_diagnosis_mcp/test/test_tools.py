@@ -233,3 +233,29 @@ def test_subprocess_adapter_forces_offline_model_loading(tmp_path, monkeypatch):
     assert environment['TRANSFORMERS_OFFLINE'] == '1'
     assert 'HTTP_PROXY' not in environment
     assert 'HTTPS_PROXY' not in environment
+
+
+def test_subprocess_adapter_exposes_non_json_failure_detail(
+    tmp_path,
+    monkeypatch,
+):
+    """A dependency failure must survive the isolated process boundary."""
+    executable = tmp_path / 'python'
+    executable.symlink_to(Path('/usr/bin/python3'))
+    index = tmp_path / 'index.json'
+    index.write_text('{}', encoding='utf-8')
+
+    def fake_run(command, **kwargs):
+        return SimpleNamespace(
+            returncode=1,
+            stdout='',
+            stderr='ModuleNotFoundError: missing trusted dependency',
+        )
+
+    monkeypatch.setattr('robot_diagnosis_mcp.tools.subprocess.run', fake_run)
+    adapter = SubprocessRagAdapter(executable, index, [tmp_path])
+    with pytest.raises(
+        DiagnosisToolError,
+        match='missing trusted dependency',
+    ):
+        adapter.query('query', 'project2-v1', 1)

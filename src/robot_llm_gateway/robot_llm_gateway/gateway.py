@@ -26,7 +26,13 @@ class LlmGateway:
             schema_dir,
             'llm_plan_request.schema.json',
         )
-        self.plan_schema = load_schema(schema_dir, 'agent_plan.schema.json')
+        self.default_plan_schema = load_schema(
+            schema_dir,
+            'agent_plan.schema.json',
+        )
+        # Kept as a public compatibility alias for callers that inspect the
+        # default robot-task contract. Per-Prompt schemas are loaded in plan().
+        self.plan_schema = self.default_plan_schema
         self.result_schema = load_schema(
             schema_dir,
             'llm_gateway_result.schema.json',
@@ -60,7 +66,24 @@ class LlmGateway:
                 str(exc),
                 _runtime((monotonic() - started) * 1000.0),
             )
-        messages = self._messages(prompt.definition, request['task'])
+        try:
+            plan_schema = load_schema(
+                self.schema_dir,
+                prompt.definition['output_schema'],
+            )
+        except ContractError as exc:
+            return self._failure(
+                request,
+                request_hash,
+                'prompt_mismatch',
+                str(exc),
+                _runtime((monotonic() - started) * 1000.0),
+            )
+        messages = self._messages(
+            prompt.definition,
+            request['task'],
+            plan_schema,
+        )
         try:
             response = self.provider.complete(
                 model=request['model'],
@@ -100,7 +123,7 @@ class LlmGateway:
                 runtime,
             )
         try:
-            validate_instance(plan, self.plan_schema, 'agent plan')
+            validate_instance(plan, plan_schema, 'agent plan')
             self._validate_catalog_bindings(plan, prompt.definition)
         except ContractError as exc:
             return self._failure(
@@ -115,10 +138,11 @@ class LlmGateway:
         validate_instance(result, self.result_schema, 'gateway result')
         return result
 
-    def _messages(self, definition, task):
+    def _messages(self, definition, task, plan_schema=None):
         """Build trusted system content and an untrusted JSON user payload."""
-        schema_text = canonical_json(self.plan_schema)
-        skills_text = canonical_json(definition['allowed_skills'])
+        schema_text = canonical_json(plan_schema or self.default_plan_schema)
+        catalog = definition.get('allowed_skills') or definition['allowed_tools']
+        skills_text = canonical_json(catalog)
         system = (
             f"{definition['system_message']}\n\n"
             f'Allowed Skill catalog:\n{skills_text}\n\n'
@@ -132,7 +156,9 @@ class LlmGateway:
     def _validate_catalog_bindings(self, plan, definition):
         """Require exact Skill pins, ordered steps, and valid Skill inputs."""
         catalog = {
-            item['name']: item for item in definition['allowed_skills']
+            item['name']: item for item in (
+                definition.get('allowed_skills') or definition['allowed_tools']
+            )
         }
         expected_step_ids = list(range(1, len(plan['steps']) + 1))
         actual_step_ids = [step['step_id'] for step in plan['steps']]
@@ -141,20 +167,33 @@ class LlmGateway:
                 'plan step ids must be consecutive and start at one'
             )
         for step in plan['steps']:
-            skill = catalog.get(step['skill_name'])
+            if 'skill_name' in step:
+                name_key = 'skill_name'
+                version_key = 'skill_version'
+                hash_key = 'artifact_hash'
+            elif 'tool_name' in step:
+                name_key = 'tool_name'
+                version_key = 'tool_version'
+                hash_key = 'contract_sha256'
+            else:
+                raise ContractError('plan step has no governed catalog identity')
+            skill = catalog.get(step[name_key])
             if skill is None:
-                raise ContractError('plan references a Skill outside catalog')
-            if step['skill_version'] != skill['version']:
-                raise ContractError('plan Skill version is not pinned')
-            if step['artifact_hash'] != skill['artifact_hash']:
-                raise ContractError('plan Skill artifact hash is not pinned')
+                raise ContractError('plan references an entry outside catalog')
+            if step[version_key] != skill['version']:
+                raise ContractError('plan catalog version is not pinned')
+            expected_hash = skill.get('artifact_hash') or skill.get(
+                'contract_sha256'
+            )
+            if step[hash_key] != expected_hash:
+                raise ContractError('plan catalog hash is not pinned')
             if 'input_schema' in skill:
                 validate_instance(
                     step['inputs'],
                     skill['input_schema'],
                     (
-                        f"Skill inputs for step {step['step_id']} "
-                        f"({step['skill_name']})"
+                        f"catalog inputs for step {step['step_id']} "
+                        f'({step[name_key]})'
                     ),
                 )
 

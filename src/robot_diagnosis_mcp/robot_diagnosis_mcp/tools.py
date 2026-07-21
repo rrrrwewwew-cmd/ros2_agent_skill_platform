@@ -153,8 +153,10 @@ class SubprocessRagAdapter:
         try:
             result = json.loads(completed.stdout)
         except json.JSONDecodeError as error:
+            detail = (completed.stderr or completed.stdout).strip()[-800:]
             raise DiagnosisToolError(
-                'isolated RAG process returned non-JSON output'
+                'isolated RAG process returned non-JSON output '
+                f'(exit {completed.returncode}): {detail}'
             ) from error
         if completed.returncode != 0 or result.get('status') == 'failed':
             message = result.get('error') or completed.stderr[-500:]

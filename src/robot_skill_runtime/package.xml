@@ -12,6 +12,7 @@
   <exec_depend>robot_controlled_navigation_skills</exec_depend>
   <exec_depend>robot_navigation_skills</exec_depend>
   <exec_depend>robot_skill_registry</exec_depend>
+  <exec_depend>robot_composite_skills</exec_depend>
   <exec_depend>robot_semantic_skills</exec_depend>
   <exec_depend>safe_agent_core</exec_depend>
 

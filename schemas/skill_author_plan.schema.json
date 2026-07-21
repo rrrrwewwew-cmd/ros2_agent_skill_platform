@@ -1,0 +1,87 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/skill-author-plan.schema.json",
+  "title": "Bounded ROS 2 Skill Draft Plan",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "decision", "summary", "steps", "clarification"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "decision": {"enum": ["plan", "clarify", "refuse"]},
+    "summary": {"type": "string", "minLength": 1, "maxLength": 1000},
+    "steps": {
+      "type": "array",
+      "maxItems": 1,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": ["step_id", "skill_name", "skill_version", "artifact_hash", "inputs", "reason", "expected_evidence"],
+        "properties": {
+          "step_id": {"const": 1},
+          "skill_name": {"const": "render_bounded_ros2_skill"},
+          "skill_version": {"const": "0.1.0"},
+          "artifact_hash": {"const": "9d47d8188c1ce718673eb0a22edda8510e33084948e7183fa19f27faaf6b701b"},
+          "inputs": {
+            "type": "object",
+            "additionalProperties": false,
+            "required": ["name", "version", "description", "template_family", "safety_level", "requires_human_approval", "inputs", "dependency_steps", "preconditions", "effects", "test_scenarios"],
+            "properties": {
+              "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,63}$"},
+              "version": {"type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"},
+              "description": {"type": "string", "minLength": 10, "maxLength": 1000},
+              "template_family": {"const": "bounded_python_workflow_v1"},
+              "safety_level": {"enum": ["read_only", "controlled"]},
+              "requires_human_approval": {"type": "boolean"},
+              "inputs": {"type": "object", "maxProperties": 16, "additionalProperties": {"type": "object"}},
+              "dependency_steps": {
+                "type": "array",
+                "minItems": 1,
+                "maxItems": 6,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["step_id", "skill_name", "on_failure"],
+                  "properties": {
+                    "step_id": {"type": "integer", "minimum": 1, "maximum": 6},
+                    "skill_name": {"enum": ["check_robot_health", "query_semantic_target", "preview_safe_route", "navigate_to_approved_pose"]},
+                    "on_failure": {"enum": ["abort", "request_approval"]}
+                  }
+                }
+              },
+              "preconditions": {"type": "array", "maxItems": 12, "items": {"type": "string", "minLength": 1}},
+              "effects": {"type": "array", "maxItems": 12, "items": {"type": "string", "minLength": 1}},
+              "test_scenarios": {
+                "type": "array",
+                "minItems": 3,
+                "maxItems": 12,
+                "items": {
+                  "type": "object",
+                  "additionalProperties": false,
+                  "required": ["name", "failed_step", "expected_state"],
+                  "properties": {
+                    "name": {"type": "string", "pattern": "^[a-z][a-z0-9_]{2,63}$"},
+                    "failed_step": {"type": ["integer", "null"], "minimum": 1, "maximum": 6},
+                    "expected_state": {"enum": ["succeeded", "aborted", "waiting_approval"]}
+                  }
+                }
+              }
+            }
+          },
+          "reason": {"type": "string", "minLength": 1, "maxLength": 500},
+          "expected_evidence": {"type": "array", "minItems": 1, "maxItems": 8, "items": {"type": "string", "minLength": 1}}
+        }
+      }
+    },
+    "clarification": {"type": ["string", "null"], "maxLength": 1000}
+  },
+  "allOf": [
+    {
+      "if": {"properties": {"decision": {"const": "plan"}}},
+      "then": {"properties": {"steps": {"minItems": 1}, "clarification": {"type": "null"}}}
+    },
+    {
+      "if": {"properties": {"decision": {"enum": ["clarify", "refuse"]}}},
+      "then": {"properties": {"steps": {"maxItems": 0}}}
+    }
+  ]
+}

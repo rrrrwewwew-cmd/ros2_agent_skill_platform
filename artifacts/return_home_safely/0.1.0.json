@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "name": "return_home_safely",
+  "version": "0.1.0",
+  "hash_algorithm": "sha256-file-list-v1",
+  "artifact_hash": "1c8968d1e246ac7ff371ee9a9985902265dfa3f6e4216863eb47b87ae00eca63",
+  "files": [
+    "schemas/composite_skill_result.schema.json",
+    "skills/return_home_safely/SKILL.md",
+    "skills/return_home_safely/evals/evals.json",
+    "skills/return_home_safely/skill-card.md",
+    "skills/return_home_safely/skill.yaml",
+    "src/robot_composite_skills/package.xml",
+    "src/robot_composite_skills/setup.py",
+    "src/robot_composite_skills/robot_composite_skills/__init__.py",
+    "src/robot_composite_skills/robot_composite_skills/workflows.py",
+    "src/robot_composite_skills/test/test_workflows.py"
+  ]
+}

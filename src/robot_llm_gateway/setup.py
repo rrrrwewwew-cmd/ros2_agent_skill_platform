@@ -19,6 +19,18 @@ prompt_eval_files = sorted(
         repository_root / 'prompts/robot_task_planner/evals'
     ).glob('*.json')
 )
+diagnosis_prompt_files = sorted(
+    '../../prompts/experiment_diagnosis_planner/' + path.name
+    for path in (
+        repository_root / 'prompts/experiment_diagnosis_planner'
+    ).glob('*.json')
+)
+skill_author_prompt_files = sorted(
+    '../../prompts/skill_author_planner/' + path.name
+    for path in (
+        repository_root / 'prompts/skill_author_planner'
+    ).glob('*.json')
+)
 
 
 setup(
@@ -34,6 +46,15 @@ setup(
          prompt_files),
         ('share/' + package_name + '/prompts/robot_task_planner/evals',
          prompt_eval_files),
+        (
+            'share/' + package_name + '/prompts/'
+            'experiment_diagnosis_planner',
+            diagnosis_prompt_files,
+        ),
+        (
+            'share/' + package_name + '/prompts/skill_author_planner',
+            skill_author_prompt_files,
+        ),
     ],
     install_requires=['setuptools', 'jsonschema'],
     zip_safe=True,

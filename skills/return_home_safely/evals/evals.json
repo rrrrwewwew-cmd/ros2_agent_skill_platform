@@ -1,0 +1,12 @@
+{
+  "schema_version": 1,
+  "skill": "return_home_safely",
+  "version": "0.1.0",
+  "cases": [
+    {"id": "safe_return", "expected_state": "succeeded"},
+    {"id": "health_unsafe", "expected_state": "aborted"},
+    {"id": "semantic_target_missing", "expected_state": "aborted"},
+    {"id": "route_intersects_keepout", "expected_state": "aborted"},
+    {"id": "navigation_canceled", "expected_state": "aborted"}
+  ]
+}

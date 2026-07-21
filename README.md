@@ -30,7 +30,8 @@ source ~/robot_agent_ws/install/setup.bash
 
 ## 当前状态
 
-确定性安全底座、真实 MiMo 规划评测、只读 Agent Loop 和版本化 RAG 首个切片已完成。仓库已包含：
+项目二六个实现阶段已经形成代码闭环：确定性安全底座、真实 MiMo Gateway、版本化 RAG、
+MCP 实验诊断 Agent、受治理 Skill Author、项目一复合 Skill 和统一评测/部署入口。仓库已包含：
 
 - [最新进度检查点与下次恢复入口](docs/current_progress.md)；
 - [系统架构](docs/architecture.md)；
@@ -48,11 +49,20 @@ source ~/robot_agent_ws/install/setup.bash
 - [持久化只读 Agent Loop、证据门控与父子 Trace](docs/read_only_agent_loop.md)；
 - [版本化 RAG、引用信任链与检索评测](docs/versioned_rag.md)；
 - [官方 MCP stdio 实验诊断工具、隔离 RAG 与协议证据](docs/diagnosis_mcp.md)；
+- [MiMo + MCP 强制证据顺序诊断 Agent](docs/diagnosis_agent.md)；
+- [受治理 ROS 2 Skill Author](docs/governed_skill_author.md)；
+- [项目一能力接入与两个复合 Skill](docs/project1_composite_skills.md)；
+- [最终评测与可复现部署](docs/final_evaluation_and_deployment.md)；
+- [项目二 v1 技术复盘与证据边界](docs/final_retrospective.md)；
+- [最终统一验收的脱敏 hash 证据](evidence/final_evaluation/reproducible_policy_v1.json)；
+- [真实 MiMo + MCP + BGE-M3 诊断 Agent 证据](evidence/diagnosis_agent/live_mimo_mcp_bge_v1.json)；
 - [机器可读 Skill JSON Schema](schemas/skill.schema.json)；
 - [第一个只读 Skill：`check_robot_health`](skills/check_robot_health)；
 - [第二个只读 Skill：`query_semantic_target`](skills/query_semantic_target)；
 - [第三个只读 Skill：`preview_safe_route`](skills/preview_safe_route)；
 - [第四个受控 Skill：`navigate_to_approved_pose`](skills/navigate_to_approved_pose)；
+- [第五个受控候选 Skill：`observe_and_avoid_water_risk`](skills/observe_and_avoid_water_risk)；
+- [第六个受控候选 Skill：`return_home_safely`](skills/return_home_safely)；
 - `safe_agent_core` ROS 2 Python 包和最小契约验证器；
 - `robot_skill_registry` SQLite Registry、审批/签名状态与 Agent run store；
 - ROS 2 Jazzy CI。
@@ -66,9 +76,11 @@ hash 和 Ed25519 发布证明的 `ACTIVE` artifact 进入固定适配器的 Skil
 `health → route preview`，两个 signed ACTIVE Skill 通过 Runtime 与证据门控执行，生成父子 Trace，
 且明确没有发送运动命令。`robot_rag@0.2.0` 已提供 13 个版本化来源、41 个确定性 chunk、
 feature-hash baseline、固定 revision 的 BGE-M3 混合检索、hash-bound citation 和 30 条
-development/holdout A/B；learned 候选已通过一次性 holdout 晋级门。五个实验诊断 MCP Tool 也已
-通过真实 stdio 协议、BGE-M3 cited retrieval、报告幂等和源日志不变验证。下一项是 MiMo 诊断
-Prompt 与强制证据顺序的 Agent Loop；受控导航暂不暴露给模型。
+development/holdout A/B；learned 候选已通过一次性 holdout 晋级门。五个实验诊断 MCP Tool 已
+通过真实 stdio 协议、BGE-M3 cited retrieval、报告幂等和源日志不变验证。诊断 Agent 进一步强制
+执行 `list → inspect → analyze → retrieve → report`。Skill Author 只允许 MiMo 生成结构化工作流，
+源代码来自确定性模板并经过构建、测试、仿真和人工审批边界。项目一水坑观察、Keepout 和导航已
+接入两个固定复合 adapter；两个新 artifact 在总验收和人工发布前仍保持候选状态。
 
 ## 仓库结构
 
@@ -84,6 +96,10 @@ robot_agent_ws/
 ├── src/robot_agent_orchestrator/ # 持久化只读 Agent Loop、证据门控与父子 Trace
 ├── src/robot_rag/             # 版本化来源、确定性索引、带引用检索与评测
 ├── src/robot_diagnosis_mcp/   # 官方 FastMCP stdio、诊断 Tool 与隔离 RAG adapter
+├── src/robot_diagnosis_agent/ # MiMo 计划、固定 MCP 顺序、证据门与持久化 Trace
+├── src/robot_skill_author/    # RAG、结构化草案、确定性模板、sandbox 与人工审批
+├── src/robot_composite_skills/# 项目一水坑观察、Keepout 与导航复合 adapter
+├── src/safe_agent_eval/       # 42 场景冻结安全/诊断/生成评测
 ├── rag/                       # 冻结 corpus manifest、事实卡和检索用例
 ├── artifacts/                 # 版本化 Skill artifact file locks
 ├── skills/                    # 版本化、可评测的机器人/Agent Skill
@@ -93,11 +109,10 @@ robot_agent_ws/
 └── .github/workflows/         # ROS 2 Jazzy CI
 ```
 
-后续包将按验收阶段加入，而不是一次性建立空框架：
-
-- `robot_diagnosis_agent`；
-- `robot_skill_author`；
-- `safe_agent_eval`。
+新增包都包含真实实现、Schema 和测试，不是空目录占位。2026-07-21 的统一验收结果为：14 个包
+构建成功、229/229 代码测试通过、Skill Author 10/10、最终冻结策略评测 42/42，实际不安全动作 0。
+两个项目一复合 Skill 已完成人工发布审批、Ed25519 签名和 `ACTIVE` 晋级，并分别通过一次性精确
+执行审批下的现场成功闭环；已消费审批的重放在 `tool_call` 前失败关闭。
 
 ## 目标技术栈
 
@@ -188,6 +203,23 @@ ros2 run safe_agent_core experiment_analyze \
 
 该命令不调用 LLM；它验证输入 hash，计算轨迹距离矩阵，对齐控制指令，标出异常窗口，并输出
 `analysis.json`、`report.md`、`trajectory.svg` 和 `motion_timeseries.svg`。
+
+运行 MiMo + MCP 诊断 Agent（要求当前 shell 已设置 `MIMO_API_KEY`，并已构建 BGE-M3 索引）：
+
+```bash
+ros2 run robot_diagnosis_agent run_diagnosis_agent \
+  --task '分析 jitter_demo_001 的异常时间段、控制关联和可能机制，生成有引用的报告' \
+  --experiment-run-id jitter_demo_001
+```
+
+运行受治理 Skill Author 的 10 需求本地评测以及最终 42 场景总评测：
+
+```bash
+scripts/final_verify.sh
+```
+
+总验收包含真实候选 `colcon build`、unit/simulation fixtures 和“自动激活数必须为 0”的硬门。冻结
+策略评测不会冒充现场 ROS 或真实 MiMo 结果，二者证据在报告中分开陈述。
 
 初始化 Registry 并登记参考 Skill：
 

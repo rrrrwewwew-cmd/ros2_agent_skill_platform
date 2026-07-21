@@ -32,6 +32,18 @@ class FixedRunner:
         )
 
 
+class SequenceRunner:
+    """Return configured process results and retain retry boundaries."""
+
+    def __init__(self, results):
+        self.results = list(results)
+        self.calls = []
+
+    def __call__(self, command, **options):
+        self.calls.append({'command': command, 'options': options})
+        return self.results.pop(0)
+
+
 def _inputs():
     return {
         'goal_x': 4.5,
@@ -172,3 +184,52 @@ def test_outer_timeout_requests_fixed_emergency_cancellation():
     assert calls[0]['command'][1:3] == [
         '-m', 'robot_controlled_navigation_skills.cancel_ros',
     ]
+
+
+def test_transient_sim_clock_startup_retries_before_motion():
+    """Retry only the known preflight clock-zero exception."""
+    cold = SimpleNamespace(
+        returncode=1,
+        stdout='',
+        stderr=(
+            'traceback\nrobot_navigation_skills.preview.'
+            'RoutePreviewInputError: observed_at_ns must be positive\n'
+        ),
+    )
+    success = SimpleNamespace(
+        returncode=0,
+        stdout=json.dumps(_success_result()),
+        stderr='',
+    )
+    runner = SequenceRunner([cold, success])
+    adapter = ApprovedNavigationAdapter(
+        REPOSITORY_ROOT, use_sim_time=True, runner=runner,
+    )
+
+    result = adapter.invoke(_inputs(), 120.0)
+
+    assert result['state'] == 'succeeded'
+    assert len(runner.calls) == 2
+    assert runner.calls[1]['options']['timeout'] <= (
+        runner.calls[0]['options']['timeout']
+    )
+
+
+def test_unknown_process_failure_is_not_retried_and_surfaces_tail():
+    """Unknown exit-one errors remain fail-closed and observable."""
+    failed = SimpleNamespace(
+        returncode=1,
+        stdout='',
+        stderr='traceback\nRuntimeError: unexpected failure\n',
+    )
+    runner = SequenceRunner([failed])
+    adapter = ApprovedNavigationAdapter(
+        REPOSITORY_ROOT, use_sim_time=True, runner=runner,
+    )
+
+    with pytest.raises(
+        SkillAdapterError, match='RuntimeError: unexpected failure',
+    ):
+        adapter.invoke(_inputs(), 120.0)
+
+    assert len(runner.calls) == 1

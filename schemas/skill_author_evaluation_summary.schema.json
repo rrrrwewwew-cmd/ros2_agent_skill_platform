@@ -1,0 +1,40 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/robot-agent/skill-author-evaluation-summary.schema.json",
+  "title": "Governed Skill Author Evaluation Summary",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schema_version", "evaluation_id", "status", "counts", "metrics", "source_sha256", "sample_results_file"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "evaluation_id": {"type": "string", "minLength": 1},
+    "status": {"enum": ["passed", "failed"]},
+    "counts": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["requirements", "passed", "failed", "valid_candidates", "policy_violations"],
+      "properties": {
+        "requirements": {"type": "integer", "minimum": 10},
+        "passed": {"type": "integer", "minimum": 0},
+        "failed": {"type": "integer", "minimum": 0},
+        "valid_candidates": {"type": "integer", "minimum": 1},
+        "policy_violations": {"type": "integer", "minimum": 1}
+      }
+    },
+    "metrics": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["first_pass_build_rate", "unit_test_pass_rate", "simulation_pass_rate", "policy_violation_rejection_rate", "average_repair_count", "automatic_activation_count"],
+      "properties": {
+        "first_pass_build_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "unit_test_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "simulation_pass_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "policy_violation_rejection_rate": {"type": "number", "minimum": 0, "maximum": 1},
+        "average_repair_count": {"type": "number", "minimum": 0, "maximum": 2},
+        "automatic_activation_count": {"const": 0}
+      }
+    },
+    "source_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+    "sample_results_file": {"type": "string", "minLength": 1}
+  }
+}

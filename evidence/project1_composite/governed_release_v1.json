@@ -1,0 +1,54 @@
+{
+  "schema_version": 1,
+  "evidence_type": "project_one_composite_governed_release",
+  "released_at": "2026-07-20",
+  "skills": [
+    {
+      "name": "observe_and_avoid_water_risk",
+      "version": "0.1.0",
+      "safety_level": "controlled",
+      "artifact_hash": "3b4158d71f8b3485d2fb85fb59aed37af6e0c32387c96114c505008b763e916a",
+      "release_envelope_sha256": "24424d18591e256f5c845eebaae99c01c443c714838c95ece177fca8000c0260",
+      "final_state": "ACTIVE"
+    },
+    {
+      "name": "return_home_safely",
+      "version": "0.1.0",
+      "safety_level": "controlled",
+      "artifact_hash": "1c8968d1e246ac7ff371ee9a9985902265dfa3f6e4216863eb47b87ae00eca63",
+      "release_envelope_sha256": "32041f6deba9ec35dcef630a4562fae390d681d38b150c6625c5db433515711a",
+      "final_state": "ACTIVE"
+    }
+  ],
+  "governance": {
+    "approval_actor": "human_li",
+    "approval_decision": "APPROVED",
+    "approval_basis": "User explicitly approved both exact composite Skill releases after hash-bound tests and the live grounded-perception preflight.",
+    "signature_algorithm": "ed25519",
+    "artifact_hash_algorithm": "sha256-file-list-v1",
+    "signer": "local_release_authority@23ebcb2689b93221",
+    "public_key_fingerprint": "23ebcb2689b93221dec5de57e8a4344c54b9fbc63654ae16bef2a26634e36c8a",
+    "public_key_file_sha256": "6b380785df7e430ed1eb07cb4f961b5cc50d01a46713cc728adbfc9e056420f3",
+    "runtime_reverification_required": true,
+    "lifecycle": [
+      "DRAFT",
+      "GENERATED",
+      "STATIC_VALIDATED",
+      "BUILT",
+      "UNIT_TESTED",
+      "SIMULATION_TESTED",
+      "HUMAN_APPROVED",
+      "SIGNED",
+      "ACTIVE"
+    ]
+  },
+  "live_preflight_evidence": "evidence/project1_composite/live_grounded_observation_v1.json",
+  "execution": {
+    "execution_approval_created": false,
+    "motion_command_sent_during_release": false,
+    "per_run_exact_approval_still_required": true,
+    "approval_ttl_bounded": true,
+    "approval_single_use_transactional": true
+  },
+  "secrets_committed": false
+}

@@ -1,0 +1,53 @@
+{
+  "schema_version": 1,
+  "evidence_type": "governed_composite_skill_live_execution",
+  "recorded_on": "2026-07-21",
+  "run_id": "observe_avoid_east_live_005",
+  "trace_id": "trace_observe_avoid_east_live_005",
+  "trace_file": "/home/li/.ros/robot_agent/traces/observe_avoid_east_live_005.jsonl",
+  "trace_sha256": "52fca044da838e1b7151f0594a77665c2e412166c03e642c70e0de885fdeb6c7",
+  "skill": {
+    "name": "observe_and_avoid_water_risk",
+    "version": "0.1.0",
+    "artifact_hash": "3b4158d71f8b3485d2fb85fb59aed37af6e0c32387c96114c505008b763e916a"
+  },
+  "approval": {
+    "approval_id": "approval_observe_avoid_east_live_005",
+    "actor": "human_li",
+    "decision": "APPROVED",
+    "invocation_hash": "71dce1acf3e42228a4fead24a50920b78875bb7a46872ec6a6e606249c8c329d",
+    "consumed_by_run_id": "observe_avoid_east_live_005",
+    "single_use_consumed": true
+  },
+  "perception": {
+    "risk_found": true,
+    "target_id": "water_puddle",
+    "landmark_updated": true,
+    "accepted_observations": 5,
+    "rejected_observations": 1,
+    "projected_map_m": {
+      "x": 1.67104972635503,
+      "y": 0.007173170267515301
+    },
+    "catalog_error_m": 0.3290284743039536
+  },
+  "result": {
+    "agent_state": "SUCCEEDED",
+    "goal_reached": true,
+    "motion_command_sent": true,
+    "route_length_m": 5.113481343331553,
+    "planned_minimum_clearance_m": 0.38236598110815856,
+    "observed_minimum_center_distance_m": 0.9492951874643326,
+    "entered_keepout": false,
+    "safety_remained_ok": true,
+    "robot_stopped": true,
+    "goal_position_error_m": 0.05047501363214854,
+    "goal_yaw_error_deg": 13.884695471515073
+  },
+  "identity": {
+    "path_sha256": "821dcc0ac53d084a6e88d29687ad702007e58394794602bb740c34e2afbceadf",
+    "semantic_map_sha256": "026e15d59e7b40ce219a9e447dc78063e82b0d4c956a2f020982d93d0b07867f",
+    "path_identity_matches": true,
+    "semantic_identity_matches": true
+  }
+}

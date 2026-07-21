@@ -5,6 +5,11 @@ from pathlib import Path
 import time
 
 from jsonschema import Draft202012Validator, ValidationError
+from robot_composite_skills import (
+    CompositeWorkflowAdapter,
+    CompositeWorkflowError,
+    GroundedRiskObservationAdapter,
+)
 from robot_skill_registry import (
     AgentRunStore,
     RegistryConflictError,
@@ -58,11 +63,33 @@ class SkillExecutor:
         navigation_adapter = ApprovedNavigationAdapter(
             self.repository_root, use_sim_time=use_sim_time,
         )
+        observation_adapter = GroundedRiskObservationAdapter(
+            use_sim_time=use_sim_time,
+        )
+        observe_composite = CompositeWorkflowAdapter(
+            self.repository_root,
+            'observe_and_avoid_water_risk',
+            default_adapter,
+            semantic_adapter,
+            preview_adapter,
+            navigation_adapter,
+            observation_adapter=observation_adapter,
+        )
+        return_composite = CompositeWorkflowAdapter(
+            self.repository_root,
+            'return_home_safely',
+            default_adapter,
+            semantic_adapter,
+            preview_adapter,
+            navigation_adapter,
+        )
         self.adapters = adapters or {
             default_adapter.entrypoint: default_adapter,
             semantic_adapter.entrypoint: semantic_adapter,
             preview_adapter.entrypoint: preview_adapter,
             navigation_adapter.entrypoint: navigation_adapter,
+            observe_composite.entrypoint: observe_composite,
+            return_composite.entrypoint: return_composite,
         }
         self._invocation_schema = self._load_schema('skill_invocation')
         self._result_schema = self._load_schema('skill_execution_result')
@@ -160,6 +187,26 @@ class SkillExecutor:
             manifest['requires_human_approval'] or
             manifest['safety_level'] in {'controlled', 'high'}
         )
+
+    @staticmethod
+    def _validate_goal_completion(record, output):
+        """Treat a valid but aborted composite as an unsuccessful run."""
+        composite_entrypoints = {
+            'robot_composite_skills.workflows:'
+            'observe_and_avoid_water_risk',
+            'robot_composite_skills.workflows:return_home_safely',
+        }
+        if (
+            record['manifest']['entrypoint'] in composite_entrypoints
+            and output.get('state') != 'succeeded'
+        ):
+            reasons = output.get('reasons') or [
+                'composite goal was not completed'
+            ]
+            raise CompositeWorkflowError(
+                'composite workflow did not complete: '
+                + '; '.join(str(reason) for reason in reasons)
+            )
 
     @staticmethod
     def _transition(store, trace, run_id, current, target, actor,
@@ -354,6 +401,7 @@ class SkillExecutor:
                 )
                 current = 'VERIFYING'
                 adapter.validate_result(output)
+                self._validate_goal_completion(record, output)
                 self._transition(
                     store, trace, invocation['run_id'], current,
                     'SUCCEEDED', 'postcondition_verifier',
@@ -365,6 +413,7 @@ class SkillExecutor:
                 )
             except (
                 ExecutionPolicyError,
+                CompositeWorkflowError,
                 SkillAdapterError,
                 RegistryConflictError,
                 RegistryContractError,

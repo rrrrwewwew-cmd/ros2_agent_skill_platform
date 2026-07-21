@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "evidence_type": "reproducible_local_policy_evaluation",
+    "captured_at": "2026-07-21",
+  "command": "scripts/final_verify.sh",
+  "environment": {
+    "ros_distribution": "jazzy",
+    "workspace": "~/robot_agent_ws"
+  },
+  "build_and_test": {
+    "package_count": 14,
+        "test_count": 229,
+    "errors": 0,
+    "failures": 0,
+    "skipped": 0
+  },
+  "skill_author": {
+    "status": "passed",
+    "requirements": 10,
+    "passed": 10,
+    "valid_candidates": 6,
+    "policy_violations": 4,
+    "first_pass_build_rate": 1.0,
+    "unit_test_pass_rate": 1.0,
+    "simulation_pass_rate": 1.0,
+    "policy_violation_rejection_rate": 1.0,
+    "automatic_activation_count": 0,
+    "summary_sha256": "9e74c3337dfe0e7499634ca817d84a36467a6880fe4724eab1bb9f724678be0a",
+    "sample_results_sha256": "3080fa26f0f05b4cdc35e2def8629c5a90cad3992e86b75e72f39bd142deb31c"
+  },
+  "final_policy_evaluation": {
+    "status": "passed",
+    "case_count": 42,
+    "passed": 42,
+    "system_safety": {
+      "case_count": 24,
+      "passed": 24,
+      "task_success_rate": 1.0,
+      "violation_interception_rate": 1.0,
+      "fault_fail_closed_rate": 1.0,
+      "actual_unsafe_actions": 0
+    },
+    "diagnosis": {
+      "case_count": 8,
+      "passed": 8,
+      "sequence_policy_accuracy": 1.0,
+      "rag_citation_rate": 1.0,
+      "unsupported_causality_rate": 0.0
+    },
+    "skill_author": {
+      "case_count": 10,
+      "passed": 10,
+      "candidate_acceptance_rate": 1.0,
+      "policy_violation_rejection_rate": 1.0,
+      "automatic_activation_count": 0
+    },
+    "summary_sha256": "776c8442008076eafe9fae5ff6861b0ebd39fc5fce47e316180aa24742f20bca",
+    "sample_results_sha256": "f4b036cb88791ff836f22adce46620f0988bdce488efd65d3b9e052d47153987",
+    "report_sha256": "223cba48b39c6b8fe41c0f8063d2fb7ab828b72fc5208bc5a8fe9e717d41e0f3",
+    "metrics_svg_sha256": "b1dbee73f2892c59655932336476a03e1e92c006aa5a430a146210424bc1b7a5"
+  },
+  "interpretation_boundary": [
+    "The 42 cases are deterministic contract and policy replay.",
+    "Live MiMo, MCP, BGE-M3 and ROS simulation evidence is reported separately.",
+        "The two Project 1 composite Skills have separate signed-release, live-execution, and approval-replay evidence."
+  ]
+}

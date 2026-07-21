@@ -32,6 +32,23 @@ class FixedRunner:
         )
 
 
+class SequenceRunner:
+    """Return configured results in order and record bounded retries."""
+
+    def __init__(self, results):
+        self.results = list(results)
+        self.calls = []
+
+    def __call__(self, command, **options):
+        self.calls.append({'command': command, 'options': options})
+        result, returncode = self.results.pop(0)
+        return SimpleNamespace(
+            returncode=returncode,
+            stdout=json.dumps(result),
+            stderr='',
+        )
+
+
 def _safe_result():
     return {
         'schema_version': 1,
@@ -92,6 +109,35 @@ def _inputs():
     }
 
 
+def _clock_unavailable_result():
+    result = _safe_result()
+    result.update({
+        'state': 'unavailable',
+        'safe_to_execute': False,
+        'route': None,
+        'reasons': ['ROS clock is unavailable'],
+    })
+    result['planner'].update({
+        'available': False,
+        'error_code': None,
+        'planning_time_ms': None,
+        'path_frame': None,
+        'observed_at_ns': 0,
+    })
+    result['keepout'].update({
+        'source_content_sha256': None,
+        'source_updated_at': '',
+        'center_m': None,
+        'radius_m': None,
+        'global_center_cost': None,
+        'active_in_global_costmap': None,
+        'minimum_center_distance_m': None,
+        'minimum_clearance_m': None,
+        'intersects': None,
+    })
+    return result
+
+
 def test_adapter_uses_fixed_module_and_ros_arguments():
     """Inputs cannot select a process, ROS endpoint, or shell."""
     runner = FixedRunner(_safe_result())
@@ -142,3 +188,22 @@ def test_adapter_timeout_is_bounded():
     )
     with pytest.raises(SkillAdapterError, match='timed out'):
         adapter.invoke(_inputs(), 8.0)
+
+
+def test_adapter_retries_only_transient_ros_clock_discovery():
+    """A cold DDS clock is retried without widening other failures."""
+    runner = SequenceRunner([
+        (_clock_unavailable_result(), 4),
+        (_safe_result(), 0),
+    ])
+    adapter = SafeRoutePreviewAdapter(
+        REPOSITORY_ROOT, use_sim_time=True, runner=runner,
+    )
+
+    result = adapter.invoke(_inputs(), 8.0)
+
+    assert result['state'] == 'safe'
+    assert len(runner.calls) == 2
+    assert runner.calls[1]['options']['timeout'] <= (
+        runner.calls[0]['options']['timeout']
+    )

@@ -7,6 +7,8 @@ import subprocess
 from types import SimpleNamespace
 
 from jsonschema import Draft202012Validator
+import pytest
+from robot_composite_skills import CompositeWorkflowError
 from robot_skill_registry import AgentRunStore, SkillRegistry
 from robot_skill_registry import (
     canonical_json,
@@ -159,6 +161,28 @@ def test_simulation_tested_skill_is_refused_before_adapter_call(tmp_path):
     assert runner.calls == []
     with AgentRunStore(tmp_path / 'registry.db', clock) as store:
         assert store.get_run('run_not_active')['state'] == 'FAILED'
+
+
+def test_aborted_composite_cannot_be_reported_as_agent_success():
+    """A schema-valid fail-closed composite still failed its requested goal."""
+    record = {
+        'manifest': {
+            'entrypoint': (
+                'robot_composite_skills.workflows:'
+                'observe_and_avoid_water_risk'
+            ),
+        },
+    }
+    output = {
+        'state': 'aborted',
+        'reasons': ['route preview failed the Keepout evidence gate'],
+    }
+
+    with pytest.raises(
+        CompositeWorkflowError,
+        match='route preview failed the Keepout evidence gate',
+    ):
+        SkillExecutor._validate_goal_completion(record, output)
 
 
 def test_active_hash_bound_skill_executes_and_writes_trace(tmp_path):

@@ -4,12 +4,19 @@ import json
 from pathlib import Path
 import subprocess
 import sys
+import time
 
 from jsonschema import Draft202012Validator, ValidationError
 
 
 class SkillAdapterError(RuntimeError):
     """Raised when an approved Skill process fails its runtime contract."""
+
+
+def _stderr_tail(value, limit=300):
+    """Return one bounded diagnostic line without copying full subprocess logs."""
+    lines = [line.strip() for line in str(value or '').splitlines() if line.strip()]
+    return lines[-1][-limit:] if lines else ''
 
 
 class HealthSkillAdapter:
@@ -295,31 +302,6 @@ class SafeRoutePreviewAdapter:
             '-p',
             f'use_sim_time:={str(self.use_sim_time).lower()}',
         ]
-        try:
-            completed = self.runner(
-                command,
-                capture_output=True,
-                text=True,
-                timeout=float(timeout_sec),
-                check=False,
-            )
-        except subprocess.TimeoutExpired as exception:
-            raise SkillAdapterError('route preview timed out') from exception
-        except OSError as exception:
-            raise SkillAdapterError(
-                f'route preview could not start: {exception}'
-            ) from exception
-        if completed.returncode not in {0, 3, 4, 5}:
-            raise SkillAdapterError(
-                f'route preview exited {completed.returncode}'
-            )
-        try:
-            result = json.loads(completed.stdout.strip())
-        except json.JSONDecodeError as exception:
-            raise SkillAdapterError(
-                'route preview returned invalid JSON'
-            ) from exception
-        self.validate_result(result)
         expected_request = {
             'goal': {
                 'frame_id': 'map',
@@ -329,9 +311,49 @@ class SafeRoutePreviewAdapter:
             },
             'keepout_profile': inputs['keepout_profile'],
         }
-        if result['request'] != expected_request:
-            raise SkillAdapterError('route preview output identity mismatch')
-        return result
+        deadline = time.monotonic() + float(timeout_sec)
+        for attempt in range(3):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0.0:
+                raise SkillAdapterError('route preview timed out')
+            try:
+                completed = self.runner(
+                    command,
+                    capture_output=True,
+                    text=True,
+                    timeout=remaining,
+                    check=False,
+                )
+            except subprocess.TimeoutExpired as exception:
+                raise SkillAdapterError(
+                    'route preview timed out'
+                ) from exception
+            except OSError as exception:
+                raise SkillAdapterError(
+                    f'route preview could not start: {exception}'
+                ) from exception
+            if completed.returncode not in {0, 3, 4, 5}:
+                raise SkillAdapterError(
+                    f'route preview exited {completed.returncode}'
+                )
+            try:
+                result = json.loads(completed.stdout.strip())
+            except json.JSONDecodeError as exception:
+                raise SkillAdapterError(
+                    'route preview returned invalid JSON'
+                ) from exception
+            self.validate_result(result)
+            if result['request'] != expected_request:
+                raise SkillAdapterError(
+                    'route preview output identity mismatch'
+                )
+            clock_cold_start = (
+                result['state'] == 'unavailable'
+                and result['reasons'] == ['ROS clock is unavailable']
+            )
+            if not clock_cold_start or attempt == 2:
+                return result
+        raise SkillAdapterError('route preview retry bound is invalid')
 
     def validate_result(self, result):
         """Validate structural and safety-decision postconditions."""
@@ -486,26 +508,48 @@ class ApprovedNavigationAdapter:
             '-p',
             f'use_sim_time:={str(self.use_sim_time).lower()}',
         ]
-        try:
-            completed = self.runner(
-                command,
-                capture_output=True,
-                text=True,
-                timeout=float(timeout_sec),
-                check=False,
+        deadline = time.monotonic() + float(timeout_sec)
+        completed = None
+        for attempt in range(3):
+            remaining = deadline - time.monotonic()
+            if remaining <= 0.0:
+                self._cancel_all_navigation_goals()
+                raise SkillAdapterError(
+                    'approved navigation timed out; cancellation requested'
+                )
+            try:
+                completed = self.runner(
+                    command,
+                    capture_output=True,
+                    text=True,
+                    timeout=remaining,
+                    check=False,
+                )
+            except subprocess.TimeoutExpired as exception:
+                self._cancel_all_navigation_goals()
+                raise SkillAdapterError(
+                    'approved navigation timed out; cancellation requested'
+                ) from exception
+            except OSError as exception:
+                raise SkillAdapterError(
+                    f'approved navigation could not start: {exception}'
+                ) from exception
+            cold_clock_before_motion = (
+                self.use_sim_time
+                and completed.returncode == 1
+                and 'RoutePreviewInputError: observed_at_ns must be positive'
+                in str(completed.stderr or '')
             )
-        except subprocess.TimeoutExpired as exception:
-            self._cancel_all_navigation_goals()
-            raise SkillAdapterError(
-                'approved navigation timed out; cancellation requested'
-            ) from exception
-        except OSError as exception:
-            raise SkillAdapterError(
-                f'approved navigation could not start: {exception}'
-            ) from exception
+            if cold_clock_before_motion and attempt < 2:
+                continue
+            break
+        if completed is None:
+            raise SkillAdapterError('approved navigation retry bound is invalid')
         if completed.returncode not in {0, 3, 4, 5, 6, 7}:
+            diagnostic = _stderr_tail(completed.stderr)
+            suffix = f': {diagnostic}' if diagnostic else ''
             raise SkillAdapterError(
-                f'approved navigation exited {completed.returncode}'
+                f'approved navigation exited {completed.returncode}{suffix}'
             )
         try:
             result = json.loads(completed.stdout.strip())

@@ -1,0 +1,73 @@
+{
+  "schema_version": 1,
+  "evidence_type": "live_mimo_mcp_diagnosis_agent",
+  "captured_at": "2026-07-20",
+  "status": "succeeded",
+  "run_id": "diagnosis_live_mimo_002",
+  "trace_id": "trace_diagnosis_live_mimo_002",
+  "experiment_run_id": "jitter_demo_001",
+  "llm": {
+    "provider": "xiaomi_mimo",
+    "model": "mimo-v2.5-pro",
+    "prompt_id": "experiment_diagnosis_planner",
+    "prompt_version": "0.1.0",
+    "prompt_sha256": "f2647b7a9d013694f1e938439a4aac50d06bb8c00ca4e19af466cb8b72ece0df",
+    "request_sha256": "e4e8097e4b1aa117825e9631d0a4208affb375c03b554b0f05a9975bef6af6c0",
+    "latency_ms": 33160.954,
+    "usage": {
+      "input_tokens": 1685,
+      "output_tokens": 1008,
+      "total_tokens": 2693
+    }
+  },
+  "tool_sequence": [
+    "list_experiment_runs",
+    "inspect_experiment_run",
+    "analyze_experiment_run",
+    "retrieve_robotics_knowledge",
+    "materialize_diagnosis_report"
+  ],
+  "all_evidence_gates_passed": true,
+  "analysis": {
+    "analysis_sha256": "4b713c1eed2f561e6a8071a6e2bc61c9d361652cfa8f9a592f92e529fe9de944",
+    "anomaly_window_count": 1,
+    "candidate_mechanisms": [
+      "controller_oscillation",
+      "nav2_recovery_activity",
+      "obstruction_or_controller_stall"
+    ],
+    "root_cause_proven": false
+  },
+  "rag": {
+    "provider": "bge_m3_transformers_v1",
+    "retrieval_abstained": false,
+    "citation_count": 2,
+    "source_ids": [
+      "project2.skill_governance",
+      "project2.experiment_diagnosis_contract"
+    ]
+  },
+  "report": {
+    "artifact_directory": "jitter_demo_001/6c85611ef97b5f46",
+    "bundle_sha256": "6c85611ef97b5f46d9f34c84f57b9cb635cae1566eb825c7f5680def9c2aa24a",
+    "artifact_hashes": {
+      "analysis_json": "68aad9f4b0afe59491175c64120177321a9d5e19778f6674ebf18af1452bca82",
+      "diagnosis_bundle": "b22f9fe226f4ce2f4e222fa7d94775f3bd7498ad27a00c244d18bea63517446a",
+      "motion_svg": "fd9f3928d2371065992d241b2d83b55842d275557b7eeef7772346a979c88878",
+      "report_markdown": "ebed4694e2e649659aec5eeae23c19b11c764cfe1f309ec8c2479a4cbe3304ce",
+      "trajectory_svg": "3703cd26bfc6ed14fd82e3dfb31d22cee1c206040b34642cc425a2759d625bec"
+    }
+  },
+  "local_integrity": {
+    "result_sha256": "fc863a5e34a4ffdb6656bb4b22b40f0af88b7cc88ca68de5f37da553862f2f30",
+    "trace_event_count": 19,
+    "trace_sha256": "32cc7c12afdc154033551c0204434cf70a54887754e9ace505adafd58ceaf013"
+  },
+  "security": {
+    "source_experiment_modified": false,
+    "robot_motion_available": false,
+    "api_key_persisted": false,
+    "raw_trace_committed": false,
+    "causal_claim_allowed": false
+  }
+}

@@ -1,0 +1,19 @@
+{
+  "schema_version": 1,
+  "name": "observe_and_avoid_water_risk",
+  "version": "0.1.0",
+  "hash_algorithm": "sha256-file-list-v1",
+  "artifact_hash": "3b4158d71f8b3485d2fb85fb59aed37af6e0c32387c96114c505008b763e916a",
+  "files": [
+    "schemas/composite_skill_result.schema.json",
+    "skills/observe_and_avoid_water_risk/SKILL.md",
+    "skills/observe_and_avoid_water_risk/evals/evals.json",
+    "skills/observe_and_avoid_water_risk/skill-card.md",
+    "skills/observe_and_avoid_water_risk/skill.yaml",
+    "src/robot_composite_skills/package.xml",
+    "src/robot_composite_skills/setup.py",
+    "src/robot_composite_skills/robot_composite_skills/__init__.py",
+    "src/robot_composite_skills/robot_composite_skills/workflows.py",
+    "src/robot_composite_skills/test/test_workflows.py"
+  ]
+}

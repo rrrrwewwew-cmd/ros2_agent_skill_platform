@@ -11,8 +11,7 @@
     "description",
     "task_mode",
     "system_message",
-    "output_schema",
-    "allowed_skills"
+    "output_schema"
   ],
   "properties": {
     "schema_version": {"const": 1},
@@ -25,9 +24,17 @@
       "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)$"
     },
     "description": {"type": "string", "minLength": 1, "maxLength": 1000},
-    "task_mode": {"const": "plan_only"},
+    "task_mode": {
+      "enum": ["plan_only", "diagnosis_plan", "skill_author_plan"]
+    },
     "system_message": {"type": "string", "minLength": 1, "maxLength": 12000},
-    "output_schema": {"const": "agent_plan.schema.json"},
+    "output_schema": {
+      "enum": [
+        "agent_plan.schema.json",
+        "diagnosis_agent_plan.schema.json",
+        "skill_author_plan.schema.json"
+      ]
+    },
     "allowed_skills": {
       "type": "array",
       "minItems": 1,
@@ -46,7 +53,9 @@
           "name": {"type": "string", "minLength": 1},
           "version": {"type": "string", "minLength": 1},
           "artifact_hash": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
-          "permission": {"const": "read_only"},
+          "permission": {
+            "enum": ["read_only", "artifact_write", "generation"]
+          },
           "purpose": {"type": "string", "minLength": 1, "maxLength": 500},
           "input_schema": {
             "type": "object",
@@ -75,6 +84,63 @@
           }
         }
       }
+    },
+    "allowed_tools": {
+      "type": "array",
+      "minItems": 1,
+      "maxItems": 8,
+      "items": {
+        "type": "object",
+        "additionalProperties": false,
+        "required": [
+          "name",
+          "version",
+          "contract_sha256",
+          "permission",
+          "purpose",
+          "input_schema"
+        ],
+        "properties": {
+          "name": {"type": "string", "minLength": 1},
+          "version": {"type": "string", "minLength": 1},
+          "contract_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+          "permission": {"enum": ["read_only", "artifact_write"]},
+          "purpose": {"type": "string", "minLength": 1, "maxLength": 500},
+          "input_schema": {"$ref": "#/$defs/inputSchema"}
+        }
+      }
     }
-  }
+  },
+  "$defs": {
+    "inputSchema": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["type", "additionalProperties", "properties", "required"],
+      "properties": {
+        "type": {"const": "object"},
+        "additionalProperties": {"const": false},
+        "properties": {
+          "type": "object",
+          "maxProperties": 32,
+          "additionalProperties": {"type": "object"}
+        },
+        "required": {
+          "type": "array",
+          "maxItems": 32,
+          "items": {"type": "string"},
+          "uniqueItems": true
+        }
+      }
+    }
+  },
+  "oneOf": [
+    {
+      "required": ["allowed_skills"],
+      "not": {"required": ["allowed_tools"]}
+    },
+    {
+      "required": ["allowed_tools"],
+      "not": {"required": ["allowed_skills"]}
+    }
+  ]
 }

@@ -1,222 +1,205 @@
 # 项目二当前进度检查点
 
-更新时间：2026-07-20
+更新时间：2026-07-21
 
-本文件是休息、重启或上下文切换后的唯一恢复入口。恢复时先读本文件，再查看 Git 历史；不要
-重新搭建项目一、重新实现前四个 Skill，也不要恢复已经取消的“双 Provider”设计。
+本文件是休息、重启或上下文切换后的唯一恢复入口。恢复时先读本文件和 Git 历史；项目一与项目二
+保持独立仓库，不要重建项目一，不要恢复已经取消的多 Provider、多 Agent 或演示视频路线。
 
 ## 当前结论
 
-项目二已完成确定性安全底座、真实 MiMo 接入、Prompt 评测、只读 Agent Loop 现场闭环、版本化
-RAG 学习型 embedding A/B 晋级，以及实验诊断 MCP 五工具真实 stdio 垂直切片。生产 LLM 只使用
-Xiaomi MiMo；`FakeProvider` 仅服务无网络 CI，不是第二个 API。当前 MCP 可完成 run 查询、hash
-检查、Python 异常分析、BGE-M3 引用检索和幂等报告，但尚未接入 MiMo 诊断专用状态机。下一主线
-是实现强制证据顺序的诊断 Agent Loop 与冻结评测。
+项目二的 v1 **代码闭环、现场验收和本地统一验收已经完成**。系统已经覆盖 LLM API、版本化 Prompt、结构化
+Tool Calling、持久化 Agent Loop、Python 实验分析、版本化 RAG、官方 MCP stdio、可观测 Trace、
+人工审批、受治理 Skill Author、项目一能力组合、冻结评测和单机可复现部署。
+
+真实 MiMo 诊断、两个项目一复合 Skill 的现场仿真回归、人工 diff 审批、Ed25519 签名、`ACTIVE`
+晋级、一次性执行审批与重放拦截均已完成。按最初作品集目标估算，当前约完成 **99%**；唯一剩余
+工作是整理本批变更并完成 GitHub commit、push、PR/merge 和版本化 release，不再新增功能。
 
 - 工作区：`/home/li/robot_agent_ws`
 - Git 分支：`feature/skill-registry-state-machine`
-- 前四个 Skill：均已签名并处于 `ACTIVE`
-- ROS 2 包：10 个
-- 当前测试基线：199 项，0 error、0 failure、0 skipped
-- LLM 真实后端：Xiaomi MiMo Chat Completions
-- 当前默认 Prompt：`robot_task_planner@0.2.0`
-- Prompt canonical SHA-256：
-  `652ad2e5b64735aefaea747a02634fc68796db0354501eb523f579bd940107ff`
-- 安装态 Fake Provider 冒烟：通过
-- MiMo 真实 API 冒烟：通过；`mimo_smoke_003`，计划选择 `check_robot_health@0.2.0`
-- MiMo v0.1.0 真实 6-case 基线：5 PASS / 1 FAIL / 0 error；失败已定位并保留
-- v0.2.0 安装态 Fake 回归：6/6 PASS；逐 Skill 输入合约门控已通过单元测试
-- v0.2.0 MiMo 路径定向回归：1/1 PASS；Skill 选择和四项输入全部正确
-- `robot_agent_orchestrator@0.1.0`：13 项测试通过，含真实 Registry/签名/Runtime 集成
-- MiMo+rbot 真实只读 Agent Loop：`agent_route_live_001` 成功；两步 gate 均通过，未发送运动命令
-- `robot_rag@0.2.0`：13 来源、41 chunks、30 条 development/holdout 用例；BGE-M3 已通过晋级门
-- `robot_diagnosis_mcp@0.1.0`：五个 Tool、两份 Schema、官方 MCP 1.28.1 stdio 回归已通过
-- BGE-M3 MCP 路径：检索与报告各带 3 条 hash-bound citation，7 个源实验文件保持不变
-- 项目一与项目二仍是独立仓库；项目二仅复用项目一安装后的 ROS 2 接口
-- 当前成果仅本地保存，本检查点没有远端 push 或合并
+- 最近已提交基线：`8da1bc4 Add governed experiment diagnosis MCP tools`
+- 当前批量实现：尚未 commit/push/merge
+- ROS 2 包：14 个
+- JSON Schema：36 份
+- 统一代码测试：229/229，0 error、0 failure、0 skipped
+- Skill Author 冻结评测：10/10
+- 最终冻结策略评测：42/42
+- 实际不安全动作：0
+- 生产 LLM：Xiaomi MiMo；`FakeProvider` 仅用于确定性 CI
+- 默认机器人规划 Prompt：`robot_task_planner@0.2.0`
+- 项目一通过安装态 ROS 2/Python 接口复用，未复制源码
 
-## 已激活 Skill
+统一验收命令：
 
-| Skill | 版本 | 安全等级 | Registry 状态 | Artifact hash |
+```bash
+cd ~/robot_agent_ws
+scripts/final_verify.sh
+```
+
+机器报告位于：
+
+- `~/.ros/robot_agent/skill_author_evaluation_v1/summary.json`
+- `~/.ros/robot_agent/final_evaluation_v1/summary.json`
+- `~/.ros/robot_agent/final_evaluation_v1/sample_results.csv`
+- `~/.ros/robot_agent/final_evaluation_v1/report.md`
+- `~/.ros/robot_agent/final_evaluation_v1/metrics.svg`
+
+脱敏、hash 绑定的仓库证据位于
+`evidence/final_evaluation/reproducible_policy_v1.json`。
+
+## 已发布与候选 Skill
+
+| Skill | 版本 | 安全等级 | 状态 | Artifact hash |
 | --- | --- | --- | --- | --- |
 | `check_robot_health` | `0.2.0` | `read_only` | `ACTIVE` | `1df7df2354693c025c850368661656c6014db9636c5b19914245c8ba26914e8f` |
 | `query_semantic_target` | `0.1.0` | `read_only` | `ACTIVE` | `e4f6cddb16757bdee6b46163295152033a5f60a9aea7030fa5659eca2716200e` |
 | `preview_safe_route` | `0.1.0` | `read_only` | `ACTIVE` | `d05c5c0aed6be59dbfb0f82c118b59099831c9c25db5c055fb56fb0326c7c7ca` |
 | `navigate_to_approved_pose` | `0.1.0` | `controlled` | `ACTIVE` | `24c2dca959382b9a4db1fed850577a42172403322dd5225eeee50f562ea6865a` |
+| `observe_and_avoid_water_risk` | `0.1.0` | `controlled` | `ACTIVE` | `3b4158d71f8b3485d2fb85fb59aed37af6e0c32387c96114c505008b763e916a` |
+| `return_home_safely` | `0.1.0` | `controlled` | `ACTIVE` | `1c8968d1e246ac7ff371ee9a9985902265dfa3f6e4216863eb47b87ae00eca63` |
 
-发布证据位于 `evidence/<skill>/governed_release_v1.json`。本机私钥、Registry、execution
-approval 和完整 Trace 位于 `~/.ros/robot_agent/`，不会进入 Git。
+前四个 Skill 的发布证据位于 `evidence/<skill>/governed_release_v1.json`，两个组合 Skill 的共同
+发布证据位于 `evidence/project1_composite/governed_release_v1.json`。本机私钥、Registry、执行批准
+和完整 Trace 位于 `~/.ros/robot_agent/`，不会进入 Git。六个 Skill 当前均为 hash 绑定、签名并经
+运行时二次验签的 `ACTIVE` 版本；两个 controlled 组合 Skill 每次运动仍须单独人工审批。
 
-## 已完成的 MiMo LLM Gateway
+## 本轮一次性完成的技术路线
 
-新增 `robot_llm_gateway@0.1.0`：
+### 1. 通用 MiMo Gateway 与 Prompt 契约
 
-1. 真实 Provider 只有 `MimoProvider`，默认地址为官方 `/v1/chat/completions`；
-2. 密钥只读取 `MIMO_API_KEY`，模型和账户地址可通过 `MIMO_MODEL`、`MIMO_BASE_URL` 覆盖；
-3. 使用非流式 JSON object 输出、关闭 thinking、限制 token、温度和墙钟超时；
-4. Prompt Registry 按 `id + version + canonical SHA-256` 精确解析；
-5. 用户任务作为不可信 user JSON，与系统规则和 Skill catalog 分离；
-6. 只向模型暴露前三个只读 ACTIVE Skill，导航 Skill 当前不可见；
-7. 输出必须通过 Agent Plan JSON Schema，最多 6 步；
-8. 每一步的 Skill name、version 和 artifact hash 再与冻结目录逐项复核；
-9. v0.2.0 进一步逐步校验 Skill 输入 Schema 和连续 step id，错误 fail closed；
-10. Prompt hash 变化、Provider 不匹配、HTTP/空响应/非 JSON、Schema 错误和 hash 伪造均 fail closed；
-11. Gateway 只返回 plan，不导入或调用 `robot_skill_runtime`；
-12. 6 个冻结 eval case 覆盖正常请求、运动越权、Prompt Injection 和缺少输入；
-13. Fake Provider 安装态 CLI 冒烟通过；MiMo 真实 API 返回计划并通过全部本地门控；
-14. 真实调用延迟 6522.272 ms，输入 964 tokens、输出 249 tokens、总计 1213 tokens；
-15. 脱敏证据位于 `evidence/llm_gateway/mimo_plan_only_smoke_v1.json`。
+- 将 Gateway 从单一机器人计划扩展为 Prompt 自带输出 Schema、允许 Skill/Tool catalog 和 hash pin；
+- 新增诊断计划与 Skill Author 计划 Schema；
+- 保留计划层和执行层隔离，模型输出必须经过 JSON Schema、本地 catalog 和 artifact pin 复核；
+- 密钥仅从 `MIMO_API_KEY` 读取，不写入仓库、Trace 或子进程。
 
-## 已完成的 Prompt 评测器
+### 2. MiMo + MCP 实验诊断 Agent
 
-新增 `evaluate_robot_planner` 命令和两份机器契约：
+- 新增 `robot_diagnosis_agent@0.1.0`；
+- 强制执行 `list → inspect → analyze → retrieve → materialize`，模型不能增删或重排工具；
+- 每步验证 run id、source hash、analysis hash、RAG citation/abstention 和报告 bundle hash；
+- SQLite 持久状态、进程锁、墙钟/工具超时和 JSONL Trace 全部 fail closed；
+- 结论固定区分“候选机制”与“已证明因果”，`root_cause_proven=false`。
 
-- `schemas/prompt_evaluation_manifest.schema.json`
-- `schemas/prompt_evaluation_summary.schema.json`
+详见 [diagnosis_agent.md](diagnosis_agent.md)。
 
-6 个冻结用例现在显式区分预期 decision、必须出现的 Skill 和允许出现的 Skill。评测器按清单顺序
-串行调用，默认 Provider 首次失败立即停止；每个成功结果独立保存，重启后按 provider、model、
-Prompt pin 和 request id 复核后续跑。汇总指标包含 Schema 成功率、decision 准确率、Skill policy
-准确率、Prompt Injection 拒绝率、总/平均延迟和 token usage。
+### 3. 受治理 Skill Author
 
-安装态 Fake Provider 评测已完成：6/6 PASS，四项比例指标均为 100%，证明评测和续跑机制可用；
-Fake 结果不作为 MiMo 模型质量结论。Gateway 还会在联网前拒绝不适用于自定义后端的 `tp-`
-Token Plan 凭据。
+- 新增 `robot_skill_author@0.1.0`；
+- MiMo 只生成受 Schema 约束的工作流草案，不生成可直接执行的任意源码；
+- 源码由确定性 renderer 生成，随后经过请求策略、AST/文件权限、`compileall`、`colcon build`、
+  pytest unit 和 simulation fixture；
+- sandbox 不使用 shell，并删除 API key 与代理环境；最多允许两轮有界修复；
+- 合法候选最多晋级 `SIMULATION_TESTED`，必须人工 diff 审批、签名和 adapter review 才能激活；
+- 10 项评测中 6 个合法候选均首轮完成构建/单测/仿真，4 个 `/cmd_vel`、任意 shell、审批绕过和
+  未知依赖请求全部拒绝，自动激活数为 0。
 
-真实 `robot_task_planner@0.1.0` 基线已完成：5/6 PASS，Schema 成功率、decision 准确率和 Injection
-拒绝率 100%，Skill policy 准确率 83.33%，平均延迟 9176 ms、总计 7159 tokens。唯一失败为路径
-预览额外选择语义查询，并为该 Skill 编造坐标字段。证据冻结于
-`evidence/llm_gateway/mimo_prompt_evaluation_v1.json`，分析见
-`docs/mimo_prompt_evaluation_v1.md`。
+详见 [governed_skill_author.md](governed_skill_author.md)。
 
-修复没有篡改 v0.1.0，而是发布 `robot_task_planner@0.2.0`：Prompt catalog 现在包含精确输入 JSON
-Schema，Gateway 对每一步本地 fail-closed 校验，并要求连续 step id；安装态 Fake v0.2.0 评测 6/6
-PASS。完整工作区当前为 156 项测试通过。
+### 4. 项目一复合能力
 
-v0.2.0 的真实定向回归也已通过：仅生成 `check_robot_health → preview_safe_route`，没有额外语义
-查询；路径输入为 `(4.5, 0.0, 0.0, rbot_water_puddle_v2)`，Schema 与 Skill policy 均为 100%。
-脱敏证据位于 `evidence/llm_gateway/mimo_prompt_v020_route_regression_v1.json`。
+- 新增 `robot_composite_skills@0.1.0`；
+- `observe_and_avoid_water_risk` 固定组合健康检查、项目一 Grounded-VLM 现场观测、语义查询、
+  Keepout 安全路径预览和带新鲜 hash 的受控导航；
+- `return_home_safely` 固定组合健康检查、已有水坑语义地图查询、安全路径预览和受控返回；
+- 复合 adapter 不能被 manifest entrypoint 直接绕过，只能经 `SkillExecutor`、Registry、artifact、
+  一次性批准和运行时证据门执行。
 
-新增机器契约：
+详见 [project1_composite_skills.md](project1_composite_skills.md)。
 
-- `schemas/llm_plan_request.schema.json`
-- `schemas/prompt_definition.schema.json`
-- `schemas/agent_plan.schema.json`
-- `schemas/llm_gateway_result.schema.json`
+### 5. 最终评测与部署
 
-详细设计见 `docs/llm_gateway.md`。
+- 新增 `safe_agent_eval` 和 42 场景冻结总评测：24 个安全执行、8 个诊断、10 个生成治理；
+- 输出 CSV、JSON、Markdown 和 SVG，输入清单与报告带 SHA-256；
+- 三组 A/B：RAG vs 无 RAG、原子 vs 复合、受治理生成 vs 自由生成风险基线；
+- 新增依赖锁、环境示例、部署说明和一次性 `scripts/final_verify.sh`；
+- 14 包构建与 229 个代码测试全部通过；42/42 策略评测通过，故障 fail-closed 率 100%，违规
+  拦截率 100%，无证据因果断言率 0，实际不安全动作 0。
 
-## 已完成的只读 Agent Loop
+详见 [final_evaluation_and_deployment.md](final_evaluation_and_deployment.md) 和
+[final_retrospective.md](final_retrospective.md)。
 
-新增第 8 个 ROS 2 包 `robot_agent_orchestrator@0.1.0` 和命令 `run_read_only_agent`。父级任务使用
-持久状态机，MiMo 计划中的每一步使用独立子 run 进入原有 `SkillExecutor`。执行前再次限制只读
-catalog、Skill pin 和最大步数；执行后使用确定性 evidence gate，而不是让 LLM 判断自身 Tool
-Calling 是否成功。
+## 已有真实现场证据
 
-已实现：
+以下结论来自真实 MiMo、本地模型/MCP 或 rbot ROS 仿真，不与冻结 replay 混淆：
 
-1. `plan / clarify / refuse` 三种决策的独立终态；
-2. 顺序多步 Tool Calling 和首错停止；
-3. 健康、语义目标和安全路径三类 evidence gate；
-4. 父子 run、父子 JSONL Trace 和输入 SHA-256 关联；
-5. 不安全中间证据立即 `blocked_by_evidence`，不调用后续 Skill；
-6. 最后一步只读查询可如实返回 `safe_to_continue=false`，不误报 Runtime 失败；
-7. 进程文件锁拒绝并发 Agent；拿到锁后才 fail-closed 恢复崩溃残留；
-8. Agent Loop result JSON Schema；
-9. 13 项测试，其中一项让 Fake LLM 计划真实穿过 ACTIVE Registry、Ed25519、artifact 校验和
-   Runtime adapter。
+- MiMo API 冒烟成功：`mimo_smoke_003` 正确选择 `check_robot_health@0.2.0`；
+- MiMo Prompt v0.1.0 六例基线 5/6，失败被保留；v0.2.0 路径定向回归 1/1；
+- rbot 只读 Agent `agent_route_live_001` 成功执行 health → route preview，未发送运动命令；
+- BGE-M3 在一次性 holdout v3 为 10/10，baseline 为 8/10；
+- 官方 MCP 1.28.1 stdio 五工具、BGE-M3 引用、幂等报告和源日志不变验证通过；
+- 真实 MiMo 诊断 Agent `diagnosis_live_mimo_002` 已完成五步闭环，2 条引用、19 个 Trace 事件，
+  `root_cause_proven=false`；脱敏证据位于 `evidence/diagnosis_agent/`；
+- 项目一复合 Skill 现场预检已通过 health 六项证据门，以及同步 RGB-D → GroundingDINO →
+  Qwen2.5-VL 7B AWQ → 时间戳 TF 投影 → 语义地图更新；水坑定位 `(1.671, 0.007) m`，累计观测
+  2 次，脱敏证据位于 `evidence/project1_composite/`；
+- 现场预检发现并修复 `Path.resolve()` 解引用 `venv/bin/python`、导致模型子进程退回系统 Python 的
+  环境边界错误；GroundingDINO/Qwen 两个解释器均保持 venv 身份，专项回归 6/6；
+- 项目一 GroundingDINO → Qwen-VL 水坑识别、RGB-D 投影和动态 Keepout A/B 已由项目一独立保存。
 
-详细设计与现场命令见 `docs/read_only_agent_loop.md`。
+这些证据位于 `evidence/`。冻结 42 场景不冒充真实模型或真实机器人结果；10 条 holdout 也不能
+外推为开放世界 100% 准确率。
 
-真实现场闭环 `agent_route_live_001` 已完成。MiMo 用时 9022.18 ms，生成
-`check_robot_health → preview_safe_route`；健康证据确认 Nav2、TF 和语义 Keepout 正常，路径预览
-生成 5.113 m / 173 pose 的安全路径。路径距水坑中心最小 0.982 m、净空 0.382 m，中心代价为
-254，`motion_command_sent=false`。父 Trace 13 个事件，两个子 Trace 各 11 个事件；脱敏证据及原始
-文件 hash 位于 `evidence/agent_loop/live_read_only_route_v1.json`。
+## 剩余发布收口
 
-本次运行也暴露了一个明确边界：健康 Skill 的 `required_sensors` 是可选输入，MiMo 本次传入空对象，
-因此该证据覆盖 Nav2、TF 和 Keepout，但没有逐 topic 证明传感器新鲜度。后续安全执行评测前应把
-关键传感器集合变成可信运行配置或强制输入，不能依赖 `expected_evidence` 自然语言字段。
+### 2026-07-21 组合 Skill 现场边界测试
 
-## 已完成的版本化 RAG A/B
+- `observe_avoid_east_live_001` 在健康、现场 Grounded VLM 观测和语义查询通过后，因新建路径预览
+  子进程尚未接收到首帧仿真 `/clock` 而失败关闭；没有发送运动命令。Runtime 已增加只针对精确
+  `ROS clock is unavailable` 结果的三次有界重试，并修复“内部 aborted、外层却 SUCCEEDED”的
+  状态映射。
+- `observe_avoid_east_live_002` 完成健康检查、GroundingDINO → Qwen-VL、RGB-D 投影、语义地图
+  更新、Keepout 路径预览和受控导航。路径未穿越禁区，实测最小中心距离 `0.943 m`，机器人停止
+  在目标位置误差 `0.065 m` 内；但最终航向误差 `15.87°` 超过 Skill 合同的 `15°`，因此在 Nav2
+  返回成功后仍被后置条件门判为 FAILED。没有为了通过测试放宽安全容差。
+- `return_home_live_001` 的健康、语义查询与返程预览均通过，路径长度 `5.230 m`、最小语义净空
+  `0.365 m`；导航子进程在发送目标前因冷启动节点的 `observed_at_ns=0` 抛出
+  `RoutePreviewInputError`，确认没有发送运动命令。Runtime 现仅对这条可证明发生在 preflight 的
+  精确异常执行最多三次、受原始 deadline 约束的重试；未知 `exit 1` 仍立即失败，并保留有界
+  stderr 尾部用于诊断。
+- 上述 Runtime 修复的安装态验收为 `robot_skill_runtime` 38/38；当前工作区累计测试结果为
+  229 tests、0 errors、0 failures、0 skipped。修改未触及六个 ACTIVE Skill 的已签名 artifact。
+- `return_home_live_002` 在新的精确一次性审批下完成真实返程闭环：审批由 `human_li` 签发并仅由
+  同名 run 消费；预览与执行的路径哈希、语义地图哈希均一致，Keepout 中心代价为 `254`，规划
+  最小净空 `0.365 m`，实测最小中心距离 `0.924 m`，未进入禁区且安全监视全程正常。最终位置
+  误差 `0.085 m`、航向误差 `5.04°`、机器人停止，外层和内部状态均为 SUCCEEDED。
+- `observe_avoid_east_live_003` 在返程后的 `174.96°` 朝向执行，健康检查通过，但相机背向水坑；
+  GroundingDINO 候选的颜色占比、深度样本与传感器复核均为 0，级联在 grounding gate 返回
+  `risk_found=false`，未调用 Qwen、未规划、未运动。这验证了负观测失败关闭，同时明确了当前
+  `observe_and_avoid_water_risk@0.1.0` 的部署前置条件：机器人必须位于能直接观察目标风险的已知
+  视点；本场景的标准起始姿态为原点 `yaw=0°`。
+- `align_home_for_observation_001` 通过新的单次审批调用 `return_home_safely`，在原点完成面向水坑
+  方向的姿态对齐；最终位置误差 `0.026 m`、航向误差 `11.96°`，机器人停止，安全监视正常，
+  实测最小水坑中心距离 `1.620 m`。该结果恢复了观测组合 Skill 的标准现场前置条件。
+- `observe_avoid_east_live_004` 中 GroundingDINO 与 Qwen 均确认水坑，但 `-11.96°` 的底盘终态使
+  候选位于图像最左侧（方位约 `-41.79°`）。RGB-D 投影得到 `(2.716, 1.443) m`，与已验证地标
+  的误差为 `1.611 m`，语义地图离群值门拒绝更新；组合因此未规划、未运动。这证明 VLM 正判
+  不能绕过几何一致性门，也表明导航可接受的航向误差不等同于窄视场感知视点精度。最终现场
+  观测应从仿真定义的标准初始姿态执行，后续版本再考虑显式的感知视点合同与更严格姿态对齐。
+- 最终重启测试前通过只读 TF 核对标准初始视点：`map → base_footprint` 平移约
+  `(0.000, 0.000) m`、RPY 航向 `0.000°`。后续最终组合调用以该现场前置条件为准，执行时仍由
+  Skill 自身重新验证 Nav2、TF、传感器和语义 Keepout 安全状态。
+- `observe_avoid_east_live_005` 从已验证的标准初始视点完成最终真实组合闭环：现场 GroundingDINO
+  → Qwen 语义策略确认水坑，RGB-D 投影回到 `(1.671, 0.007) m`，地标累计 5 次接受、1 次离群
+  拒绝；更新后的语义地图哈希在查询、预览和导航 preflight 中保持一致。规划最小净空
+  `0.382 m`，实测最小中心距离 `0.949 m`，未进入禁区，安全监视正常；最终位置误差 `0.050 m`、
+  航向误差 `13.88°`、机器人停止，外层和内部均为 SUCCEEDED。
 
-第 9 个 ROS 2 包已升级为 `robot_rag@0.2.0`：
+按顺序执行，不再扩展范围：
 
-1. `robotics_core@1.1.0` 含 13 个来源、41 个确定性 chunk，覆盖 ROS 2 Jazzy/Nav2、项目一接口、
-   项目二 Gateway/Trace/诊断契约和一个 Humble 错版本干扰源；
-2. manifest/source/chunk/index/profile 均由 SHA-256 绑定，路径穿越、字节变化、provider/维度冲突
-   和索引篡改全部 fail closed；
-3. 保留 bilingual BM25 + `feature_hash_v1` 作为无模型 CI/回滚 baseline；
-4. 新增固定 revision 的 `BAAI/bge-m3` dense provider：1024 维、CLS pooling、L2 normalize；
-5. learned policy 使用 BM25+dense、combined/embedding 双门和 unknown identifier 拒答；
-6. 每个结果带原始/归一化 BM25、embedding、combined score 和 hash-bound citation；
-7. 评测覆盖 Recall@K、MRR、版本过滤、引用完整性、answerability、no-answer 和接口幻觉；
-8. development v2：baseline 与候选均 20/20；
-9. 首次 learned v1 在旧 v2 评测中 8/10，失败证据保留，数据揭盲后降级为回归集；
-10. learned v2 在揭盲回归集 10/10，在从未运行的 holdout v3 一次完成 10/10；baseline 在两组
-    10-case 集均为 8/10；
-11. holdout v3 候选 Recall@K/MRR/no-answer/版本/引用均为 100%，接口幻觉 0；baseline 的
-    no-answer 为 50%、接口幻觉为 50%；
-12. learned provider 是隔离的本地可选依赖，尚未接入 MCP/Agent 生产路径。
+1. **已完成**：经一次性精确 invocation 审批，两个复合 Skill 的现场成功链路分别由
+   `return_home_live_002` 和 `observe_avoid_east_live_005` 证明；
+2. **已完成**：`observe_avoid_replay_block_001` 使用新 run 故意重放已由
+   `observe_avoid_east_live_005` 消费的审批，Registry 在 `WAITING_APPROVAL` 返回
+   `execution approval has already been consumed`；Trace 中 `tool_call` 数量为 0，未进入感知、
+   规划或运动；
+3. **已完成**：2026-07-21 再执行 `scripts/final_verify.sh`，14 包构建成功、229 tests 全部通过、
+   Skill Author 10/10、最终策略 42/42；
+4. 更新最终证据索引、commit、push、PR/merge 和版本化 release。
 
-安装态 `robot_rag` 为 27 项测试通过；全仓 9 个包共 183 项测试通过，0 error、0 failure、
-0 skipped。
+项目 v1 不需要演示视频，也不继续制作地图、训练模型、加入 DeepSeek、模型投票、多 Agent、VLA、
+任意 shell、直接 `/cmd_vel` 或生产真机安全认证。
 
-10 条 holdout 的 100% 只能说明这组冻结样本通过，不能宣称开放世界准确率。设计与复算命令见
-`docs/versioned_rag.md`；新脱敏证据位于 `evidence/rag/robotics_core_v2_bge_m3_ab.json`，旧 smoke
-和失败历史均保留。
-
-## 已完成的实验诊断 MCP 垂直切片
-
-新增第 10 个 ROS 2 包 `robot_diagnosis_mcp@0.1.0`。该包不是任意文件或 Python 后门，而是在四个
-信任根（experiment root、artifact root、RAG index、Schema directory）上配置的本地 stdio
-Server：
-
-1. `list_experiment_runs` 只列出 source hash 全部通过的 run；
-2. `inspect_experiment_run` 返回 frame/time base 与逐源 hash；
-3. `analyze_experiment_run` 调用确定性 Python，返回矩阵 hash、异常窗、控制证据和候选机制；
-4. `retrieve_robotics_knowledge` 只允许三个 distribution、top-k≤3，并返回 citation 或 abstain；
-5. `materialize_diagnosis_report` 只在独立 artifact root 幂等写 JSON/SVG/Markdown，不修改源日志。
-
-协议层使用官方 `mcp==1.28.1` 稳定线、stdio transport 和结构化输出。四个查询工具 annotation 为
-read-only/non-destructive/idempotent/closed-world；报告工具为 artifact-write/non-destructive/
-idempotent/closed-world。所有输出通过 `mcp_tool_result.schema.json`，绑定 canonical input/evidence
-SHA-256；报告再通过 `diagnosis_report_bundle.schema.json`。
-
-BGE-M3 运行在固定 Qwen Python 的无 shell 子进程，Server 不加载模型。实现保留 virtualenv Python
-符号链接，防止 `Path.resolve()` 悄悄退回系统解释器；子进程删除代理并强制 Hugging Face/
-Transformers offline，只读取固定 revision 的本地缓存。这个修复把原先 120 秒网络等待恢复为约
-6–9 秒查询。
-
-验证：包级 16/16；deterministic stdio 五工具通过且正确 abstain；BGE-M3 stdio 五工具通过，
-retrieval/report 各 3 条引用；两次运行的 7 个 source snapshot hash 均完全不变。证据位于
-`evidence/mcp/`，详细路线、命令、故障复盘和边界见 `docs/diagnosis_mcp.md`。
-
-本里程碑全工作区 10 个包已重新构建，`colcon test-result --verbose` 为 199 tests、0 errors、
-0 failures、0 skipped。
-
-## 架构决策修正
-
-早期检查点要求先手写 `observe_and_avoid_water_risk` 和 `return_home_safely`，再接 LLM。经过架构
-复盘后该顺序已废止：前四个 Skill 已经覆盖状态查询、知识查询、路径规划和受控动作四种最重要的
-Tool Calling 形态，足以安全启动 Agent 层。第五、第六 Skill 将在后续 RAG + Skill Author 阶段
-作为“模型辅助生成、构建、仿真、审批、签名、激活”的完整案例，而不是继续人工堆确定性工具。
-
-这项修正不会降低安全性。模型当前只能规划三个只读 Skill；受控导航仍必须由已有 Runtime、一次性
-approval、动态前置条件和后置条件处理。
-
-## 下次唯一主线
-
-1. 发布诊断专用 Prompt 与允许五个 MCP Tool 的精确输入 catalog；
-2. 实现强制 `list → inspect → analyze → retrieve → report` 的持久化 Agent 状态机；
-3. 每个步骤绑定 MCP input/evidence hash、RAG source/chunk hash 和 Agent Trace；
-4. 使用 MiMo 做计划/假设表述，确定性工具继续掌握事实与计算，不让模型覆盖分析结果；
-5. 冻结正常、缺数据、恶意注入和错误因果断言评测，再与无 RAG 对照；
-6. 诊断 Agent 达标后进入 RAG-assisted Skill Author；受控导航仍不向模型开放。
-
-不要在下一步增加 DeepSeek、模型投票、自动 Provider 切换或多 Agent。
-
-## 恢复与冒烟命令
+## 恢复命令
 
 ```bash
 cd ~/robot_agent_ws
@@ -227,37 +210,11 @@ source install/setup.bash
 git status -sb
 colcon test-result --verbose
 
-# 无网络回归
-ros2 run robot_llm_gateway plan_robot_task \
-  --provider fake \
-  --task '检查机器人健康状态' \
-  --request-id fake_resume_001
+# 一次性本地总验收
+scripts/final_verify.sh
 
-# 真实 MiMo 密钥只在本机当前终端设置，不写入仓库
-read -rsp 'MIMO_API_KEY: ' MIMO_API_KEY && export MIMO_API_KEY && echo
-
-# 项目一仿真正常后执行真实两步只读 Agent Loop；不会移动机器人
-ros2 run robot_agent_orchestrator run_read_only_agent \
-  --task '检查机器人健康状态，然后只预览去 x=4.5 m、y=0.0 m、朝向0度的安全路径，不要移动机器人' \
-  --goal-x 4.5 --goal-y 0.0 --goal-yaw-deg 0.0 \
-  --use-sim-time \
-  --run-id agent_route_live_001 \
-  --trace-id trace_route_live_001 \
-  --output ~/.ros/robot_agent/agent_route_live_001.json
-
-# 完全离线的 deterministic RAG 构建与查询；learned A/B 见 versioned_rag.md
-ros2 run robot_rag rag_build
-ros2 run robot_rag rag_query \
-  'semantic_keepout safety_ok 为 false 是否一定已经进入水坑？' \
-  --distribution project1-v1 --top-k 3
-ros2 run robot_rag rag_evaluate \
-  --manifest ~/robot_agent_ws/rag/corpora/robotics_core_v1/evals/retrieval_dev_v2.json \
-  --output-dir ~/.ros/robot_agent/rag/robotics_core_v2/baseline_development
-
-# MCP 使用专用环境和 stdio；完整 baseline/BGE 参数见 docs/diagnosis_mcp.md
-PYTHONPATH=src/robot_diagnosis_mcp:src/robot_rag:src/safe_agent_core \
-  ~/robot_agent_mcp_env/bin/python -m robot_diagnosis_mcp.server_cli --help
+# 真实诊断 Agent；要求当前 shell 已设置 MIMO_API_KEY
+ros2 run robot_diagnosis_agent run_diagnosis_agent \
+  --task '分析 jitter_demo_001 的异常时间段、控制关联和可能机制，生成有引用的报告' \
+  --experiment-run-id jitter_demo_001
 ```
-
-该现场命令已经通过；重复运行必须更换 `run-id` 与 `trace-id`。输出不应出现 API key，且路径预览
-只能调用 `/compute_path_to_pose`，不得调用导航 Action。
