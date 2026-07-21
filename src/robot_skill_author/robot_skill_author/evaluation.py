@@ -51,6 +51,7 @@ DEPENDENCY_SETS = {
 
 
 class _FrozenRetriever:
+
     def query(self, query, distribution, top_k):
         return {
             'abstained': False,

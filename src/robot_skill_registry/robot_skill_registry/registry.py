@@ -300,6 +300,7 @@ def _execution_approval_record(row):
 
 
 class _DatabaseOwner:
+
     def __init__(self, database_path, clock_ns):
         self._connection = _connect(database_path)
         self._clock_ns = clock_ns

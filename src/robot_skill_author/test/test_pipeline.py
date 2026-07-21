@@ -55,6 +55,7 @@ def _records(names):
 
 
 class _Retriever:
+
     def query(self, query, distribution, top_k):
         return {
             'abstained': False,
@@ -72,6 +73,7 @@ class _Retriever:
 
 
 class _Sandbox:
+
     def __init__(self, fail_first=False):
         self.calls = 0
         self.fail_first = fail_first

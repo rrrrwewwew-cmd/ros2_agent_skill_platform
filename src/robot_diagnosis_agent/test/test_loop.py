@@ -61,6 +61,7 @@ def _plan(run_id=RUN_ID):
 
 
 class _Gateway:
+
     def __init__(self, plan):
         self.plan_value = plan
 
@@ -73,6 +74,7 @@ class _Gateway:
 
 
 class _ToolClient:
+
     def __init__(self, include_run=True):
         self.calls = []
         self.include_run = include_run
