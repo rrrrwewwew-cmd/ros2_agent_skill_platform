@@ -124,6 +124,7 @@ HF_HOME=~/.cache/huggingface \
 可以说：实现了版本化语料、hash-bound citation、确定性 baseline、固定 revision 的 BGE-M3 混合
 检索、拒答策略、development/holdout A/B 和失败证据保留。
 
-不能说：已经验证所有 ROS 问题、10 条 holdout 等于生产准确率 100%、BGE-M3 已接管生产 Agent，
-或 RAG 已完成诊断闭环。下一步是把晋级后的 retriever 通过只读 MCP 工具接入实验诊断 Agent，并
-继续用更大的冻结集扩展证据。
+不能说：已经验证所有 ROS 问题、10 条 holdout 等于生产准确率 100%，或 BGE-M3 已接管生产 Agent。
+v1 已将晋级后的 retriever 通过只读 MCP Tool 接入实验诊断 Agent；`diagnosis_live_mimo_002` 完成
+真实 MiMo 五步诊断闭环并返回 2 条 hash-bound 引用，冻结诊断评测为 8/8、无证据因果断言率为 0。
+更大的冻结集和生产检索监控属于后续增强，不是 v1 发布前置条件。

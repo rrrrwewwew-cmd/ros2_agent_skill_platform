@@ -51,4 +51,6 @@ manifest 中声明的是组合过程可能使用的完整 ROS topic/service/acti
 两个精确 artifact 已在 2026-07-20 完成现场感知预检、人工发布审批、Ed25519 签名与独立验签，
 Registry 状态均为 `ACTIVE`。发布过程没有创建执行审批或发送运动命令；每次组合运动仍必须提交
 完整 invocation，获得最长 300 秒、一次性消费的人工执行审批，并由 Runtime 重新验证 artifact 与
-签名。现场完整运动闭环与失败关闭边界仍作为 release-candidate 收口项保留。
+签名。`return_home_live_002` 与 `observe_avoid_east_live_005` 已分别证明返程和“观测—更新语义图—
+Keepout 规划—受控导航”的现场成功闭环；`observe_avoid_replay_block_001` 证明已消费审批在任何
+Tool 调用或运动前被拒绝。对应脱敏证据位于 `evidence/project1_composite/`。
